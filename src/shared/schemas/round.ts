@@ -26,11 +26,11 @@ export const createRoundSchema = z.object({
 	purchaseStart: z.string().optional(),
 	purchaseEnd: z.string().optional(),
 	deliveryEta: z.string().optional(),
-	status: z.enum(ROUND_STATUSES).default("draft"),
+	status: z.enum(ROUND_STATUSES),
 	sourceCurrency: z.enum(SOURCE_CURRENCIES),
 	fxRate: z.coerce.number().positive(),
-	perItemFeeTh: z.coerce.number().min(0).default(0),
-	defaultShippingFee: z.coerce.number().min(0).default(50),
+	perItemFeeTh: z.coerce.number().min(0),
+	defaultShippingFee: z.coerce.number().min(0),
 	notes: z.string().optional(),
 });
 
