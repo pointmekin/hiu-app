@@ -17,7 +17,7 @@ This is an internal admin tool replacing the Excel-based workflow for a ร้�
 - TanStack Query v5, Zustand
 - react-hook-form + zod, schemas shared between client and server
 - i18next + react-i18next — Thai default, English alternative
-- Cloudflare R2 for storage (via @aws-sdk/client-s3), sharp for image processing
+- AWS S3 for storage (via @aws-sdk/client-s3), sharp for image processing
 - exceljs for XLSX exports
 - Vitest + Playwright
 - Biome for lint/format

@@ -9,7 +9,7 @@
 - **Fee model overhauled.** Replaced the three-model selector with an **effective FX rate** + optional **per-item fee** + per-product manual override. Matches how Chom actually thinks about pricing.
 - **Currencies** now first-class: JPY, USD, GBP, HKD, AUD, plus extensible via app settings. Each round picks one.
 - **i18n added.** Thai default, English alternative. Cookie-based locale switch. UI strings, validation messages, date/number formatting localized. User-entered data is never translated.
-- **Image pipeline** simplified — server-side `sharp` for thumbnails is back, client-side compression remains for faster mobile uploads. R2 still recommended for storage (zero egress); S3 fine too.
+- **Image pipeline** simplified — server-side `sharp` for thumbnails is back, client-side compression remains for faster mobile uploads. **Storage: AWS S3** (switched from R2).
 - **มัดจำ default** removed — manual entry only, per Chom's answer.
 - Per-user logins question (§16) still open.
 
@@ -384,7 +384,7 @@ graph TB
 
     subgraph Storage["External"]
         PG[(Neon Postgres)]
-        R2[(Cloudflare R2<br/>or AWS S3)]
+        R2[(AWS S3)]
     end
 
     UI <--> TQ
@@ -421,7 +421,7 @@ Flow:
 | ORM | Drizzle (`drizzle-orm/neon-http`) | |
 | Migrations | drizzle-kit | `bun drizzle-kit generate / migrate` |
 | Auth | better-auth + Drizzle adapter | Email/password, cookie sessions |
-| Storage | Cloudflare R2 (recommended) or AWS S3 | R2: zero egress, presigned URLs identical to S3 SDK. S3 if you want the AWS ecosystem. |
+| Storage | AWS S3 | Standard IAM auth, presigned URLs, lifecycle policies. |
 | S3 client | `@aws-sdk/client-s3` | Works against both R2 and S3 |
 | Image processing | `sharp` | Server-side, WebP output |
 | Client image compression | `browser-image-compression` | Reduces mobile upload time |
@@ -480,19 +480,17 @@ Photos are optional. A round can be published with zero photos.
    - `sharp` produces:
      - Canonical: max 1024px long edge, WebP q80, strip EXIF.
      - Thumb: 200×200 cover-crop, WebP q70.
-   - Uploads both to R2 with keys `products/{id}/canonical-{hash}.webp` and `products/{id}/thumb-{hash}.webp`.
+   - Uploads both to S3 with keys `products/{id}/canonical-{hash}.webp` and `products/{id}/thumb-{hash}.webp`.
    - Updates `products.image_key` and `thumb_key`.
 
 ### Serving
-- Originals private. Thumbs public via R2's public bucket setting (or signed URLs if you want stricter access).
+- Originals private. Thumbs served via presigned URLs or a public S3 bucket prefix with appropriate bucket policy.
 - Cache headers: `Cache-Control: public, max-age=31536000, immutable` — keys include content hash, so we never invalidate.
 
-### Why R2 over S3
-- Zero egress fees (vs. ~$0.09/GB on S3).
-- S3-compatible API — same SDK code.
-- At this scale either is essentially free, but R2 has no surprise bill if you ever embed images in a public page that goes viral.
-
-If you prefer S3 because you already have AWS infra, swap the bucket endpoint in the SDK config. No other code changes.
+### Why S3
+- Standard AWS IAM and bucket policies for access control.
+- Native lifecycle rules for photo recovery and archival.
+- Same `@aws-sdk/client-s3` SDK used throughout.
 
 ---
 
@@ -672,7 +670,7 @@ All aggregation in SQL. Materialize `round_stats` view if any single dashboard q
 - **Exit criteria**: log in on mobile, see empty rounds list, switch UI between Thai and English. Deploy via `git push`.
 
 ### M2 — Catalog + rounds (1.5 weeks)
-- Product CRUD with optional photo upload (compression → server sharp → R2).
+- Product CRUD with optional photo upload (compression → server sharp → S3).
 - Round CRUD with currency picker, effective FX rate, per-item fee.
 - Round-product editor with live FX calculator and override flag.
 - `recomputeFromFx` when round rate/fee changes.
@@ -721,8 +719,8 @@ All aggregation in SQL. Materialize `round_stats` view if any single dashboard q
 GitHub ──► Vercel (auto-deploy)
               │
               ├── Vercel Postgres adapter → Neon (prod branch)
-              ├── R2 bucket (via S3 SDK)
-              └── Vercel env vars (BETTER_AUTH_SECRET, DATABASE_URL, R2 creds)
+              ├── AWS S3 bucket
+              └── Vercel env vars (BETTER_AUTH_SECRET, DATABASE_URL, S3 creds)
 ```
 
 Two Vercel environments:
@@ -732,9 +730,9 @@ Two Vercel environments:
 ### Setup checklist
 1. Vercel project, link to GitHub repo.
 2. Neon project with `prod` and `staging` branches.
-3. R2 bucket + API token; or S3 bucket + IAM user.
+3. S3 bucket + IAM user with `s3:PutObject` / `s3:GetObject` / `s3:DeleteObject` on the bucket.
 4. Custom domain in Vercel.
-5. Env vars set in Vercel dashboard: `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_PUBLIC_URL`.
+5. Env vars set in Vercel dashboard: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `S3_BUCKET`, `S3_PUBLIC_URL`.
 6. `bun` as the build command (Vercel auto-detects, otherwise set `installCommand: "bun install"` and `buildCommand: "bun run build"`).
 
 ### CI
@@ -749,7 +747,7 @@ Vercel handles the actual deploy; no Wrangler-equivalent for us to maintain.
 ### Cost
 - Vercel Hobby: free, fine for staging. Pro: $20/mo per member if it grows; for a 2-user internal tool you can stay on Hobby a long time.
 - Neon: free tier carries this for ages, $19/mo when compute hours exceed.
-- R2: <$1/mo storage, zero egress.
+- S3: ~$0.023/GB storage, ~$0.09/GB egress (negligible at this scale).
 - Domain: ~$10/year.
 
 **Total: $0–$20/mo realistically.**
@@ -778,7 +776,7 @@ No Workers-specific code, no lock-in.
 - **Purchasing-companion mode** — high-leverage v1.1. Schema supports it; UI is one new screen.
 - **Thai timezone**: Postgres stores UTC, all UI renders `Asia/Bangkok`.
 - **Empty-state onboarding**: 5-minute first-run flow importing last round's products.
-- **R2 versioning + lifecycle rules** for photo recovery.
+- **S3 versioning + lifecycle rules** for photo recovery.
 - **Round vs shipping batch separation** — with deposits enabled, some customers ship later. Kerry export filter handles this; surface it in the UI.
 
 ---
