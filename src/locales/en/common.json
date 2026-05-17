@@ -1,0 +1,24 @@
+{
+	"nav": {
+		"rounds": "Rounds",
+		"customers": "Customers",
+		"products": "Products",
+		"settings": "Settings"
+	},
+	"action": {
+		"save": "Save",
+		"cancel": "Cancel",
+		"create": "Create",
+		"edit": "Edit",
+		"delete": "Delete",
+		"back": "Back",
+		"confirm": "Confirm"
+	},
+	"language": {
+		"th": "ภาษาไทย",
+		"en": "English"
+	},
+	"appName": "Hiu App",
+	"loading": "Loading...",
+	"logout": "Log out"
+}

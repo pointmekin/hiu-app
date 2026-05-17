@@ -1,0 +1,151 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai+Looped:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap");
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+	/* Brand palette */
+	--bone: #f6f1e9;
+	--bone-soft: #ede6d8;
+	--bone-muted: #d8cfc0;
+	--ink: #1c1916;
+	--ink-soft: #4a433a;
+	--ink-muted: #8a7f73;
+	--hanko: #c8302a;
+	--hanko-hover: #b02824;
+	--surface: rgba(246, 241, 233, 0.88);
+	--surface-strong: rgba(255, 253, 248, 0.95);
+	--line: rgba(28, 25, 22, 0.1);
+
+	/* shadcn/ui semantic tokens */
+	--background: var(--bone);
+	--foreground: var(--ink);
+	--card: var(--surface-strong);
+	--card-foreground: var(--ink);
+	--popover: var(--surface-strong);
+	--popover-foreground: var(--ink);
+	--primary: var(--ink);
+	--primary-foreground: var(--bone);
+	--secondary: var(--bone-soft);
+	--secondary-foreground: var(--ink);
+	--muted: var(--bone-soft);
+	--muted-foreground: var(--ink-muted);
+	--accent: var(--hanko);
+	--accent-foreground: var(--bone);
+	--destructive: #dc2626;
+	--destructive-foreground: var(--bone);
+	--border: var(--line);
+	--input: var(--bone-muted);
+	--ring: var(--ink-muted);
+	--radius: 0.5rem;
+}
+
+.dark {
+	--bone: #f0e8de;
+	--bone-soft: #e0d6ca;
+	--bone-muted: #c8bcac;
+	--ink: #18140e;
+	--ink-soft: #3a342c;
+	--ink-muted: #72665a;
+	--hanko: #e03c34;
+	--hanko-hover: #c83028;
+	--surface: rgba(30, 24, 18, 0.88);
+	--surface-strong: rgba(24, 18, 12, 0.95);
+	--line: rgba(240, 232, 222, 0.1);
+
+	--background: #1a140e;
+	--foreground: var(--bone);
+	--card: #221c16;
+	--card-foreground: var(--bone);
+	--popover: #221c16;
+	--popover-foreground: var(--bone);
+	--primary: var(--bone);
+	--primary-foreground: var(--ink);
+	--secondary: #2e261e;
+	--secondary-foreground: var(--bone);
+	--muted: #2e261e;
+	--muted-foreground: #9e8e80;
+	--accent: var(--hanko);
+	--accent-foreground: var(--bone);
+	--destructive: #ef4444;
+	--destructive-foreground: var(--bone);
+	--border: rgba(240, 232, 222, 0.1);
+	--input: #2e261e;
+	--ring: #9e8e80;
+}
+
+@theme inline {
+	--font-sans: "IBM Plex Sans Thai Looped", "Noto Sans Thai", ui-sans-serif,
+		system-ui, sans-serif;
+	--font-display: "Fraunces", Georgia, serif;
+	--font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-destructive-foreground: var(--destructive-foreground);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+
+	--radius-sm: calc(var(--radius) - 2px);
+	--radius-md: var(--radius);
+	--radius-lg: calc(var(--radius) + 2px);
+	--radius-xl: calc(var(--radius) + 6px);
+
+	--color-hanko: var(--hanko);
+	--color-hanko-hover: var(--hanko-hover);
+	--color-bone: var(--bone);
+	--color-ink: var(--ink);
+	--color-ink-soft: var(--ink-soft);
+	--color-ink-muted: var(--ink-muted);
+	--color-bone-soft: var(--bone-soft);
+	--color-bone-muted: var(--bone-muted);
+}
+
+html,
+body,
+#app {
+	min-height: 100%;
+}
+
+body {
+	margin: 0;
+	font-family: var(--font-sans);
+	background-color: var(--background);
+	color: var(--foreground);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	overflow-x: hidden;
+}
+
+@layer base {
+	* {
+		@apply border-border outline-ring/50;
+	}
+}
+
+/* Tabular numbers for all numeric displays */
+.tabular {
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+}
+
+/* Display headings use Fraunces */
+.display {
+	font-family: var(--font-display);
+}

@@ -1,0 +1,24 @@
+{
+	"nav": {
+		"rounds": "รอบสั่ง",
+		"customers": "ลูกค้า",
+		"products": "สินค้า",
+		"settings": "ตั้งค่า"
+	},
+	"action": {
+		"save": "บันทึก",
+		"cancel": "ยกเลิก",
+		"create": "สร้างใหม่",
+		"edit": "แก้ไข",
+		"delete": "ลบ",
+		"back": "กลับ",
+		"confirm": "ยืนยัน"
+	},
+	"language": {
+		"th": "ภาษาไทย",
+		"en": "English"
+	},
+	"appName": "ร้านหิ้ว",
+	"loading": "กำลังโหลด...",
+	"logout": "ออกจากระบบ"
+}

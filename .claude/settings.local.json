@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(andrej-karpathy-skills:karpathy-guidelines)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs",
+      "Bash(cp /tmp/hiu-temp/tsconfig.json .)",
+      "Bash(cp /tmp/hiu-temp/biome.json .)",
+      "Bash(cp /tmp/hiu-temp/components.json .)",
+      "Bash(cp /tmp/hiu-temp/src/lib/utils.ts src/lib/utils.ts)",
+      "Bash(cp /tmp/hiu-temp/src/lib/auth-client.ts src/lib/auth-client.ts)"
+    ]
+  }
+}
