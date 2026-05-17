@@ -1,0 +1,21 @@
+{
+  "name": "ร้านหิ้ว",
+  "short_name": "หิ้ว",
+  "description": "Admin app for ร้านหิ้ว personal shopper",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f1e9",
+  "theme_color": "#f6f1e9",
+  "icons": [
+    {
+      "src": "/logo192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

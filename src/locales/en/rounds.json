@@ -1,0 +1,16 @@
+{
+	"list": {
+		"title": "Rounds",
+		"empty": "No rounds yet",
+		"emptyHint": "Create your first round to start taking orders",
+		"createFirst": "Create round"
+	},
+	"status": {
+		"draft": "Draft",
+		"open": "Open",
+		"closed": "Closed",
+		"shipping": "Shipping",
+		"done": "Done",
+		"archived": "Archived"
+	}
+}
