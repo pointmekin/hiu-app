@@ -11,6 +11,9 @@ describe("createRoundSchema", () => {
 			country: "Japan",
 			sourceCurrency: "JPY",
 			fxRate: 0.235,
+			status: "draft",
+			perItemFeeTh: 0,
+			defaultShippingFee: 50,
 		});
 		expect(result.name).toBe("Japan May 2026");
 		expect(result.status).toBe("draft");
@@ -52,6 +55,9 @@ describe("createRoundSchema", () => {
 			country: "Japan",
 			sourceCurrency: "JPY",
 			fxRate: "0.235",
+			status: "draft",
+			perItemFeeTh: 0,
+			defaultShippingFee: 50,
 		});
 		expect(typeof result.fxRate).toBe("number");
 		expect(result.fxRate).toBe(0.235);

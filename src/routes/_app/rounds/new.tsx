@@ -4,13 +4,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { createRound } from "#/server/functions/rounds/create";
-import { z } from "zod";
 import {
 	SOURCE_CURRENCIES,
+	type CreateRoundInput,
 	createRoundSchema,
 } from "#/shared/schemas/round";
-
-type CreateRoundForm = z.input<typeof createRoundSchema>;
 
 export const Route = createFileRoute("/_app/rounds/new")({
 	component: NewRoundPage,
@@ -21,7 +19,7 @@ function NewRoundPage() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
-	const form = useForm<CreateRoundForm>({
+	const form = useForm<CreateRoundInput>({
 		resolver: zodResolver(createRoundSchema),
 		defaultValues: {
 			status: "draft",
@@ -39,20 +37,14 @@ function NewRoundPage() {
 	const computedThb = exampleForeign * fxRate + perItemFee;
 
 	const mutation = useMutation({
-		mutationFn: (data: CreateRoundForm) =>
-			createRound({ data: data as Parameters<typeof createRound>[0]["data"] }),
+		mutationFn: (data: CreateRoundInput) => createRound({ data }),
 		onSuccess: (round) => {
 			queryClient.invalidateQueries({ queryKey: ["rounds"] });
-			if (round && typeof round === "object" && "id" in round) {
-				navigate({
-					to: "/rounds/$roundId",
-					params: { roundId: (round as { id: string }).id },
-				});
-			}
+			navigate({ to: "/rounds/$roundId", params: { roundId: round.id } });
 		},
 	});
 
-	function onSubmit(data: CreateRoundForm) {
+	function onSubmit(data: CreateRoundInput) {
 		mutation.mutate(data);
 	}
 
