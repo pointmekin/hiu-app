@@ -1,0 +1,31 @@
+{
+	"list": {
+		"title": "Products",
+		"empty": "No products yet",
+		"emptyHint": "Add products to use in your rounds",
+		"addFirst": "Add product",
+		"search": "Search products..."
+	},
+	"field": {
+		"name": "Product name",
+		"brand": "Brand",
+		"sourceCountry": "Country",
+		"category": "Category",
+		"photo": "Product photo"
+	},
+	"form": {
+		"createTitle": "Add new product",
+		"editTitle": "Edit product",
+		"namePlaceholder": "e.g. Dior Sauvage EDP",
+		"brandPlaceholder": "e.g. Dior",
+		"categoryPlaceholder": "e.g. Perfume, Skincare, Food",
+		"photoHint": "Photo will be converted to WebP automatically",
+		"uploadPhoto": "Upload photo",
+		"changePhoto": "Change photo"
+	},
+	"action": {
+		"create": "Add product",
+		"save": "Save",
+		"delete": "Delete product"
+	}
+}

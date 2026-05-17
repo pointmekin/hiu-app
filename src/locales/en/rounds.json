@@ -12,5 +12,50 @@
 		"shipping": "Shipping",
 		"done": "Done",
 		"archived": "Archived"
+	},
+	"field": {
+		"name": "Round name",
+		"country": "Country",
+		"storeHint": "Store (optional)",
+		"purchaseStart": "Order open date",
+		"purchaseEnd": "Order close date",
+		"deliveryEta": "Estimated delivery",
+		"status": "Status",
+		"sourceCurrency": "Currency",
+		"fxRate": "Effective FX rate",
+		"perItemFeeTh": "Per-item fee (THB)",
+		"defaultShippingFee": "Default shipping fee (THB)",
+		"notes": "Notes"
+	},
+	"form": {
+		"createTitle": "Create new round",
+		"editTitle": "Edit round",
+		"fxRateHint": "The rate applied to calculate sell prices (already includes markup)",
+		"fxPreview": "Example: {{foreign}} {{currency}} = ฿{{thb}}"
+	},
+	"tab": {
+		"overview": "Overview",
+		"products": "Products",
+		"orders": "Orders",
+		"summary": "Summary",
+		"shipping": "Shipping"
+	},
+	"products": {
+		"title": "Products in round",
+		"addProduct": "Add product",
+		"empty": "No products in this round",
+		"emptyHint": "Click «Add product» to pick from the catalog",
+		"column": {
+			"product": "Product",
+			"foreignPrice": "Source price",
+			"computedThb": "Computed (฿)",
+			"sellPrice": "Sell price (฿)",
+			"override": "Override",
+			"store": "Store"
+		},
+		"recompute": "Recompute prices",
+		"recomputeHint": "Recompute from current FX rate (leaves overrides alone)",
+		"saveAll": "Save all",
+		"searchCatalog": "Search catalog..."
 	}
 }

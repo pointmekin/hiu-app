@@ -4,23 +4,31 @@ import { initReactI18next } from "react-i18next";
 import enAuth from "#/locales/en/auth.json";
 import enCommon from "#/locales/en/common.json";
 import enErrors from "#/locales/en/errors.json";
+import enProducts from "#/locales/en/products.json";
 import enRounds from "#/locales/en/rounds.json";
+import enSettings from "#/locales/en/settings.json";
 import thAuth from "#/locales/th/auth.json";
 import thCommon from "#/locales/th/common.json";
 import thErrors from "#/locales/th/errors.json";
+import thProducts from "#/locales/th/products.json";
 import thRounds from "#/locales/th/rounds.json";
+import thSettings from "#/locales/th/settings.json";
 
 const resources = {
 	th: {
 		common: thCommon,
 		auth: thAuth,
 		rounds: thRounds,
+		products: thProducts,
+		settings: thSettings,
 		errors: thErrors,
 	},
 	en: {
 		common: enCommon,
 		auth: enAuth,
 		rounds: enRounds,
+		products: enProducts,
+		settings: enSettings,
 		errors: enErrors,
 	},
 };
@@ -33,7 +41,7 @@ if (!i18n.isInitialized) {
 			resources,
 			fallbackLng: "th",
 			defaultNS: "common",
-			ns: ["common", "auth", "rounds", "errors"],
+			ns: ["common", "auth", "rounds", "products", "settings", "errors"],
 			detection: {
 				order: ["querystring", "cookie", "navigator"],
 				lookupQuerystring: "lang",

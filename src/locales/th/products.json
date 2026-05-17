@@ -1,0 +1,31 @@
+{
+	"list": {
+		"title": "สินค้า",
+		"empty": "ยังไม่มีสินค้า",
+		"emptyHint": "เพิ่มสินค้าเพื่อใช้ในรอบสั่งซื้อ",
+		"addFirst": "เพิ่มสินค้า",
+		"search": "ค้นหาสินค้า..."
+	},
+	"field": {
+		"name": "ชื่อสินค้า",
+		"brand": "แบรนด์",
+		"sourceCountry": "ประเทศที่ซื้อ",
+		"category": "หมวดหมู่",
+		"photo": "รูปสินค้า"
+	},
+	"form": {
+		"createTitle": "เพิ่มสินค้าใหม่",
+		"editTitle": "แก้ไขสินค้า",
+		"namePlaceholder": "เช่น น้ำหอม Dior Sauvage",
+		"brandPlaceholder": "เช่น Dior",
+		"categoryPlaceholder": "เช่น น้ำหอม, ครีม, ของกิน",
+		"photoHint": "รูปจะถูกย่อให้เป็น WebP อัตโนมัติ",
+		"uploadPhoto": "อัพโหลดรูป",
+		"changePhoto": "เปลี่ยนรูป"
+	},
+	"action": {
+		"create": "เพิ่มสินค้า",
+		"save": "บันทึก",
+		"delete": "ลบสินค้า"
+	}
+}
