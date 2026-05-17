@@ -1,0 +1,14 @@
+{
+	"title": "Settings",
+	"section": {
+		"shipping": "Shipping",
+		"currencies": "Currencies"
+	},
+	"field": {
+		"shippingFeePresets": "Shipping fee presets (THB)",
+		"defaultShippingFee": "Default shipping fee (THB)",
+		"sourceCurrencies": "Supported currencies"
+	},
+	"presetsHint": "Click to add or remove options, separated by comma",
+	"saved": "Saved"
+}

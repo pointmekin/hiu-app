@@ -1,0 +1,14 @@
+{
+	"title": "ตั้งค่า",
+	"section": {
+		"shipping": "ค่าส่ง",
+		"currencies": "สกุลเงิน"
+	},
+	"field": {
+		"shippingFeePresets": "ตัวเลือกค่าส่ง (บาท)",
+		"defaultShippingFee": "ค่าส่งเริ่มต้น (บาท)",
+		"sourceCurrencies": "สกุลเงินที่รองรับ"
+	},
+	"presetsHint": "กดเพื่อเพิ่มหรือลบตัวเลือก คั่นด้วยจุลภาค",
+	"saved": "บันทึกแล้ว"
+}

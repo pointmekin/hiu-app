@@ -12,8 +12,15 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppRoundsRouteImport } from './routes/_app/rounds'
+import { Route as AppProductsRouteImport } from './routes/_app/products'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AppRoundsNewRouteImport } from './routes/_app/rounds/new'
+import { Route as AppRoundsRoundIdRouteImport } from './routes/_app/rounds/$roundId'
+import { Route as AppProductsProductIdRouteImport } from './routes/_app/products/$productId'
+import { Route as AppRoundsRoundIdIndexRouteImport } from './routes/_app/rounds/$roundId/index'
+import { Route as AppRoundsRoundIdProductsRouteImport } from './routes/_app/rounds/$roundId/products'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -29,9 +36,19 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppRoundsRoute = AppRoundsRouteImport.update({
   id: '/rounds',
   path: '/rounds',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProductsRoute = AppProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
   getParentRoute: () => AppRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
@@ -39,39 +56,113 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoundsNewRoute = AppRoundsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AppRoundsRoute,
+} as any)
+const AppRoundsRoundIdRoute = AppRoundsRoundIdRouteImport.update({
+  id: '/$roundId',
+  path: '/$roundId',
+  getParentRoute: () => AppRoundsRoute,
+} as any)
+const AppProductsProductIdRoute = AppProductsProductIdRouteImport.update({
+  id: '/$productId',
+  path: '/$productId',
+  getParentRoute: () => AppProductsRoute,
+} as any)
+const AppRoundsRoundIdIndexRoute = AppRoundsRoundIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoundsRoundIdRoute,
+} as any)
+const AppRoundsRoundIdProductsRoute =
+  AppRoundsRoundIdProductsRouteImport.update({
+    id: '/products',
+    path: '/products',
+    getParentRoute: () => AppRoundsRoundIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
-  '/rounds': typeof AppRoundsRoute
+  '/products': typeof AppProductsRouteWithChildren
+  '/rounds': typeof AppRoundsRouteWithChildren
+  '/settings': typeof AppSettingsRoute
+  '/products/$productId': typeof AppProductsProductIdRoute
+  '/rounds/$roundId': typeof AppRoundsRoundIdRouteWithChildren
+  '/rounds/new': typeof AppRoundsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/rounds/$roundId/products': typeof AppRoundsRoundIdProductsRoute
+  '/rounds/$roundId/': typeof AppRoundsRoundIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
-  '/rounds': typeof AppRoundsRoute
+  '/products': typeof AppProductsRouteWithChildren
+  '/rounds': typeof AppRoundsRouteWithChildren
+  '/settings': typeof AppSettingsRoute
   '/': typeof AppIndexRoute
+  '/products/$productId': typeof AppProductsProductIdRoute
+  '/rounds/new': typeof AppRoundsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/rounds/$roundId/products': typeof AppRoundsRoundIdProductsRoute
+  '/rounds/$roundId': typeof AppRoundsRoundIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
-  '/_app/rounds': typeof AppRoundsRoute
+  '/_app/products': typeof AppProductsRouteWithChildren
+  '/_app/rounds': typeof AppRoundsRouteWithChildren
+  '/_app/settings': typeof AppSettingsRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/products/$productId': typeof AppProductsProductIdRoute
+  '/_app/rounds/$roundId': typeof AppRoundsRoundIdRouteWithChildren
+  '/_app/rounds/new': typeof AppRoundsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_app/rounds/$roundId/products': typeof AppRoundsRoundIdProductsRoute
+  '/_app/rounds/$roundId/': typeof AppRoundsRoundIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/rounds' | '/api/auth/$'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/products'
+    | '/rounds'
+    | '/settings'
+    | '/products/$productId'
+    | '/rounds/$roundId'
+    | '/rounds/new'
+    | '/api/auth/$'
+    | '/rounds/$roundId/products'
+    | '/rounds/$roundId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/rounds' | '/' | '/api/auth/$'
+  to:
+    | '/login'
+    | '/products'
+    | '/rounds'
+    | '/settings'
+    | '/'
+    | '/products/$productId'
+    | '/rounds/new'
+    | '/api/auth/$'
+    | '/rounds/$roundId/products'
+    | '/rounds/$roundId'
   id:
     | '__root__'
     | '/_app'
     | '/login'
+    | '/_app/products'
     | '/_app/rounds'
+    | '/_app/settings'
     | '/_app/'
+    | '/_app/products/$productId'
+    | '/_app/rounds/$roundId'
+    | '/_app/rounds/new'
     | '/api/auth/$'
+    | '/_app/rounds/$roundId/products'
+    | '/_app/rounds/$roundId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -103,11 +194,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/rounds': {
       id: '/_app/rounds'
       path: '/rounds'
       fullPath: '/rounds'
       preLoaderRoute: typeof AppRoundsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/products': {
+      id: '/_app/products'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof AppProductsRouteImport
       parentRoute: typeof AppRoute
     }
     '/api/auth/$': {
@@ -117,16 +222,94 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/rounds/new': {
+      id: '/_app/rounds/new'
+      path: '/new'
+      fullPath: '/rounds/new'
+      preLoaderRoute: typeof AppRoundsNewRouteImport
+      parentRoute: typeof AppRoundsRoute
+    }
+    '/_app/rounds/$roundId': {
+      id: '/_app/rounds/$roundId'
+      path: '/$roundId'
+      fullPath: '/rounds/$roundId'
+      preLoaderRoute: typeof AppRoundsRoundIdRouteImport
+      parentRoute: typeof AppRoundsRoute
+    }
+    '/_app/products/$productId': {
+      id: '/_app/products/$productId'
+      path: '/$productId'
+      fullPath: '/products/$productId'
+      preLoaderRoute: typeof AppProductsProductIdRouteImport
+      parentRoute: typeof AppProductsRoute
+    }
+    '/_app/rounds/$roundId/': {
+      id: '/_app/rounds/$roundId/'
+      path: '/'
+      fullPath: '/rounds/$roundId/'
+      preLoaderRoute: typeof AppRoundsRoundIdIndexRouteImport
+      parentRoute: typeof AppRoundsRoundIdRoute
+    }
+    '/_app/rounds/$roundId/products': {
+      id: '/_app/rounds/$roundId/products'
+      path: '/products'
+      fullPath: '/rounds/$roundId/products'
+      preLoaderRoute: typeof AppRoundsRoundIdProductsRouteImport
+      parentRoute: typeof AppRoundsRoundIdRoute
+    }
   }
 }
 
+interface AppProductsRouteChildren {
+  AppProductsProductIdRoute: typeof AppProductsProductIdRoute
+}
+
+const AppProductsRouteChildren: AppProductsRouteChildren = {
+  AppProductsProductIdRoute: AppProductsProductIdRoute,
+}
+
+const AppProductsRouteWithChildren = AppProductsRoute._addFileChildren(
+  AppProductsRouteChildren,
+)
+
+interface AppRoundsRoundIdRouteChildren {
+  AppRoundsRoundIdProductsRoute: typeof AppRoundsRoundIdProductsRoute
+  AppRoundsRoundIdIndexRoute: typeof AppRoundsRoundIdIndexRoute
+}
+
+const AppRoundsRoundIdRouteChildren: AppRoundsRoundIdRouteChildren = {
+  AppRoundsRoundIdProductsRoute: AppRoundsRoundIdProductsRoute,
+  AppRoundsRoundIdIndexRoute: AppRoundsRoundIdIndexRoute,
+}
+
+const AppRoundsRoundIdRouteWithChildren =
+  AppRoundsRoundIdRoute._addFileChildren(AppRoundsRoundIdRouteChildren)
+
+interface AppRoundsRouteChildren {
+  AppRoundsRoundIdRoute: typeof AppRoundsRoundIdRouteWithChildren
+  AppRoundsNewRoute: typeof AppRoundsNewRoute
+}
+
+const AppRoundsRouteChildren: AppRoundsRouteChildren = {
+  AppRoundsRoundIdRoute: AppRoundsRoundIdRouteWithChildren,
+  AppRoundsNewRoute: AppRoundsNewRoute,
+}
+
+const AppRoundsRouteWithChildren = AppRoundsRoute._addFileChildren(
+  AppRoundsRouteChildren,
+)
+
 interface AppRouteChildren {
-  AppRoundsRoute: typeof AppRoundsRoute
+  AppProductsRoute: typeof AppProductsRouteWithChildren
+  AppRoundsRoute: typeof AppRoundsRouteWithChildren
+  AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppRoundsRoute: AppRoundsRoute,
+  AppProductsRoute: AppProductsRouteWithChildren,
+  AppRoundsRoute: AppRoundsRouteWithChildren,
+  AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
 }
 

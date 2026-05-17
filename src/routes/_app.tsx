@@ -4,7 +4,7 @@ import {
 	Outlet,
 	redirect,
 } from "@tanstack/react-router";
-import { Globe, LogOut, Package, ShoppingBag, Users } from "lucide-react";
+import { Globe, LogOut, Package, Settings, ShoppingBag, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { authClient } from "#/lib/auth-client";
 import i18n, { type Locale } from "#/lib/i18n";
@@ -55,6 +55,11 @@ function AppLayout() {
 						to="/products"
 						icon={<Package size={16} />}
 						label={t("nav.products")}
+					/>
+					<NavItem
+						to="/settings"
+						icon={<Settings size={16} />}
+						label={t("nav.settings")}
 					/>
 				</nav>
 

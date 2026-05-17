@@ -12,5 +12,50 @@
 		"shipping": "กำลังส่ง",
 		"done": "เสร็จสิ้น",
 		"archived": "เก็บถาวร"
+	},
+	"field": {
+		"name": "ชื่อรอบ",
+		"country": "ประเทศ",
+		"storeHint": "ร้านค้า (ไม่บังคับ)",
+		"purchaseStart": "วันเริ่มรับออเดอร์",
+		"purchaseEnd": "วันปิดรับออเดอร์",
+		"deliveryEta": "กำหนดส่งโดยประมาณ",
+		"status": "สถานะ",
+		"sourceCurrency": "สกุลเงิน",
+		"fxRate": "อัตราแลกเปลี่ยนที่ใช้",
+		"perItemFeeTh": "ค่าบริการต่อชิ้น (บาท)",
+		"defaultShippingFee": "ค่าส่งเริ่มต้น (บาท)",
+		"notes": "หมายเหตุ"
+	},
+	"form": {
+		"createTitle": "สร้างรอบใหม่",
+		"editTitle": "แก้ไขรอบ",
+		"fxRateHint": "อัตราที่ใช้คำนวณราคาขาย (รวมกำไรแล้ว)",
+		"fxPreview": "ตัวอย่าง: {{foreign}} {{currency}} = ฿{{thb}}"
+	},
+	"tab": {
+		"overview": "ภาพรวม",
+		"products": "สินค้า",
+		"orders": "ออเดอร์",
+		"summary": "สรุปยอด",
+		"shipping": "เอกสารส่ง"
+	},
+	"products": {
+		"title": "สินค้าในรอบ",
+		"addProduct": "เพิ่มสินค้า",
+		"empty": "ยังไม่มีสินค้าในรอบนี้",
+		"emptyHint": "กด «เพิ่มสินค้า» เพื่อเลือกสินค้าจากคลัง",
+		"column": {
+			"product": "สินค้า",
+			"foreignPrice": "ราคาต้นทาง",
+			"computedThb": "ราคาคำนวณ (฿)",
+			"sellPrice": "ราคาขาย (฿)",
+			"override": "กำหนดเอง",
+			"store": "ร้าน"
+		},
+		"recompute": "คำนวณราคาใหม่",
+		"recomputeHint": "คำนวณราคาใหม่ตามอัตราปัจจุบัน (ไม่แตะราคาที่กำหนดเอง)",
+		"saveAll": "บันทึกทั้งหมด",
+		"searchCatalog": "ค้นหาสินค้าในคลัง..."
 	}
 }
