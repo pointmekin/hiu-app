@@ -3,33 +3,34 @@ import {
 	Link,
 	Outlet,
 	redirect,
-} from "@tanstack/react-router";
-import { Globe, LogOut, Package, Settings, ShoppingBag, Users } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { authClient } from "#/lib/auth-client";
-import i18n, { type Locale } from "#/lib/i18n";
+} from "@tanstack/react-router"
+import { Globe, LogOut, Package, Settings, ShoppingBag, Users } from "lucide-react"
+import { useTranslation } from "react-i18next"
+import { Button } from "#/components/ui/button"
+import { authClient } from "#/lib/auth-client"
+import i18n, { type Locale } from "#/lib/i18n"
 
 export const Route = createFileRoute("/_app")({
 	beforeLoad: ({ context }) => {
 		if (!context.session) {
-			throw redirect({ to: "/login" });
+			throw redirect({ to: "/login" })
 		}
 	},
 	component: AppLayout,
-});
+})
 
 function AppLayout() {
-	const { t } = useTranslation("common");
+	const { t } = useTranslation("common")
 
 	async function handleLogout() {
-		await authClient.signOut();
-		window.location.href = "/login";
+		await authClient.signOut()
+		window.location.href = "/login"
 	}
 
 	function handleLocaleChange(locale: Locale) {
-		i18n.changeLanguage(locale);
+		i18n.changeLanguage(locale)
 		// biome-ignore lint/suspicious/noDocumentCookie: locale cookie has no sensitive data; Cookie Store API support is limited
-		document.cookie = `locale=${locale}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
+		document.cookie = `locale=${locale}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
 	}
 
 	return (
@@ -65,14 +66,16 @@ function AppLayout() {
 
 				<div className="flex items-center gap-3">
 					<LocaleSwitcher onLocaleChange={handleLocaleChange} />
-					<button
+					<Button
 						type="button"
+						variant="ghost"
+						size="sm"
 						onClick={handleLogout}
-						className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+						className="gap-1.5 text-muted-foreground hover:text-foreground"
 					>
 						<LogOut size={15} />
 						{t("logout")}
-					</button>
+					</Button>
 				</div>
 			</header>
 
@@ -102,7 +105,7 @@ function AppLayout() {
 				</div>
 			</nav>
 		</div>
-	);
+	)
 }
 
 function NavItem({
@@ -110,9 +113,9 @@ function NavItem({
 	icon,
 	label,
 }: {
-	to: string;
-	icon: React.ReactNode;
-	label: string;
+	to: string
+	icon: React.ReactNode
+	label: string
 }) {
 	return (
 		<Link
@@ -123,7 +126,7 @@ function NavItem({
 			{icon}
 			{label}
 		</Link>
-	);
+	)
 }
 
 function BottomNavItem({
@@ -131,9 +134,9 @@ function BottomNavItem({
 	icon,
 	label,
 }: {
-	to: string;
-	icon: React.ReactNode;
-	label: string;
+	to: string
+	icon: React.ReactNode
+	label: string
 }) {
 	return (
 		<Link
@@ -144,28 +147,29 @@ function BottomNavItem({
 			{icon}
 			<span className="text-[11px] font-medium">{label}</span>
 		</Link>
-	);
+	)
 }
 
 function LocaleSwitcher({
 	onLocaleChange,
 }: {
-	onLocaleChange: (locale: Locale) => void;
+	onLocaleChange: (locale: Locale) => void
 }) {
-	const { t, i18n: i18nInstance } = useTranslation("common");
-	const current = i18nInstance.language as Locale;
-
-	const next: Locale = current === "th" ? "en" : "th";
+	const { t, i18n: i18nInstance } = useTranslation("common")
+	const current = i18nInstance.language as Locale
+	const next: Locale = current === "th" ? "en" : "th"
 
 	return (
-		<button
+		<Button
 			type="button"
+			variant="ghost"
+			size="sm"
 			onClick={() => onLocaleChange(next)}
-			className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
 			title={t(`language.${next}`)}
+			className="gap-1.5 text-muted-foreground hover:text-foreground"
 		>
 			<Globe size={15} />
 			<span>{t(`language.${next}`)}</span>
-		</button>
-	);
+		</Button>
+	)
 }
