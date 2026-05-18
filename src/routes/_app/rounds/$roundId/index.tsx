@@ -1,33 +1,53 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, useParams } from "@tanstack/react-router";
-import { useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
-import { getRound } from "#/server/functions/rounds/get";
-import { updateRound } from "#/server/functions/rounds/update";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
+import { createFileRoute, useParams } from "@tanstack/react-router"
+import { useForm, type Resolver } from "react-hook-form"
+import { useTranslation } from "react-i18next"
+import { getRound } from "#/server/functions/rounds/get"
+import { updateRound } from "#/server/functions/rounds/update"
 import {
 	ROUND_STATUSES,
 	SOURCE_CURRENCIES,
 	type UpdateRoundInput,
 	updateRoundSchema,
-} from "#/shared/schemas/round";
+} from "#/shared/schemas/round"
+import { Alert, AlertDescription } from "#/components/ui/alert"
+import { Button } from "#/components/ui/button"
+import {
+	Form,
+	FormControl,
+	FormDescription,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "#/components/ui/form"
+import { Input } from "#/components/ui/input"
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "#/components/ui/select"
+import { Textarea } from "#/components/ui/textarea"
 
 export const Route = createFileRoute("/_app/rounds/$roundId/")({
 	component: RoundOverview,
-});
+})
 
 function RoundOverview() {
-	const { t } = useTranslation(["rounds", "common"]);
-	const { roundId } = useParams({ from: "/_app/rounds/$roundId/" });
-	const queryClient = useQueryClient();
+	const { t } = useTranslation(["rounds", "common"])
+	const { roundId } = useParams({ from: "/_app/rounds/$roundId/" })
+	const queryClient = useQueryClient()
 
 	const { data: round } = useSuspenseQuery({
 		queryKey: ["rounds", roundId],
 		queryFn: () => getRound({ data: { id: roundId } }),
-	});
+	})
 
 	const form = useForm<UpdateRoundInput>({
-		resolver: zodResolver(updateRoundSchema),
+		resolver: zodResolver(updateRoundSchema) as Resolver<UpdateRoundInput>,
 		values: {
 			id: round.id,
 			name: round.name,
@@ -50,173 +70,280 @@ function RoundOverview() {
 				? new Date(round.deliveryEta).toISOString().split("T")[0]
 				: undefined,
 		},
-	});
+	})
 
-	const fxRate = form.watch("fxRate") ?? 0;
-	const perItemFee = form.watch("perItemFeeTh") ?? 0;
-	const currency = form.watch("sourceCurrency");
-	const exampleForeign = currency === "JPY" ? 2800 : 100;
-	const computedThb = exampleForeign * fxRate + perItemFee;
+	const fxRate = form.watch("fxRate") ?? 0
+	const perItemFee = form.watch("perItemFeeTh") ?? 0
+	const currency = form.watch("sourceCurrency")
+	const exampleForeign = currency === "JPY" ? 2800 : 100
+	const computedThb = exampleForeign * fxRate + perItemFee
 
 	const mutation = useMutation({
 		mutationFn: (data: UpdateRoundInput) => updateRound({ data }),
 		onSuccess: (updated) => {
-			queryClient.setQueryData(["rounds", roundId], updated);
-			queryClient.invalidateQueries({ queryKey: ["rounds"] });
+			queryClient.setQueryData(["rounds", roundId], updated)
+			queryClient.invalidateQueries({ queryKey: ["rounds"] })
 		},
-	});
+	})
 
 	function onSubmit(data: UpdateRoundInput) {
-		mutation.mutate(data);
+		mutation.mutate(data)
 	}
 
 	return (
-		<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-			<Field
-				label={t("rounds:field.name")}
-				error={form.formState.errors.name?.message}
-			>
-				<input {...form.register("name")} className="input" />
-			</Field>
-
-			<div className="grid grid-cols-2 gap-4">
-				<Field label={t("rounds:field.country")}>
-					<input {...form.register("country")} className="input" />
-				</Field>
-				<Field label={t("rounds:field.storeHint")}>
-					<input {...form.register("storeHint")} className="input" />
-				</Field>
-			</div>
-
-			<Field label={t("rounds:field.status")}>
-				<select {...form.register("status")} className="input">
-					{ROUND_STATUSES.map((s) => (
-						<option key={s} value={s}>
-							{t(`rounds:status.${s}`)}
-						</option>
-					))}
-				</select>
-			</Field>
-
-			<div className="grid grid-cols-2 gap-4">
-				<Field label={t("rounds:field.sourceCurrency")}>
-					<select {...form.register("sourceCurrency")} className="input">
-						{SOURCE_CURRENCIES.map((c) => (
-							<option key={c} value={c}>
-								{c}
-							</option>
-						))}
-					</select>
-				</Field>
-
-				<Field
-					label={t("rounds:field.fxRate")}
-					hint={t("rounds:form.fxRateHint")}
-				>
-					<input
-						{...form.register("fxRate", { valueAsNumber: true })}
-						type="number"
-						step="0.0001"
-						min="0"
-						className="input font-mono"
-					/>
-				</Field>
-			</div>
-
-			<div className="rounded-md bg-bone-soft dark:bg-muted/30 px-4 py-3 text-sm">
-				<span className="text-muted-foreground">
-					{t("rounds:form.fxPreview", {
-						foreign: exampleForeign.toLocaleString(),
-						currency,
-						thb: computedThb.toLocaleString("th-TH", {
-							minimumFractionDigits: 2,
-							maximumFractionDigits: 2,
-						}),
-					})}
-				</span>
-			</div>
-
-			<div className="grid grid-cols-2 gap-4">
-				<Field label={t("rounds:field.perItemFeeTh")}>
-					<input
-						{...form.register("perItemFeeTh", { valueAsNumber: true })}
-						type="number"
-						step="0.01"
-						min="0"
-						className="input font-mono"
-					/>
-				</Field>
-				<Field label={t("rounds:field.defaultShippingFee")}>
-					<input
-						{...form.register("defaultShippingFee", { valueAsNumber: true })}
-						type="number"
-						step="0.01"
-						min="0"
-						className="input font-mono"
-					/>
-				</Field>
-			</div>
-
-			<div className="grid grid-cols-3 gap-4">
-				<Field label={t("rounds:field.purchaseStart")}>
-					<input {...form.register("purchaseStart")} type="date" className="input" />
-				</Field>
-				<Field label={t("rounds:field.purchaseEnd")}>
-					<input {...form.register("purchaseEnd")} type="date" className="input" />
-				</Field>
-				<Field label={t("rounds:field.deliveryEta")}>
-					<input {...form.register("deliveryEta")} type="date" className="input" />
-				</Field>
-			</div>
-
-			<Field label={t("rounds:field.notes")}>
-				<textarea
-					{...form.register("notes")}
-					rows={3}
-					className="input resize-none"
+		<Form {...form}>
+			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+				<FormField
+					control={form.control}
+					name="name"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>{t("rounds:field.name")}</FormLabel>
+							<FormControl>
+								<Input {...field} />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
 				/>
-			</Field>
 
-			{mutation.error && (
-				<p className="text-sm text-destructive">
-					{(mutation.error as Error).message}
-				</p>
-			)}
+				<div className="grid grid-cols-2 gap-4">
+					<FormField
+						control={form.control}
+						name="country"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>{t("rounds:field.country")}</FormLabel>
+								<FormControl>
+									<Input {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="storeHint"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>{t("rounds:field.storeHint")}</FormLabel>
+								<FormControl>
+									<Input {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
 
-			{mutation.isSuccess && (
-				<p className="text-sm text-green-600">{t("common:action.save")} ✓</p>
-			)}
+				<FormField
+					control={form.control}
+					name="status"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>{t("rounds:field.status")}</FormLabel>
+							<Select onValueChange={field.onChange} value={field.value}>
+								<FormControl>
+									<SelectTrigger>
+										<SelectValue />
+									</SelectTrigger>
+								</FormControl>
+								<SelectContent>
+									{ROUND_STATUSES.map((s) => (
+										<SelectItem key={s} value={s}>
+											{t(`rounds:status.${s}`)}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
 
-			<button
-				type="submit"
-				disabled={mutation.isPending || !form.formState.isDirty}
-				className="rounded-md bg-hanko px-4 py-2.5 text-sm font-semibold text-bone hover:bg-hanko-hover disabled:opacity-50 transition-opacity"
-			>
-				{mutation.isPending ? t("common:loading") : t("common:action.save")}
-			</button>
-		</form>
-	);
-}
+				<div className="grid grid-cols-2 gap-4">
+					<FormField
+						control={form.control}
+						name="sourceCurrency"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>{t("rounds:field.sourceCurrency")}</FormLabel>
+								<Select onValueChange={field.onChange} value={field.value}>
+									<FormControl>
+										<SelectTrigger>
+											<SelectValue />
+										</SelectTrigger>
+									</FormControl>
+									<SelectContent>
+										{SOURCE_CURRENCIES.map((c) => (
+											<SelectItem key={c} value={c}>
+												{c}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 
-function Field({
-	label,
-	hint,
-	error,
-	children,
-}: {
-	label: string;
-	hint?: string;
-	error?: string;
-	children: React.ReactNode;
-}) {
-	return (
-		<div className="space-y-1.5">
-			<label className="block text-sm font-medium text-foreground">
-				{label}
-			</label>
-			{children}
-			{hint && <p className="text-xs text-muted-foreground">{hint}</p>}
-			{error && <p className="text-xs text-destructive">{error}</p>}
-		</div>
-	);
+					<FormField
+						control={form.control}
+						name="fxRate"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>{t("rounds:field.fxRate")}</FormLabel>
+								<FormControl>
+									<Input
+										{...field}
+										type="number"
+										step="0.0001"
+										min="0"
+										className="font-mono"
+										onChange={(e) => field.onChange(e.target.valueAsNumber)}
+									/>
+								</FormControl>
+								<FormDescription>{t("rounds:form.fxRateHint")}</FormDescription>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
+
+				<Alert>
+					<AlertDescription>
+						{t("rounds:form.fxPreview", {
+							foreign: exampleForeign.toLocaleString(),
+							currency,
+							thb: computedThb.toLocaleString("th-TH", {
+								minimumFractionDigits: 2,
+								maximumFractionDigits: 2,
+							}),
+						})}
+					</AlertDescription>
+				</Alert>
+
+				<div className="grid grid-cols-2 gap-4">
+					<FormField
+						control={form.control}
+						name="perItemFeeTh"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>{t("rounds:field.perItemFeeTh")}</FormLabel>
+								<FormControl>
+									<Input
+										{...field}
+										type="number"
+										step="0.01"
+										min="0"
+										className="font-mono"
+										onChange={(e) => field.onChange(e.target.valueAsNumber)}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="defaultShippingFee"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>{t("rounds:field.defaultShippingFee")}</FormLabel>
+								<FormControl>
+									<Input
+										{...field}
+										type="number"
+										step="0.01"
+										min="0"
+										className="font-mono"
+										onChange={(e) => field.onChange(e.target.valueAsNumber)}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
+
+				<div className="grid grid-cols-3 gap-4">
+					<FormField
+						control={form.control}
+						name="purchaseStart"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>{t("rounds:field.purchaseStart")}</FormLabel>
+								<FormControl>
+									<Input {...field} type="date" />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="purchaseEnd"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>{t("rounds:field.purchaseEnd")}</FormLabel>
+								<FormControl>
+									<Input {...field} type="date" />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="deliveryEta"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>{t("rounds:field.deliveryEta")}</FormLabel>
+								<FormControl>
+									<Input {...field} type="date" />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
+
+				<FormField
+					control={form.control}
+					name="notes"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>{t("rounds:field.notes")}</FormLabel>
+							<FormControl>
+								<Textarea {...field} rows={3} className="resize-none" />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				{mutation.error && (
+					<Alert variant="destructive">
+						<AlertDescription>
+							{(mutation.error as Error).message}
+						</AlertDescription>
+					</Alert>
+				)}
+
+				{mutation.isSuccess && (
+					<Alert>
+						<AlertDescription>{t("common:action.save")} ✓</AlertDescription>
+					</Alert>
+				)}
+
+				<Button
+					type="submit"
+					variant="brand"
+					disabled={mutation.isPending || !form.formState.isDirty}
+				>
+					{mutation.isPending ? t("common:loading") : t("common:action.save")}
+				</Button>
+			</form>
+		</Form>
+	)
 }

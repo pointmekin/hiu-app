@@ -1,32 +1,33 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query"
 import {
 	createFileRoute,
 	Link,
 	Outlet,
 	useParams,
-} from "@tanstack/react-router";
-import { useTranslation } from "react-i18next";
-import { getRound } from "#/server/functions/rounds/get";
-import type { RoundStatus } from "#/shared/schemas/round";
+} from "@tanstack/react-router"
+import { useTranslation } from "react-i18next"
+import { getRound } from "#/server/functions/rounds/get"
+import { RoundStatusBadge } from "#/components/round-status-badge"
+import type { RoundStatus } from "#/shared/schemas/round"
 
 export const Route = createFileRoute("/_app/rounds/$roundId")({
 	loader: async ({ context: { queryClient }, params }) => {
 		await queryClient.ensureQueryData({
 			queryKey: ["rounds", params.roundId],
 			queryFn: () => getRound({ data: { id: params.roundId } }),
-		});
+		})
 	},
 	component: RoundLayout,
-});
+})
 
 function RoundLayout() {
-	const { t } = useTranslation("rounds");
-	const { roundId } = useParams({ from: "/_app/rounds/$roundId" });
+	const { t } = useTranslation("rounds")
+	const { roundId } = useParams({ from: "/_app/rounds/$roundId" })
 
 	const { data: round } = useSuspenseQuery({
 		queryKey: ["rounds", roundId],
 		queryFn: () => getRound({ data: { id: roundId } }),
-	});
+	})
 
 	return (
 		<div className="flex flex-col min-h-full">
@@ -46,7 +47,7 @@ function RoundLayout() {
 								{Number(round.fxRate).toFixed(4)}
 							</p>
 						</div>
-						<StatusChip status={round.status as RoundStatus} />
+						<RoundStatusBadge status={round.status as RoundStatus} />
 					</div>
 
 					<nav className="-mb-px flex gap-0 overflow-x-auto">
@@ -74,7 +75,7 @@ function RoundLayout() {
 				<Outlet />
 			</div>
 		</div>
-	);
+	)
 }
 
 function TabLink({
@@ -83,17 +84,17 @@ function TabLink({
 	label,
 	disabled,
 }: {
-	to: string;
-	params: Record<string, string>;
-	label: string;
-	disabled?: boolean;
+	to: string
+	params: Record<string, string>
+	label: string
+	disabled?: boolean
 }) {
 	if (disabled) {
 		return (
 			<span className="shrink-0 px-4 py-2.5 text-sm font-medium text-muted-foreground/50 cursor-not-allowed border-b-2 border-transparent">
 				{label}
 			</span>
-		);
+		)
 	}
 
 	return (
@@ -109,28 +110,5 @@ function TabLink({
 		>
 			{label}
 		</Link>
-	);
-}
-
-function StatusChip({ status }: { status: RoundStatus }) {
-	const { t } = useTranslation("rounds");
-
-	const colorMap: Record<RoundStatus, string> = {
-		draft: "bg-muted text-muted-foreground",
-		open: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-		closed:
-			"bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
-		shipping:
-			"bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-		done: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
-		archived: "bg-muted text-muted-foreground opacity-60",
-	};
-
-	return (
-		<span
-			className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${colorMap[status]}`}
-		>
-			{t(`status.${status}`)}
-		</span>
-	);
+	)
 }

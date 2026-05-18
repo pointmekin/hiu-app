@@ -4,13 +4,14 @@ import { z } from "zod";
 import { db } from "#/db/index";
 import { products, roundProducts } from "#/db/schema";
 import { requireSession } from "#/server/middleware";
+import { s3PublicUrl } from "#/server/s3";
 
 export const listRoundProducts = createServerFn({ method: "GET" })
 	.inputValidator(z.object({ roundId: z.string().uuid() }))
 	.handler(async ({ data }) => {
 		await requireSession();
 
-		return db
+		const rows = await db
 			.select({
 				id: roundProducts.id,
 				roundId: roundProducts.roundId,
@@ -30,6 +31,8 @@ export const listRoundProducts = createServerFn({ method: "GET" })
 			.innerJoin(products, eq(roundProducts.productId, products.id))
 			.where(eq(roundProducts.roundId, data.roundId))
 			.orderBy(products.name);
+
+		return rows.map((r) => ({ ...r, productThumbUrl: s3PublicUrl(r.productThumbKey) }));
 	});
 
 export type RoundProductWithProduct = Awaited<
