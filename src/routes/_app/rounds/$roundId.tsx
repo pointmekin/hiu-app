@@ -65,7 +65,6 @@ function RoundLayout() {
 							to="/rounds/$roundId/orders"
 							params={{ roundId }}
 							label={t("tab.orders")}
-							disabled
 						/>
 					</nav>
 				</div>

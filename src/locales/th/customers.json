@@ -1,0 +1,34 @@
+{
+	"list": {
+		"title": "ลูกค้า",
+		"empty": "ยังไม่มีลูกค้า",
+		"emptyHint": "ลูกค้าจะถูกเพิ่มเมื่อสร้างออเดอร์",
+		"search": "ค้นหาลูกค้า..."
+	},
+	"field": {
+		"displayName": "ชื่อ",
+		"lineId": "LINE ID",
+		"instagramHandle": "Instagram",
+		"phone": "เบอร์โทร",
+		"notes": "หมายเหตุ",
+		"recipientName": "ชื่อผู้รับ",
+		"mobile": "เบอร์โทรผู้รับ",
+		"address": "ที่อยู่",
+		"postalCode": "รหัสไปรษณีย์",
+		"isDefault": "ที่อยู่หลัก"
+	},
+	"form": {
+		"createTitle": "เพิ่มลูกค้าใหม่",
+		"editTitle": "แก้ไขข้อมูลลูกค้า",
+		"addressSection": "ที่อยู่จัดส่ง",
+		"addAddress": "เพิ่มที่อยู่",
+		"noAddress": "ยังไม่มีที่อยู่",
+		"selectAddress": "เลือกที่อยู่",
+		"newAddress": "ที่อยู่ใหม่"
+	},
+	"action": {
+		"select": "เลือก",
+		"new": "ลูกค้าใหม่"
+	},
+	"lastOrdered": "สั่งล่าสุด {{date}}"
+}

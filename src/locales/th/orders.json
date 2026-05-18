@@ -1,0 +1,68 @@
+{
+	"list": {
+		"title": "ออเดอร์",
+		"empty": "ยังไม่มีออเดอร์",
+		"emptyHint": "กด «สร้างออเดอร์» เพื่อเริ่มรับออเดอร์",
+		"createNew": "สร้างออเดอร์",
+		"filter": {
+			"all": "ทั้งหมด",
+			"pending": "รอชำระ",
+			"partial": "มัดจำแล้ว",
+			"paid": "ชำระแล้ว",
+			"active": "ยังไม่ยกเลิก",
+			"cancelled": "ยกเลิกแล้ว"
+		}
+	},
+	"detail": {
+		"items": "รายการสินค้า",
+		"subtotal": "รวมสินค้า",
+		"shipping": "ค่าส่ง",
+		"total": "รวมทั้งหมด",
+		"paid": "ชำระแล้ว",
+		"balance": "คงเหลือ",
+		"notes": "หมายเหตุ",
+		"tracking": "เลขพัสดุ Kerry",
+		"status": "สถานะ",
+		"paymentStatus": "สถานะชำระเงิน"
+	},
+	"field": {
+		"customer": "ลูกค้า",
+		"address": "ที่อยู่จัดส่ง",
+		"shippingFee": "ค่าส่ง (บาท)",
+		"notes": "หมายเหตุ",
+		"kerryTracking": "เลขพัสดุ Kerry"
+	},
+	"form": {
+		"newTitle": "สร้างออเดอร์ใหม่",
+		"editTitle": "แก้ไขออเดอร์",
+		"addItem": "เพิ่มสินค้า",
+		"searchProducts": "ค้นหาสินค้า...",
+		"noItems": "ยังไม่มีสินค้า",
+		"shippingPreset": "ค่าส่งด่วน",
+		"selectCustomer": "เลือกลูกค้า",
+		"selectAddress": "เลือกที่อยู่จัดส่ง"
+	},
+	"status": {
+		"active": "ปกติ",
+		"cancelled": "ยกเลิก"
+	},
+	"paymentStatus": {
+		"pending": "รอชำระ",
+		"partial": "มัดจำแล้ว",
+		"paid": "ชำระแล้ว",
+		"refunded": "คืนเงิน"
+	},
+	"action": {
+		"cancel": "ยกเลิกออเดอร์",
+		"cancelConfirm": "ยืนยันยกเลิกออเดอร์นี้?",
+		"recordPayment": "บันทึกการชำระ",
+		"viewPayments": "ประวัติชำระเงิน",
+		"saveTracking": "บันทึกเลขพัสดุ"
+	},
+	"item": {
+		"qty": "จำนวน",
+		"unit": "ราคา/ชิ้น",
+		"total": "รวม",
+		"remove": "ลบ"
+	}
+}

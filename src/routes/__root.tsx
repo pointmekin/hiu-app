@@ -1,9 +1,12 @@
+import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import {
 	createRootRouteWithContext,
 	HeadContent,
 	Scripts,
 } from "@tanstack/react-router";
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import type { ReactNode } from "react";
@@ -55,6 +58,18 @@ function RootDocument({ children }: { children: ReactNode }) {
 					<I18nextProvider i18n={i18n}>{children}</I18nextProvider>
 				</TanstackQueryProvider>
 				<Scripts />
+				<TanStackDevtools
+					plugins={[
+						{
+							name: "TanStack Query",
+							render: <ReactQueryDevtoolsPanel />,
+						},
+						{
+							name: "TanStack Router",
+							render: <TanStackRouterDevtoolsPanel />,
+						},
+					]}
+				/>
 			</body>
 		</html>
 	);

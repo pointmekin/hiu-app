@@ -1,0 +1,25 @@
+{
+	"record": {
+		"title": "Record payment",
+		"amount": "Amount (THB)",
+		"type": "Type",
+		"method": "Method",
+		"notes": "Notes"
+	},
+	"type": {
+		"deposit": "Deposit",
+		"remainder": "Remainder",
+		"full": "Full payment",
+		"refund": "Refund"
+	},
+	"method": {
+		"bank_transfer": "Bank transfer",
+		"promptpay": "PromptPay",
+		"cash": "Cash"
+	},
+	"history": {
+		"title": "Payment history",
+		"empty": "No payments yet",
+		"at": "at {{date}}"
+	}
+}

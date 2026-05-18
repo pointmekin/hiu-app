@@ -1,0 +1,34 @@
+{
+	"list": {
+		"title": "Customers",
+		"empty": "No customers yet",
+		"emptyHint": "Customers are added when you create an order",
+		"search": "Search customers..."
+	},
+	"field": {
+		"displayName": "Name",
+		"lineId": "LINE ID",
+		"instagramHandle": "Instagram",
+		"phone": "Phone",
+		"notes": "Notes",
+		"recipientName": "Recipient name",
+		"mobile": "Mobile",
+		"address": "Address",
+		"postalCode": "Postal code",
+		"isDefault": "Default address"
+	},
+	"form": {
+		"createTitle": "Add new customer",
+		"editTitle": "Edit customer",
+		"addressSection": "Shipping address",
+		"addAddress": "Add address",
+		"noAddress": "No address yet",
+		"selectAddress": "Select address",
+		"newAddress": "New address"
+	},
+	"action": {
+		"select": "Select",
+		"new": "New customer"
+	},
+	"lastOrdered": "Last ordered {{date}}"
+}
