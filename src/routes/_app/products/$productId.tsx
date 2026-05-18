@@ -15,9 +15,9 @@ import { useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { cn } from "#/lib/utils"
-import { listProducts } from "#/server/functions/products/list"
-import { uploadProductImage } from "#/server/functions/products/upload-image"
+import { getProduct } from "#/server/functions/products/get"
 import { upsertProduct } from "#/server/functions/products/upsert"
+import { uploadProductImage } from "#/server/functions/products/upload-image"
 import {
 	type UpsertProductInput,
 	upsertProductSchema,
@@ -34,14 +34,14 @@ import {
 } from "#/components/ui/form"
 import { Input } from "#/components/ui/input"
 
-type ProductWithUrls = Awaited<ReturnType<typeof listProducts>>[number]
+type ProductWithUrls = Awaited<ReturnType<typeof getProduct>>
 
 export const Route = createFileRoute("/_app/products/$productId")({
 	loader: async ({ context: { queryClient }, params }) => {
 		if (params.productId === "new") return
 		await queryClient.ensureQueryData({
-			queryKey: ["products", ""],
-			queryFn: () => listProducts({ data: { q: "", limit: 50 } }),
+			queryKey: ["products", params.productId],
+			queryFn: () => getProduct({ data: { id: params.productId } }),
 		})
 	},
 	component: ProductDetailPage,
@@ -57,11 +57,10 @@ function ProductDetailPage() {
 }
 
 function ProductFormLoader({ productId }: { productId: string }) {
-	const { data: products } = useSuspenseQuery({
-		queryKey: ["products", ""],
-		queryFn: () => listProducts({ data: { q: "", limit: 50 } }),
+	const { data: product } = useSuspenseQuery({
+		queryKey: ["products", productId],
+		queryFn: () => getProduct({ data: { id: productId } }),
 	})
-	const product = products.find((p) => p.id === productId) ?? null
 	return <ProductForm product={product} />
 }
 
@@ -108,6 +107,9 @@ function ProductForm({ product }: { product: ProductWithUrls | null }) {
 				}
 			}
 			queryClient.invalidateQueries({ queryKey: ["products"] })
+				if (saved.id) {
+					queryClient.invalidateQueries({ queryKey: ["products", saved.id] })
+				}
 			navigate({ to: "/products" })
 		},
 	})

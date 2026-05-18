@@ -2,8 +2,8 @@ import { z } from "zod";
 
 export const roundProductRowSchema = z.object({
 	productId: z.string().uuid(),
-	foreignPrice: z.coerce.number().positive(),
-	sellPriceThb: z.coerce.number().positive(),
+	foreignPrice: z.coerce.number().min(0),
+	sellPriceThb: z.coerce.number().min(0),
 	priceOverridden: z.boolean().default(false),
 	storeLocation: z.string().optional(),
 	notes: z.string().optional(),
