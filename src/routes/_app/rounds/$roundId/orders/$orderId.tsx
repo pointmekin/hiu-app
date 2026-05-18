@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
 import {
 	createFileRoute,
+	Link,
 	useNavigate,
 	useParams,
 } from "@tanstack/react-router"
@@ -79,7 +80,13 @@ function OrderDetailPage() {
 					<ArrowLeft size={18} />
 				</Button>
 				<div className="min-w-0">
-					<h2 className="font-semibold text-lg truncate">{order.customerName}</h2>
+					<Link
+						to="/customers/$customerId"
+						params={{ customerId: order.customerId }}
+						className="font-semibold text-lg truncate underline-offset-2 hover:underline"
+					>
+						{order.customerName}
+					</Link>
 					<p
 						className={`text-sm ${paymentStatusColors[order.paymentStatus] ?? "text-muted-foreground"}`}
 					>

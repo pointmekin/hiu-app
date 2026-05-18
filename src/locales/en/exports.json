@@ -29,9 +29,9 @@
 	},
 	"kerry": {
 		"title": "Kerry Shipping Manifest",
-		"description": "Customers who have paid (full or deposit) — ready to print shipping labels",
+		"description": "All customers with active orders — ready to print shipping labels",
 		"download": "Download Kerry.xlsx",
-		"filterHint": "Shows only paid or partially-paid orders",
+		"filterHint": "Unpaid orders marked",
 		"col": {
 			"no": "No",
 			"recipient": "*ชื่อผู้รับ/Recipient Name",
@@ -40,6 +40,12 @@
 			"postalCode": "*รหัสไปรษณีย์/Postal code"
 		},
 		"noAddress": "(no address)",
-		"empty": "No paid or partially-paid orders yet"
+		"empty": "No active orders yet",
+		"unpaidBadge": "Unpaid",
+		"missingAddress": {
+			"title": "Missing Shipping Address",
+			"description": "Customers in this round with active orders but no complete shipping address on file",
+			"empty": "All customers have a complete shipping address"
+		}
 	}
 }

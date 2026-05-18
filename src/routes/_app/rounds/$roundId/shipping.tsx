@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+import { getCustomersMissingAddress } from "#/server/functions/exports/get-customers-missing-address";
 import { getKerryRows } from "#/server/functions/exports/get-kerry-rows";
 import { Button } from "#/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "#/components/ui/card";
@@ -15,10 +16,16 @@ import {
 
 export const Route = createFileRoute("/_app/rounds/$roundId/shipping")({
 	loader: async ({ context: { queryClient }, params }) => {
-		await queryClient.ensureQueryData({
-			queryKey: ["kerry", params.roundId],
-			queryFn: () => getKerryRows({ data: { roundId: params.roundId } }),
-		});
+		await Promise.all([
+			queryClient.ensureQueryData({
+				queryKey: ["kerry", params.roundId],
+				queryFn: () => getKerryRows({ data: { roundId: params.roundId } }),
+			}),
+			queryClient.ensureQueryData({
+				queryKey: ["customers-missing-address", params.roundId],
+				queryFn: () => getCustomersMissingAddress({ data: { roundId: params.roundId } }),
+			}),
+		]);
 	},
 	component: ShippingPage,
 });
@@ -33,8 +40,42 @@ function ShippingPage() {
 		refetchOnMount: "always",
 	});
 
+	const { data: missingAddressCustomers } = useSuspenseQuery({
+		queryKey: ["customers-missing-address", roundId],
+		queryFn: () => getCustomersMissingAddress({ data: { roundId } }),
+		refetchOnMount: "always",
+	});
+
 	return (
 		<div className="space-y-6">
+			{missingAddressCustomers.length > 0 && (
+				<Card className="border-destructive/50">
+					<CardHeader>
+						<CardTitle className="text-destructive">
+							{t("exports:kerry.missingAddress.title")}
+						</CardTitle>
+						<CardDescription>
+							{t("exports:kerry.missingAddress.description")}
+						</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<ul className="space-y-1">
+							{missingAddressCustomers.map((c) => (
+								<li key={c.customerId} className="text-sm">
+									<Link
+										to="/customers/$customerId"
+										params={{ customerId: c.customerId }}
+										className="underline underline-offset-2 hover:text-foreground"
+									>
+										{c.customerName}
+									</Link>
+								</li>
+							))}
+						</ul>
+					</CardContent>
+				</Card>
+			)}
+
 			<Card>
 				<CardHeader>
 					<CardTitle>{t("exports:kerry.title")}</CardTitle>
@@ -71,7 +112,16 @@ function ShippingPage() {
 									{rows.map((row) => (
 										<TableRow key={row.no}>
 											<TableCell className="font-mono">{row.no}</TableCell>
-											<TableCell>{row.recipientName || t("exports:kerry.noAddress")}</TableCell>
+											<TableCell>
+												<div className="flex items-center gap-2">
+													<span>{row.recipientName || t("exports:kerry.noAddress")}</span>
+													{row.paymentStatus === "pending" && (
+														<span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full font-medium">
+															{t("exports:kerry.unpaidBadge")}
+														</span>
+													)}
+												</div>
+											</TableCell>
 											<TableCell className="font-mono">{row.mobile}</TableCell>
 											<TableCell>{row.address}</TableCell>
 											<TableCell className="font-mono">{row.postalCode}</TableCell>

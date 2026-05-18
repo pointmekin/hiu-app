@@ -14,6 +14,7 @@ const MOCK_ROWS: KerryRow[] = [
 		mobile: "0812345678",
 		address: "123 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพฯ",
 		postalCode: "10110",
+		paymentStatus: "paid",
 	},
 	{
 		no: 2,
@@ -21,6 +22,7 @@ const MOCK_ROWS: KerryRow[] = [
 		mobile: "0898765432",
 		address: "456 ถนนพหลโยธิน แขวงลาดยาว เขตจตุจักร กรุงเทพฯ",
 		postalCode: "10900",
+		paymentStatus: "partial",
 	},
 ];
 
