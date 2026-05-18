@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "#/db/index";
 import { products } from "#/db/schema";
 import { requireSession } from "#/server/middleware";
+import { s3PublicUrl } from "#/server/s3";
 
 export const listProducts = createServerFn({ method: "GET" })
 	.inputValidator(
@@ -12,25 +13,28 @@ export const listProducts = createServerFn({ method: "GET" })
 	.handler(async ({ data }) => {
 		await requireSession();
 
-		if (data.q?.trim()) {
-			const term = `%${data.q.trim()}%`;
-			return db
-				.select()
-				.from(products)
-				.where(
-					or(
-						ilike(products.name, term),
-						ilike(products.brand, term),
-						ilike(products.category, term),
-					),
-				)
-				.orderBy(desc(products.lastUsedAt))
-				.limit(data.limit);
-		}
+		const rows = await (data.q?.trim()
+			? db
+					.select()
+					.from(products)
+					.where(
+						or(
+							ilike(products.name, `%${data.q.trim()}%`),
+							ilike(products.brand, `%${data.q.trim()}%`),
+							ilike(products.category, `%${data.q.trim()}%`),
+						),
+					)
+					.orderBy(desc(products.lastUsedAt))
+					.limit(data.limit)
+			: db
+					.select()
+					.from(products)
+					.orderBy(desc(products.lastUsedAt))
+					.limit(data.limit));
 
-		return db
-			.select()
-			.from(products)
-			.orderBy(desc(products.lastUsedAt))
-			.limit(data.limit);
+		return rows.map((p) => ({
+			...p,
+			thumbUrl: s3PublicUrl(p.thumbKey),
+			imageUrl: s3PublicUrl(p.imageKey),
+		}));
 	});

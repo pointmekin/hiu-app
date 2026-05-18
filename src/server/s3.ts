@@ -64,3 +64,14 @@ export function s3KeyUrl(key: string): string {
 	const { publicUrl } = getS3Config();
 	return `${publicUrl}/${key}`;
 }
+
+export function s3PublicUrl(key: string | null | undefined): string | null {
+	if (!key) return null;
+	const publicUrl =
+		process.env.S3_PUBLIC_URL ??
+		(process.env.S3_BUCKET && process.env.AWS_REGION
+			? `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com`
+			: null);
+	if (!publicUrl) return null;
+	return `${publicUrl}/${key}`;
+}

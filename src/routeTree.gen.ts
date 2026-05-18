@@ -15,6 +15,8 @@ import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppRoundsRouteImport } from './routes/_app/rounds'
 import { Route as AppProductsRouteImport } from './routes/_app/products'
+import { Route as AppRoundsIndexRouteImport } from './routes/_app/rounds/index'
+import { Route as AppProductsIndexRouteImport } from './routes/_app/products/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AppRoundsNewRouteImport } from './routes/_app/rounds/new'
 import { Route as AppRoundsRoundIdRouteImport } from './routes/_app/rounds/$roundId'
@@ -50,6 +52,16 @@ const AppProductsRoute = AppProductsRouteImport.update({
   id: '/products',
   path: '/products',
   getParentRoute: () => AppRoute,
+} as any)
+const AppRoundsIndexRoute = AppRoundsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoundsRoute,
+} as any)
+const AppProductsIndexRoute = AppProductsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppProductsRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
@@ -93,18 +105,20 @@ export interface FileRoutesByFullPath {
   '/rounds/$roundId': typeof AppRoundsRoundIdRouteWithChildren
   '/rounds/new': typeof AppRoundsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/products/': typeof AppProductsIndexRoute
+  '/rounds/': typeof AppRoundsIndexRoute
   '/rounds/$roundId/products': typeof AppRoundsRoundIdProductsRoute
   '/rounds/$roundId/': typeof AppRoundsRoundIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
-  '/products': typeof AppProductsRouteWithChildren
-  '/rounds': typeof AppRoundsRouteWithChildren
   '/settings': typeof AppSettingsRoute
   '/': typeof AppIndexRoute
   '/products/$productId': typeof AppProductsProductIdRoute
   '/rounds/new': typeof AppRoundsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/products': typeof AppProductsIndexRoute
+  '/rounds': typeof AppRoundsIndexRoute
   '/rounds/$roundId/products': typeof AppRoundsRoundIdProductsRoute
   '/rounds/$roundId': typeof AppRoundsRoundIdIndexRoute
 }
@@ -120,6 +134,8 @@ export interface FileRoutesById {
   '/_app/rounds/$roundId': typeof AppRoundsRoundIdRouteWithChildren
   '/_app/rounds/new': typeof AppRoundsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_app/products/': typeof AppProductsIndexRoute
+  '/_app/rounds/': typeof AppRoundsIndexRoute
   '/_app/rounds/$roundId/products': typeof AppRoundsRoundIdProductsRoute
   '/_app/rounds/$roundId/': typeof AppRoundsRoundIdIndexRoute
 }
@@ -135,18 +151,20 @@ export interface FileRouteTypes {
     | '/rounds/$roundId'
     | '/rounds/new'
     | '/api/auth/$'
+    | '/products/'
+    | '/rounds/'
     | '/rounds/$roundId/products'
     | '/rounds/$roundId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
-    | '/products'
-    | '/rounds'
     | '/settings'
     | '/'
     | '/products/$productId'
     | '/rounds/new'
     | '/api/auth/$'
+    | '/products'
+    | '/rounds'
     | '/rounds/$roundId/products'
     | '/rounds/$roundId'
   id:
@@ -161,6 +179,8 @@ export interface FileRouteTypes {
     | '/_app/rounds/$roundId'
     | '/_app/rounds/new'
     | '/api/auth/$'
+    | '/_app/products/'
+    | '/_app/rounds/'
     | '/_app/rounds/$roundId/products'
     | '/_app/rounds/$roundId/'
   fileRoutesById: FileRoutesById
@@ -215,6 +235,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProductsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/rounds/': {
+      id: '/_app/rounds/'
+      path: '/'
+      fullPath: '/rounds/'
+      preLoaderRoute: typeof AppRoundsIndexRouteImport
+      parentRoute: typeof AppRoundsRoute
+    }
+    '/_app/products/': {
+      id: '/_app/products/'
+      path: '/'
+      fullPath: '/products/'
+      preLoaderRoute: typeof AppProductsIndexRouteImport
+      parentRoute: typeof AppProductsRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -262,10 +296,12 @@ declare module '@tanstack/react-router' {
 
 interface AppProductsRouteChildren {
   AppProductsProductIdRoute: typeof AppProductsProductIdRoute
+  AppProductsIndexRoute: typeof AppProductsIndexRoute
 }
 
 const AppProductsRouteChildren: AppProductsRouteChildren = {
   AppProductsProductIdRoute: AppProductsProductIdRoute,
+  AppProductsIndexRoute: AppProductsIndexRoute,
 }
 
 const AppProductsRouteWithChildren = AppProductsRoute._addFileChildren(
@@ -288,11 +324,13 @@ const AppRoundsRoundIdRouteWithChildren =
 interface AppRoundsRouteChildren {
   AppRoundsRoundIdRoute: typeof AppRoundsRoundIdRouteWithChildren
   AppRoundsNewRoute: typeof AppRoundsNewRoute
+  AppRoundsIndexRoute: typeof AppRoundsIndexRoute
 }
 
 const AppRoundsRouteChildren: AppRoundsRouteChildren = {
   AppRoundsRoundIdRoute: AppRoundsRoundIdRouteWithChildren,
   AppRoundsNewRoute: AppRoundsNewRoute,
+  AppRoundsIndexRoute: AppRoundsIndexRoute,
 }
 
 const AppRoundsRouteWithChildren = AppRoundsRoute._addFileChildren(

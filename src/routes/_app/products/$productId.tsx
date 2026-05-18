@@ -9,10 +9,12 @@ import {
 	useNavigate,
 	useParams,
 } from "@tanstack/react-router";
+import imageCompression from "browser-image-compression";
+import { ImagePlus } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import imageCompression from "browser-image-compression";
+import { cn } from "#/lib/utils";
 import { listProducts } from "#/server/functions/products/list";
 import { uploadProductImage } from "#/server/functions/products/upload-image";
 import { upsertProduct } from "#/server/functions/products/upsert";
@@ -20,7 +22,8 @@ import {
 	type UpsertProductInput,
 	upsertProductSchema,
 } from "#/shared/schemas/product";
-import type { Product } from "#/db/schema";
+
+type ProductWithUrls = Awaited<ReturnType<typeof listProducts>>[number];
 
 export const Route = createFileRoute("/_app/products/$productId")({
 	loader: async ({ context: { queryClient }, params }) => {
@@ -51,11 +54,10 @@ function ProductFormLoader({ productId }: { productId: string }) {
 	return <ProductForm product={product} />;
 }
 
-function ProductForm({ product }: { product: Product | null }) {
+function ProductForm({ product }: { product: ProductWithUrls | null }) {
 	const { t } = useTranslation(["products", "common"]);
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
-	const fileRef = useRef<HTMLInputElement>(null);
 	const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 	const [uploadFile, setUploadFile] = useState<File | null>(null);
 
@@ -99,9 +101,7 @@ function ProductForm({ product }: { product: Product | null }) {
 		},
 	});
 
-	function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-		const file = e.target.files?.[0];
-		if (!file) return;
+	function handleFile(file: File) {
 		setUploadFile(file);
 		setPhotoPreview(URL.createObjectURL(file));
 	}
@@ -113,10 +113,20 @@ function ProductForm({ product }: { product: Product | null }) {
 	return (
 		<div className="max-w-xl mx-auto px-4 py-6">
 			<h1 className="text-2xl font-semibold text-foreground mb-6">
-				{product ? t("products:form.editTitle") : t("products:form.createTitle")}
+				{product
+					? t("products:form.editTitle")
+					: t("products:form.createTitle")}
 			</h1>
 
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+				<PhotoDropZone
+					preview={photoPreview}
+					storedUrl={product?.imageUrl ?? null}
+					onFile={handleFile}
+					label={t("products:field.photo")}
+					hint={t("products:form.photoHint")}
+				/>
+
 				<Field
 					label={t("products:field.name")}
 					error={form.formState.errors.name?.message}
@@ -153,37 +163,6 @@ function ProductForm({ product }: { product: Product | null }) {
 					/>
 				</Field>
 
-				<Field
-					label={t("products:field.photo")}
-					hint={t("products:form.photoHint")}
-				>
-					<div className="flex items-center gap-3">
-						{(photoPreview ?? product?.imageKey) && (
-							<img
-								src={photoPreview ?? undefined}
-								alt=""
-								className="h-16 w-16 rounded-md object-cover border border-border"
-							/>
-						)}
-						<button
-							type="button"
-							onClick={() => fileRef.current?.click()}
-							className="rounded-md border border-border px-3 py-2 text-sm hover:bg-accent"
-						>
-							{photoPreview || product?.imageKey
-								? t("products:form.changePhoto")
-								: t("products:form.uploadPhoto")}
-						</button>
-						<input
-							ref={fileRef}
-							type="file"
-							accept="image/jpeg,image/png,image/webp"
-							onChange={handleFileChange}
-							className="hidden"
-						/>
-					</div>
-				</Field>
-
 				{upsertMutation.error && (
 					<p className="text-sm text-destructive">
 						{(upsertMutation.error as Error).message}
@@ -211,6 +190,147 @@ function ProductForm({ product }: { product: Product | null }) {
 					</button>
 				</div>
 			</form>
+		</div>
+	);
+}
+
+function PhotoDropZone({
+	preview,
+	storedUrl,
+	onFile,
+	label,
+	hint,
+}: {
+	preview: string | null;
+	storedUrl: string | null;
+	onFile: (file: File) => void;
+	label: string;
+	hint?: string;
+}) {
+	const inputRef = useRef<HTMLInputElement>(null);
+	const [isDragging, setIsDragging] = useState(false);
+	const displaySrc = preview ?? storedUrl;
+
+	function pickFile(file: File) {
+		if (!file.type.startsWith("image/")) return;
+		onFile(file);
+	}
+
+	function handleDragOver(e: React.DragEvent) {
+		e.preventDefault();
+		setIsDragging(true);
+	}
+
+	function handleDragLeave(e: React.DragEvent) {
+		if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+			setIsDragging(false);
+		}
+	}
+
+	function handleDrop(e: React.DragEvent) {
+		e.preventDefault();
+		setIsDragging(false);
+		const file = e.dataTransfer.files[0];
+		if (file) pickFile(file);
+	}
+
+	function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+		const file = e.target.files?.[0];
+		if (file) pickFile(file);
+	}
+
+	return (
+		<div className="space-y-1.5">
+			<span className="block text-sm font-medium text-foreground">{label}</span>
+
+			<div
+				role="button"
+				tabIndex={0}
+				onClick={() => inputRef.current?.click()}
+				onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
+				onDragOver={handleDragOver}
+				onDragLeave={handleDragLeave}
+				onDrop={handleDrop}
+				className={cn(
+					"group relative w-full rounded-xl border-2 cursor-pointer",
+					"transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+					displaySrc
+						? cn(
+								"border-transparent overflow-hidden",
+								isDragging && "border-hanko",
+							)
+						: cn(
+								"aspect-video flex flex-col items-center justify-center gap-3",
+								isDragging
+									? "border-hanko bg-hanko/5"
+									: "border-dashed border-border hover:border-muted-foreground/50 hover:bg-accent/30",
+							),
+				)}
+			>
+				{displaySrc ? (
+					<>
+						<img
+							src={displaySrc}
+							alt=""
+							className="w-full h-auto block"
+						/>
+						<div
+							className={cn(
+								"absolute inset-0 flex items-center justify-center",
+								"bg-black/0 group-hover:bg-black/40 transition-colors duration-150",
+								isDragging && "bg-black/40",
+							)}
+						>
+							<div
+								className={cn(
+									"flex flex-col items-center gap-1.5 text-white opacity-0 group-hover:opacity-100 transition-opacity",
+									isDragging && "opacity-100",
+								)}
+							>
+								<ImagePlus size={24} />
+								<span className="text-xs font-medium">
+									{isDragging ? "Drop to replace" : "Change photo"}
+								</span>
+							</div>
+						</div>
+					</>
+				) : (
+					<>
+						<ImagePlus
+							size={28}
+							className={cn(
+								"transition-colors",
+								isDragging ? "text-hanko" : "text-muted-foreground",
+							)}
+						/>
+						<div className="text-center">
+							<p
+								className={cn(
+									"text-sm font-medium transition-colors",
+									isDragging ? "text-hanko" : "text-foreground",
+								)}
+							>
+								{isDragging
+									? "Drop image here"
+									: "Drag & drop or click to upload"}
+							</p>
+							<p className="text-xs text-muted-foreground mt-0.5">
+								JPG, PNG, WebP
+							</p>
+						</div>
+					</>
+				)}
+
+				<input
+					ref={inputRef}
+					type="file"
+					accept="image/jpeg,image/png,image/webp"
+					onChange={handleInputChange}
+					className="hidden"
+				/>
+			</div>
+
+			{hint && <p className="text-xs text-muted-foreground">{hint}</p>}
 		</div>
 	);
 }
