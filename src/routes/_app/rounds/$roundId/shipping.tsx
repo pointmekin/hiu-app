@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { fetchKerryData } from "#/server/functions/exports/kerry";
+import { getKerryRows } from "#/server/functions/exports/get-kerry-rows";
 import { Button } from "#/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "#/components/ui/card";
 import {
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_app/rounds/$roundId/shipping")({
 	loader: async ({ context: { queryClient }, params }) => {
 		await queryClient.ensureQueryData({
 			queryKey: ["kerry", params.roundId],
-			queryFn: () => fetchKerryData(params.roundId),
+			queryFn: () => getKerryRows({ data: { roundId: params.roundId } }),
 		});
 	},
 	component: ShippingPage,
@@ -29,7 +29,7 @@ function ShippingPage() {
 
 	const { data: rows } = useSuspenseQuery({
 		queryKey: ["kerry", roundId],
-		queryFn: () => fetchKerryData(roundId),
+		queryFn: () => getKerryRows({ data: { roundId } }),
 		refetchOnMount: "always",
 	});
 
