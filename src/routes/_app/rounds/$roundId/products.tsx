@@ -1,5 +1,6 @@
 import {
 	useMutation,
+	useQuery,
 	useQueryClient,
 	useSuspenseQuery,
 } from "@tanstack/react-query";
@@ -412,7 +413,7 @@ function CatalogPicker({
 	const { t } = useTranslation(["rounds", "products"]);
 	const [q, setQ] = useState("");
 
-	const { data: allProducts } = useSuspenseQuery({
+	const { data: allProducts = [] } = useQuery({
 		queryKey: ["products", q],
 		queryFn: () => listProducts({ data: { q, limit: 30 } }),
 	});
@@ -453,8 +454,16 @@ function CatalogPicker({
 									onClick={() => onSelect(product)}
 									className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent/50 text-left"
 								>
-									<div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center shrink-0">
-										<Package size={18} className="text-muted-foreground" />
+									<div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center shrink-0 overflow-hidden">
+										{product.thumbUrl ? (
+											<img
+												src={product.thumbUrl}
+												alt=""
+												className="h-full w-full object-cover"
+											/>
+										) : (
+											<Package size={18} className="text-muted-foreground" />
+										)}
 									</div>
 									<div className="min-w-0">
 										<p className="font-medium text-foreground truncate">

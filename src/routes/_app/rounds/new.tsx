@@ -5,9 +5,9 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { createRound } from "#/server/functions/rounds/create";
 import {
-	SOURCE_CURRENCIES,
 	type CreateRoundInput,
 	createRoundSchema,
+	SOURCE_CURRENCIES,
 } from "#/shared/schemas/round";
 
 export const Route = createFileRoute("/_app/rounds/new")({
@@ -55,7 +55,10 @@ function NewRoundPage() {
 			</h1>
 
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-				<Field label={t("rounds:field.name")} error={form.formState.errors.name?.message}>
+				<Field
+					label={t("rounds:field.name")}
+					error={form.formState.errors.name?.message}
+				>
 					<input
 						{...form.register("name")}
 						placeholder="Japan May 2026"
@@ -63,7 +66,10 @@ function NewRoundPage() {
 					/>
 				</Field>
 
-				<Field label={t("rounds:field.country")} error={form.formState.errors.country?.message}>
+				<Field
+					label={t("rounds:field.country")}
+					error={form.formState.errors.country?.message}
+				>
 					<input
 						{...form.register("country")}
 						placeholder="Japan"
@@ -106,11 +112,16 @@ function NewRoundPage() {
 				</div>
 
 				<div className="rounded-md bg-bone-soft dark:bg-muted/30 px-4 py-3 text-sm">
-					<span className="text-muted-foreground">{t("rounds:form.fxPreview", {
-						foreign: exampleForeign.toLocaleString(),
-						currency,
-						thb: computedThb.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-					})}</span>
+					<span className="text-muted-foreground">
+						{t("rounds:form.fxPreview", {
+							foreign: exampleForeign.toLocaleString(),
+							currency,
+							thb: computedThb.toLocaleString("th-TH", {
+								minimumFractionDigits: 2,
+								maximumFractionDigits: 2,
+							}),
+						})}
+					</span>
 				</div>
 
 				<div className="grid grid-cols-2 gap-4">
@@ -181,7 +192,9 @@ function NewRoundPage() {
 						disabled={mutation.isPending}
 						className="flex-1 rounded-md bg-hanko px-4 py-2.5 text-sm font-semibold text-bone hover:bg-hanko-hover disabled:opacity-50 transition-opacity"
 					>
-						{mutation.isPending ? t("common:loading") : t("rounds:list.createFirst")}
+						{mutation.isPending
+							? t("common:loading")
+							: t("rounds:list.createFirst")}
 					</button>
 				</div>
 			</form>
