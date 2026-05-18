@@ -1,6 +1,6 @@
 import path from "node:path";
 import ExcelJS from "exceljs";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db } from "#/db/index";
 import { customerAddresses, customers, orders } from "#/db/schema";
@@ -47,38 +47,37 @@ export interface KerryRow {
 	mobile: string;
 	address: string;
 	postalCode: string;
+	paymentStatus: string;
+}
+
+// Subquery: best available address for a customer — default first, otherwise oldest.
+// Used when orders.address_id is NULL (address added to customer profile after order creation).
+function bestAddrSq(field: string) {
+	return sql`(
+		SELECT ${sql.raw(field)} FROM ${customerAddresses}
+		WHERE ${customerAddresses.customerId} = ${orders.customerId}
+		ORDER BY ${customerAddresses.isDefault} DESC, ${customerAddresses.createdAt} ASC
+		LIMIT 1
+	)`;
 }
 
 export async function fetchKerryData(roundId: string): Promise<KerryRow[]> {
 	const orderAddr = alias(customerAddresses, "order_addr");
-	const defaultAddr = alias(customerAddresses, "default_addr");
 
 	const rows = await db
 		.select({
 			orderId: orders.id,
 			customerName: customers.displayName,
-			recipientName: sql<string | null>`COALESCE(${orderAddr.recipientName}, ${defaultAddr.recipientName})`,
-			mobile: sql<string | null>`COALESCE(${orderAddr.mobile}, ${defaultAddr.mobile})`,
-			address: sql<string | null>`COALESCE(${orderAddr.address}, ${defaultAddr.address})`,
-			postalCode: sql<string | null>`COALESCE(${orderAddr.postalCode}, ${defaultAddr.postalCode})`,
+			paymentStatus: orders.paymentStatus,
+			recipientName: sql<string | null>`COALESCE(${orderAddr.recipientName}, ${bestAddrSq("recipient_name")})`,
+			mobile: sql<string | null>`COALESCE(${orderAddr.mobile}, ${bestAddrSq("mobile")})`,
+			address: sql<string | null>`COALESCE(${orderAddr.address}, ${bestAddrSq("address")})`,
+			postalCode: sql<string | null>`COALESCE(${orderAddr.postalCode}, ${bestAddrSq("postal_code")})`,
 		})
 		.from(orders)
 		.innerJoin(customers, eq(orders.customerId, customers.id))
 		.leftJoin(orderAddr, eq(orders.addressId, orderAddr.id))
-		.leftJoin(
-			defaultAddr,
-			and(
-				eq(defaultAddr.customerId, orders.customerId),
-				eq(defaultAddr.isDefault, true),
-			),
-		)
-		.where(
-			and(
-				eq(orders.roundId, roundId),
-				eq(orders.status, "active"),
-				inArray(orders.paymentStatus, ["paid", "partial"]),
-			),
-		)
+		.where(and(eq(orders.roundId, roundId), eq(orders.status, "active")))
 		.orderBy(customers.displayName);
 
 	return rows.map((row, i) => ({
@@ -87,6 +86,7 @@ export async function fetchKerryData(roundId: string): Promise<KerryRow[]> {
 		mobile: row.mobile ?? "",
 		address: row.address ?? "",
 		postalCode: row.postalCode ?? "",
+		paymentStatus: row.paymentStatus,
 	}));
 }
 

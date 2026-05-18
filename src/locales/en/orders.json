@@ -4,6 +4,7 @@
 		"empty": "No orders yet",
 		"emptyHint": "Click «Create order» to take your first order",
 		"createNew": "Create order",
+		"searchPlaceholder": "Search by customer name...",
 		"filter": {
 			"all": "All",
 			"pending": "Pending",

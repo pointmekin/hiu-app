@@ -5,6 +5,7 @@ import enAuth from "#/locales/en/auth.json";
 import enCommon from "#/locales/en/common.json";
 import enCustomers from "#/locales/en/customers.json";
 import enErrors from "#/locales/en/errors.json";
+import enExports from "#/locales/en/exports.json";
 import enOrders from "#/locales/en/orders.json";
 import enPayments from "#/locales/en/payments.json";
 import enProducts from "#/locales/en/products.json";
@@ -14,6 +15,7 @@ import thAuth from "#/locales/th/auth.json";
 import thCommon from "#/locales/th/common.json";
 import thCustomers from "#/locales/th/customers.json";
 import thErrors from "#/locales/th/errors.json";
+import thExports from "#/locales/th/exports.json";
 import thOrders from "#/locales/th/orders.json";
 import thPayments from "#/locales/th/payments.json";
 import thProducts from "#/locales/th/products.json";
@@ -31,6 +33,7 @@ const resources = {
 		payments: thPayments,
 		settings: thSettings,
 		errors: thErrors,
+		exports: thExports,
 	},
 	en: {
 		common: enCommon,
@@ -42,6 +45,7 @@ const resources = {
 		payments: enPayments,
 		settings: enSettings,
 		errors: enErrors,
+		exports: enExports,
 	},
 };
 
@@ -53,7 +57,7 @@ if (!i18n.isInitialized) {
 			resources,
 			fallbackLng: "th",
 			defaultNS: "common",
-			ns: ["common", "auth", "rounds", "products", "customers", "orders", "payments", "settings", "errors"],
+			ns: ["common", "auth", "rounds", "products", "customers", "orders", "payments", "settings", "errors", "exports"],
 			detection: {
 				order: ["querystring", "cookie", "navigator"],
 				lookupQuerystring: "lang",

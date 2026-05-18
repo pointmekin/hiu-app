@@ -1,11 +1,12 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { Plus, ShoppingCart } from "lucide-react";
+import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
+import { Plus, Search, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EmptyState } from "#/components/empty-state";
 import { Button } from "#/components/ui/button";
 import { Card } from "#/components/ui/card";
+import { Input } from "#/components/ui/input";
 import { listOrders } from "#/server/functions/orders/list";
 import type { PaymentStatus } from "#/shared/schemas/order";
 
@@ -30,6 +31,7 @@ function OrdersPage() {
 	const { t } = useTranslation("orders");
 	const { roundId } = useParams({ from: "/_app/rounds/$roundId/orders/" });
 	const [filter, setFilter] = useState<string>("all");
+	const [textFilter, setTextFilter] = useState("");
 
 	const selectedFilter = FILTER_OPTIONS.find((f) => f.key === filter);
 
@@ -44,37 +46,54 @@ function OrdersPage() {
 			}),
 	});
 
-	const activeOrders = orders.filter((o) => o.status === "active");
-	const cancelledOrders = orders.filter((o) => o.status === "cancelled");
+	const needle = textFilter.trim().toLowerCase();
+	const visibleOrders = needle
+		? orders.filter((o) => o.customerName.toLowerCase().includes(needle))
+		: orders;
+
+	const activeOrders = visibleOrders.filter((o) => o.status === "active");
+	const cancelledOrders = visibleOrders.filter((o) => o.status === "cancelled");
 
 	return (
 		<div>
-			<div className="flex items-center justify-between mb-4">
-				<h2 className="text-lg font-semibold">{t("list.title")}</h2>
-				<Button asChild variant="brand" size="sm">
-					<Link to="/rounds/$roundId/orders/new" params={{ roundId }}>
-						<Plus size={16} />
-						{t("list.createNew")}
-					</Link>
-				</Button>
-			</div>
+			<div className="sticky top-[119px] md:top-[176px] z-10 bg-background pb-3 pt-1">
+				<div className="flex items-center justify-between mb-3">
+					<h2 className="text-lg font-semibold">{t("list.title")}</h2>
+					<Button asChild variant="brand" size="sm">
+						<Link to="/rounds/$roundId/orders/new" params={{ roundId }}>
+							<Plus size={16} />
+							{t("list.createNew")}
+						</Link>
+					</Button>
+				</div>
 
-			{/* Filter tabs */}
-			<div className="flex gap-1 mb-4 overflow-x-auto pb-1">
-				{FILTER_OPTIONS.map((opt) => (
-					<button
-						key={opt.key}
-						type="button"
-						onClick={() => setFilter(opt.key)}
-						className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-							filter === opt.key
-								? "bg-foreground text-background"
-								: "bg-muted text-muted-foreground hover:text-foreground"
-						}`}
-					>
-						{t(`list.filter.${opt.key}`)}
-					</button>
-				))}
+				<div className="relative mb-3">
+					<Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+					<Input
+						className="pl-8 h-8 text-sm"
+						placeholder={t("list.searchPlaceholder")}
+						value={textFilter}
+						onChange={(e) => setTextFilter(e.target.value)}
+					/>
+				</div>
+
+				{/* Filter tabs */}
+				<div className="flex gap-1 overflow-x-auto pb-1">
+					{FILTER_OPTIONS.map((opt) => (
+						<button
+							key={opt.key}
+							type="button"
+							onClick={() => setFilter(opt.key)}
+							className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+								filter === opt.key
+									? "bg-foreground text-background"
+									: "bg-muted text-muted-foreground hover:text-foreground"
+							}`}
+						>
+							{t(`list.filter.${opt.key}`)}
+						</button>
+					))}
+				</div>
 			</div>
 
 			{activeOrders.length === 0 && cancelledOrders.length === 0 ? (
@@ -111,6 +130,7 @@ function OrdersPage() {
 
 interface OrderCardOrder {
 	id: string;
+	customerId: string;
 	customerName: string;
 	totalThb: string;
 	paidAmountThb: string;
@@ -129,6 +149,7 @@ function OrderCard({
 	dimmed?: boolean;
 }) {
 	const { t } = useTranslation("orders");
+	const navigate = useNavigate();
 
 	const total = Number(order.totalThb);
 	const paid = Number(order.paidAmountThb);
@@ -142,39 +163,47 @@ function OrderCard({
 	};
 
 	return (
-		<Link
-			to="/rounds/$roundId/orders/$orderId"
-			params={{ roundId, orderId: order.id }}
+		<Card
+			className={`flex items-start justify-between px-4 py-3 hover:bg-accent/50 transition-colors cursor-pointer ${dimmed ? "opacity-50" : ""}`}
+			onClick={() =>
+				navigate({
+					to: "/rounds/$roundId/orders/$orderId",
+					params: { roundId, orderId: order.id },
+				})
+			}
 		>
-			<Card
-				className={`flex items-start justify-between px-4 py-3 hover:bg-accent/50 transition-colors ${dimmed ? "opacity-50" : ""}`}
-			>
-				<div className="min-w-0">
-					<p className="font-medium truncate">{order.customerName}</p>
-					<p
-						className={`text-sm ${paymentStatusColors[order.paymentStatus] ?? "text-muted-foreground"}`}
-					>
-						{t(`paymentStatus.${order.paymentStatus}`)}
-						{order.paymentStatus !== "paid" && balance > 0 && (
-							<span className="ml-1 font-mono">
-								· คงเหลือ{" "}
-								{balance.toLocaleString("th-TH", {
-									minimumFractionDigits: 0,
-									maximumFractionDigits: 0,
-								})}{" "}
-								฿
-							</span>
-						)}
-					</p>
-				</div>
-				<p className="font-mono font-medium text-sm tabular-nums shrink-0">
-					{total.toLocaleString("th-TH", {
-						minimumFractionDigits: 0,
-						maximumFractionDigits: 0,
-					})}{" "}
-					฿
+			<div className="min-w-0">
+				<Link
+					to="/customers/$customerId"
+					params={{ customerId: order.customerId }}
+					className="font-medium truncate underline-offset-2 hover:underline"
+					onClick={(e) => e.stopPropagation()}
+				>
+					{order.customerName}
+				</Link>
+				<p
+					className={`text-sm ${paymentStatusColors[order.paymentStatus] ?? "text-muted-foreground"}`}
+				>
+					{t(`paymentStatus.${order.paymentStatus}`)}
+					{order.paymentStatus !== "paid" && balance > 0 && (
+						<span className="ml-1 font-mono">
+							· คงเหลือ{" "}
+							{balance.toLocaleString("th-TH", {
+								minimumFractionDigits: 0,
+								maximumFractionDigits: 0,
+							})}{" "}
+							฿
+						</span>
+					)}
 				</p>
-			</Card>
-		</Link>
+			</div>
+			<p className="font-mono font-medium text-sm tabular-nums shrink-0">
+				{total.toLocaleString("th-TH", {
+					minimumFractionDigits: 0,
+					maximumFractionDigits: 0,
+				})}{" "}
+				฿
+			</p>
+		</Card>
 	);
 }
