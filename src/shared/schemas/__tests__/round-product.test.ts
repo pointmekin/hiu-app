@@ -4,10 +4,13 @@ import {
 	upsertRoundProductsSchema,
 } from "#/shared/schemas/round-product";
 
+const PRODUCT_ID = "00000000-0000-4000-8000-000000000001";
+const ROUND_ID = "00000000-0000-4000-8000-000000000002";
+
 describe("roundProductRowSchema", () => {
 	it("accepts valid row", () => {
 		const result = roundProductRowSchema.parse({
-			productId: "00000000-0000-0000-0000-000000000001",
+			productId: PRODUCT_ID,
 			foreignPrice: 2800,
 			sellPriceThb: 658,
 			priceOverridden: false,
@@ -16,11 +19,20 @@ describe("roundProductRowSchema", () => {
 		expect(result.priceOverridden).toBe(false);
 	});
 
-	it("rejects non-positive foreignPrice", () => {
+	it("accepts zero foreignPrice (unpriced placeholder)", () => {
+		const result = roundProductRowSchema.parse({
+			productId: PRODUCT_ID,
+			foreignPrice: 0,
+			sellPriceThb: 0,
+		});
+		expect(result.foreignPrice).toBe(0);
+	});
+
+	it("rejects negative foreignPrice", () => {
 		expect(() =>
 			roundProductRowSchema.parse({
-				productId: "00000000-0000-0000-0000-000000000001",
-				foreignPrice: 0,
+				productId: PRODUCT_ID,
+				foreignPrice: -1,
 				sellPriceThb: 658,
 			}),
 		).toThrow();
@@ -28,7 +40,7 @@ describe("roundProductRowSchema", () => {
 
 	it("coerces string prices to numbers", () => {
 		const result = roundProductRowSchema.parse({
-			productId: "00000000-0000-0000-0000-000000000001",
+			productId: PRODUCT_ID,
 			foreignPrice: "2800",
 			sellPriceThb: "658.00",
 		});
@@ -41,7 +53,7 @@ describe("upsertRoundProductsSchema", () => {
 	it("rejects empty rows array", () => {
 		expect(() =>
 			upsertRoundProductsSchema.parse({
-				roundId: "00000000-0000-0000-0000-000000000001",
+				roundId: ROUND_ID,
 				rows: [],
 			}),
 		).toThrow();
@@ -49,10 +61,10 @@ describe("upsertRoundProductsSchema", () => {
 
 	it("accepts valid input", () => {
 		const result = upsertRoundProductsSchema.parse({
-			roundId: "00000000-0000-0000-0000-000000000001",
+			roundId: ROUND_ID,
 			rows: [
 				{
-					productId: "00000000-0000-0000-0000-000000000002",
+					productId: PRODUCT_ID,
 					foreignPrice: 2800,
 					sellPriceThb: 658,
 				},

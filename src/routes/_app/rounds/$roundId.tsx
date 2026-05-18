@@ -66,6 +66,16 @@ function RoundLayout() {
 							params={{ roundId }}
 							label={t("tab.orders")}
 						/>
+						<TabLink
+							to="/rounds/$roundId/summary"
+							params={{ roundId }}
+							label={t("tab.summary")}
+						/>
+						<TabLink
+							to="/rounds/$roundId/shipping"
+							params={{ roundId }}
+							label={t("tab.shipping")}
+						/>
 					</nav>
 				</div>
 			</div>

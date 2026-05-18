@@ -1,0 +1,45 @@
+{
+	"japan05": {
+		"title": "Export Japan05",
+		"description": "Export all order data as 3 sheets: Orders, Summary, Customers",
+		"download": "Download Japan05.xlsx",
+		"sheets": {
+			"orders": "ออเดอร์",
+			"summary": "สรุปยอด",
+			"customers": "รวมยอดลูกค้า"
+		},
+		"col": {
+			"customer": "ลูกค้า",
+			"product": "สินค้า",
+			"qty": "จำนวน",
+			"unitThb": "ราคา/ชิ้น (฿)",
+			"totalThb": "รวม (฿)",
+			"store": "ร้าน",
+			"paymentStatus": "สถานะชำระ",
+			"totalQty": "รวมชิ้น",
+			"foreignUnit": "ราคาต้นทาง",
+			"foreignTotal": "รวมต้นทาง",
+			"subtotal": "รวมยอด",
+			"shipping": "ค่าส่ง",
+			"total": "รวมทั้งหมด",
+			"paid": "จ่ายแล้ว",
+			"balance": "คงเหลือ",
+			"status": "สถานะ"
+		}
+	},
+	"kerry": {
+		"title": "Kerry Shipping Manifest",
+		"description": "Customers who have paid (full or deposit) — ready to print shipping labels",
+		"download": "Download Kerry.xlsx",
+		"filterHint": "Shows only paid or partially-paid orders",
+		"col": {
+			"no": "No",
+			"recipient": "*ชื่อผู้รับ/Recipient Name",
+			"mobile": "*เบอร์ผู้รับ/Mobile No.",
+			"address": "*ที่อยู่/Address",
+			"postalCode": "*รหัสไปรษณีย์/Postal code"
+		},
+		"noAddress": "(no address)",
+		"empty": "No paid or partially-paid orders yet"
+	}
+}
