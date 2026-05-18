@@ -1,0 +1,68 @@
+{
+	"list": {
+		"title": "Orders",
+		"empty": "No orders yet",
+		"emptyHint": "Click «Create order» to take your first order",
+		"createNew": "Create order",
+		"filter": {
+			"all": "All",
+			"pending": "Pending",
+			"partial": "Deposit paid",
+			"paid": "Paid",
+			"active": "Not cancelled",
+			"cancelled": "Cancelled"
+		}
+	},
+	"detail": {
+		"items": "Items",
+		"subtotal": "Subtotal",
+		"shipping": "Shipping",
+		"total": "Total",
+		"paid": "Paid",
+		"balance": "Balance",
+		"notes": "Notes",
+		"tracking": "Kerry tracking",
+		"status": "Status",
+		"paymentStatus": "Payment status"
+	},
+	"field": {
+		"customer": "Customer",
+		"address": "Shipping address",
+		"shippingFee": "Shipping fee (THB)",
+		"notes": "Notes",
+		"kerryTracking": "Kerry tracking number"
+	},
+	"form": {
+		"newTitle": "Create new order",
+		"editTitle": "Edit order",
+		"addItem": "Add product",
+		"searchProducts": "Search products...",
+		"noItems": "No items yet",
+		"shippingPreset": "Shipping preset",
+		"selectCustomer": "Select customer",
+		"selectAddress": "Select shipping address"
+	},
+	"status": {
+		"active": "Active",
+		"cancelled": "Cancelled"
+	},
+	"paymentStatus": {
+		"pending": "Pending",
+		"partial": "Deposit paid",
+		"paid": "Paid",
+		"refunded": "Refunded"
+	},
+	"action": {
+		"cancel": "Cancel order",
+		"cancelConfirm": "Confirm cancel this order?",
+		"recordPayment": "Record payment",
+		"viewPayments": "Payment history",
+		"saveTracking": "Save tracking"
+	},
+	"item": {
+		"qty": "Qty",
+		"unit": "Unit price",
+		"total": "Total",
+		"remove": "Remove"
+	}
+}

@@ -1,10 +1,37 @@
 import { createServerFn } from "@tanstack/react-start";
-import { desc, ilike, or } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "#/db/index";
-import { products } from "#/db/schema";
 import { requireSession } from "#/server/middleware";
 import { s3PublicUrl } from "#/server/s3";
+
+interface ProductRow {
+	id: string;
+	name: string;
+	brand: string | null;
+	source_country: string | null;
+	category: string | null;
+	image_key: string | null;
+	thumb_key: string | null;
+	last_used_at: Date | null;
+	created_at: Date;
+}
+
+function mapRow(p: ProductRow) {
+	return {
+		id: p.id,
+		name: p.name,
+		brand: p.brand,
+		sourceCountry: p.source_country,
+		category: p.category,
+		imageKey: p.image_key,
+		thumbKey: p.thumb_key,
+		lastUsedAt: p.last_used_at,
+		createdAt: p.created_at,
+		thumbUrl: s3PublicUrl(p.thumb_key),
+		imageUrl: s3PublicUrl(p.image_key),
+	};
+}
 
 export const listProducts = createServerFn({ method: "GET" })
 	.inputValidator(
@@ -13,28 +40,35 @@ export const listProducts = createServerFn({ method: "GET" })
 	.handler(async ({ data }) => {
 		await requireSession();
 
-		const rows = await (data.q?.trim()
-			? db
-					.select()
-					.from(products)
-					.where(
-						or(
-							ilike(products.name, `%${data.q.trim()}%`),
-							ilike(products.brand, `%${data.q.trim()}%`),
-							ilike(products.category, `%${data.q.trim()}%`),
-						),
-					)
-					.orderBy(desc(products.lastUsedAt))
-					.limit(data.limit)
-			: db
-					.select()
-					.from(products)
-					.orderBy(desc(products.lastUsedAt))
-					.limit(data.limit));
+		if (!data.q?.trim()) {
+			const rows = await db.execute(sql`
+				select id, name, brand, source_country, category, image_key, thumb_key, last_used_at, created_at
+				from products
+				order by last_used_at desc nulls last
+				limit ${data.limit}
+			`);
+			return (rows.rows as unknown as ProductRow[]).map(mapRow);
+		}
 
-		return rows.map((p) => ({
-			...p,
-			thumbUrl: s3PublicUrl(p.thumbKey),
-			imageUrl: s3PublicUrl(p.imageKey),
-		}));
+		const q = data.q.trim();
+		const queryWrap = `%${q}%`;
+		const rows = await db.execute(sql`
+			select id, name, brand, source_country, category, image_key, thumb_key, last_used_at, created_at
+			from products
+			where name ilike ${queryWrap}
+			   or brand ilike ${queryWrap}
+			   or category ilike ${queryWrap}
+			   or name % ${q}
+			   or coalesce(brand, '') % ${q}
+			   or coalesce(category, '') % ${q}
+			order by greatest(
+			           similarity(name, ${q}),
+			           similarity(coalesce(brand, ''), ${q}),
+			           similarity(coalesce(category, ''), ${q})
+			         ) desc,
+			         last_used_at desc nulls last
+			limit ${data.limit}
+		`);
+
+		return (rows.rows as unknown as ProductRow[]).map(mapRow);
 	});

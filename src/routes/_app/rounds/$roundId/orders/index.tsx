@@ -1,0 +1,180 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { Plus, ShoppingCart } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { EmptyState } from "#/components/empty-state";
+import { Button } from "#/components/ui/button";
+import { Card } from "#/components/ui/card";
+import { listOrders } from "#/server/functions/orders/list";
+import type { PaymentStatus } from "#/shared/schemas/order";
+
+export const Route = createFileRoute("/_app/rounds/$roundId/orders/")({
+	loader: async ({ context: { queryClient }, params }) => {
+		await queryClient.ensureQueryData({
+			queryKey: ["orders", params.roundId, "all"],
+			queryFn: () => listOrders({ data: { roundId: params.roundId } }),
+		});
+	},
+	component: OrdersPage,
+});
+
+const FILTER_OPTIONS: Array<{ key: string; paymentStatus?: PaymentStatus }> = [
+	{ key: "all" },
+	{ key: "pending", paymentStatus: "pending" },
+	{ key: "partial", paymentStatus: "partial" },
+	{ key: "paid", paymentStatus: "paid" },
+];
+
+function OrdersPage() {
+	const { t } = useTranslation("orders");
+	const { roundId } = useParams({ from: "/_app/rounds/$roundId/orders/" });
+	const [filter, setFilter] = useState<string>("all");
+
+	const selectedFilter = FILTER_OPTIONS.find((f) => f.key === filter);
+
+	const { data: orders } = useSuspenseQuery({
+		queryKey: ["orders", roundId, filter],
+		queryFn: () =>
+			listOrders({
+				data: {
+					roundId,
+					paymentStatus: selectedFilter?.paymentStatus,
+				},
+			}),
+	});
+
+	const activeOrders = orders.filter((o) => o.status === "active");
+	const cancelledOrders = orders.filter((o) => o.status === "cancelled");
+
+	return (
+		<div>
+			<div className="flex items-center justify-between mb-4">
+				<h2 className="text-lg font-semibold">{t("list.title")}</h2>
+				<Button asChild variant="brand" size="sm">
+					<Link to="/rounds/$roundId/orders/new" params={{ roundId }}>
+						<Plus size={16} />
+						{t("list.createNew")}
+					</Link>
+				</Button>
+			</div>
+
+			{/* Filter tabs */}
+			<div className="flex gap-1 mb-4 overflow-x-auto pb-1">
+				{FILTER_OPTIONS.map((opt) => (
+					<button
+						key={opt.key}
+						type="button"
+						onClick={() => setFilter(opt.key)}
+						className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+							filter === opt.key
+								? "bg-foreground text-background"
+								: "bg-muted text-muted-foreground hover:text-foreground"
+						}`}
+					>
+						{t(`list.filter.${opt.key}`)}
+					</button>
+				))}
+			</div>
+
+			{activeOrders.length === 0 && cancelledOrders.length === 0 ? (
+				<EmptyState
+					icon={<ShoppingCart size={32} className="text-ink-muted" />}
+					title={t("list.empty")}
+					hint={t("list.emptyHint")}
+				/>
+			) : (
+				<div className="space-y-2">
+					{activeOrders.map((order) => (
+						<OrderCard key={order.id} order={order} roundId={roundId} />
+					))}
+					{cancelledOrders.length > 0 && (
+						<div className="mt-4">
+							<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+								{t("status.cancelled")}
+							</p>
+							{cancelledOrders.map((order) => (
+								<OrderCard
+									key={order.id}
+									order={order}
+									roundId={roundId}
+									dimmed
+								/>
+							))}
+						</div>
+					)}
+				</div>
+			)}
+		</div>
+	);
+}
+
+interface OrderCardOrder {
+	id: string;
+	customerName: string;
+	totalThb: string;
+	paidAmountThb: string;
+	paymentStatus: string;
+	status: string;
+	createdAt: Date | null;
+}
+
+function OrderCard({
+	order,
+	roundId,
+	dimmed = false,
+}: {
+	order: OrderCardOrder;
+	roundId: string;
+	dimmed?: boolean;
+}) {
+	const { t } = useTranslation("orders");
+
+	const total = Number(order.totalThb);
+	const paid = Number(order.paidAmountThb);
+	const balance = total - paid;
+
+	const paymentStatusColors: Record<string, string> = {
+		pending: "text-muted-foreground",
+		partial: "text-amber-600 dark:text-amber-400",
+		paid: "text-green-600 dark:text-green-400",
+		refunded: "text-blue-600",
+	};
+
+	return (
+		<Link
+			to="/rounds/$roundId/orders/$orderId"
+			params={{ roundId, orderId: order.id }}
+		>
+			<Card
+				className={`flex items-start justify-between px-4 py-3 hover:bg-accent/50 transition-colors ${dimmed ? "opacity-50" : ""}`}
+			>
+				<div className="min-w-0">
+					<p className="font-medium truncate">{order.customerName}</p>
+					<p
+						className={`text-sm ${paymentStatusColors[order.paymentStatus] ?? "text-muted-foreground"}`}
+					>
+						{t(`paymentStatus.${order.paymentStatus}`)}
+						{order.paymentStatus !== "paid" && balance > 0 && (
+							<span className="ml-1 font-mono">
+								· คงเหลือ{" "}
+								{balance.toLocaleString("th-TH", {
+									minimumFractionDigits: 0,
+									maximumFractionDigits: 0,
+								})}{" "}
+								฿
+							</span>
+						)}
+					</p>
+				</div>
+				<p className="font-mono font-medium text-sm tabular-nums shrink-0">
+					{total.toLocaleString("th-TH", {
+						minimumFractionDigits: 0,
+						maximumFractionDigits: 0,
+					})}{" "}
+					฿
+				</p>
+			</Card>
+		</Link>
+	);
+}
