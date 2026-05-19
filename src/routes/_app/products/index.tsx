@@ -74,7 +74,7 @@ function ProductsPage() {
 	}
 
 	return (
-		<div className="max-w-2xl mx-auto px-4 py-6">
+		<div className="max-w-5xl mx-auto px-4 py-6">
 			<div className="flex items-center justify-between mb-6">
 				<h1 className="text-2xl font-semibold text-foreground">
 					{t("list.title")}
@@ -169,13 +169,13 @@ function ProductsPage() {
 				/>
 			) : (
 				<>
-					<ul className="space-y-2">
+					<ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
 						{products.map((product) => (
 							<li key={product.id}>
 								<Link
 									to="/products/$productId"
 									params={{ productId: product.id }}
-									className="block"
+									className="block h-full"
 								>
 									<ProductCard product={product} locale={i18n.language} />
 								</Link>

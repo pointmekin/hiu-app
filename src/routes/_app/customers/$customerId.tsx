@@ -53,7 +53,7 @@ function CustomerDetailPage() {
 	}
 
 	return (
-		<div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+		<div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
 			<div className="flex items-center gap-3">
 				<Button
 					variant="ghost"
@@ -65,56 +65,62 @@ function CustomerDetailPage() {
 				<h1 className="text-xl font-semibold">{customer.displayName}</h1>
 			</div>
 
-			<CustomerForm initialValues={initialValues} withAddress={false} />
-
-			<Separator />
-
-			{/* Addresses */}
-			<div>
-				<div className="flex items-center justify-between mb-3">
-					<p className="font-medium">{t("customers:form.addressSection")}</p>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => setAddAddressOpen(true)}
-					>
-						<Plus size={14} />
-						{t("customers:form.addAddress")}
-					</Button>
+			<div className="md:flex md:gap-8 md:items-start">
+				<div className="md:flex-1 md:min-w-0">
+					<CustomerForm initialValues={initialValues} withAddress={false} />
 				</div>
 
-				{customer.addresses.length === 0 ? (
-					<p className="text-sm text-muted-foreground">{t("customers:form.noAddress")}</p>
-				) : (
-					<div className="space-y-2">
-						{customer.addresses.map((addr) => (
-							<Card key={addr.id} className="px-4 py-3">
-								<div className="flex items-start justify-between gap-2">
-									<div className="min-w-0">
-										<p className="font-medium text-sm">{addr.recipientName}</p>
-										<p className="text-sm text-muted-foreground">{addr.mobile}</p>
-										<p className="text-sm text-muted-foreground">{addr.address}</p>
-										<p className="text-sm text-muted-foreground">{addr.postalCode}</p>
-									</div>
-									<div className="flex items-center gap-2 shrink-0">
-										{addr.isDefault && (
-											<span className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground">
-												{t("customers:field.isDefault")}
-											</span>
-										)}
-										<Button
-											variant="ghost"
-											size="icon-xs"
-											onClick={() => setEditingAddressId(addr.id)}
-										>
-											<Pencil size={13} />
-										</Button>
-									</div>
-								</div>
-							</Card>
-						))}
+				<div className="md:w-80 md:shrink-0">
+					<Separator className="md:hidden my-6" />
+
+					{/* Addresses */}
+					<div>
+						<div className="flex items-center justify-between mb-3">
+							<p className="font-medium">{t("customers:form.addressSection")}</p>
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => setAddAddressOpen(true)}
+							>
+								<Plus size={14} />
+								{t("customers:form.addAddress")}
+							</Button>
+						</div>
+
+						{customer.addresses.length === 0 ? (
+							<p className="text-sm text-muted-foreground">{t("customers:form.noAddress")}</p>
+						) : (
+							<div className="space-y-2">
+								{customer.addresses.map((addr) => (
+									<Card key={addr.id} className="px-4 py-3">
+										<div className="flex items-start justify-between gap-2">
+											<div className="min-w-0">
+												<p className="font-medium text-sm">{addr.recipientName}</p>
+												<p className="text-sm text-muted-foreground">{addr.mobile}</p>
+												<p className="text-sm text-muted-foreground">{addr.address}</p>
+												<p className="text-sm text-muted-foreground">{addr.postalCode}</p>
+											</div>
+											<div className="flex items-center gap-2 shrink-0">
+												{addr.isDefault && (
+													<span className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground">
+														{t("customers:field.isDefault")}
+													</span>
+												)}
+												<Button
+													variant="ghost"
+													size="icon-xs"
+													onClick={() => setEditingAddressId(addr.id)}
+												>
+													<Pencil size={13} />
+												</Button>
+											</div>
+										</div>
+									</Card>
+								))}
+							</div>
+						)}
 					</div>
-				)}
+				</div>
 			</div>
 
 			{/* Add address dialog */}

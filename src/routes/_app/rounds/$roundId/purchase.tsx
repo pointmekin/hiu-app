@@ -571,7 +571,12 @@ function PurchasePage() {
 					{searchQuery.trim() ? t("purchase.noResults") : t("purchase.allDone")}
 				</div>
 			) : (
-				<div className="space-y-3">
+				<div className={cn(
+					"gap-3",
+					groupBy !== "none"
+						? "grid grid-cols-1 md:grid-cols-2"
+						: "space-y-3",
+				)}>
 					{groups.map((group) => (
 						<ItemGroupCard
 							key={group.key}

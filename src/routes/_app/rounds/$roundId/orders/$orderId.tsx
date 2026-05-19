@@ -250,375 +250,473 @@ function OrderDetailPage() {
 
 	// ── Render ────────────────────────────────────────────────────────────────────
 	return (
-		<div className="space-y-5 pb-32">
-			{/* Header */}
-			<div className="flex items-center gap-3">
-				<Button
-					variant="ghost"
-					size="icon"
-					onClick={() =>
-						navigate({ to: "/rounds/$roundId/orders", params: { roundId } })
-					}
-				>
-					<ArrowLeft size={18} />
-				</Button>
-				<div className="min-w-0 flex-1">
-					<p className="font-semibold text-lg truncate">{order.customerName}</p>
-					<p
-						className={`text-sm ${paymentStatusColors[order.paymentStatus] ?? "text-muted-foreground"}`}
-					>
-						{t(`orders:paymentStatus.${order.paymentStatus}`)}
-						{isCancelled && (
-							<span className="ml-2 text-muted-foreground">
-								· {t("orders:status.cancelled")}
-							</span>
-						)}
-					</p>
-				</div>
-				<Button
-					variant="ghost"
-					size="icon"
-					onClick={copySummary}
-					title={t("orders:action.copySummary")}
-				>
-					{copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
-				</Button>
-			</div>
-
-			{/* Customer */}
-			<div className="space-y-1.5">
-				<Label>{t("orders:field.customer")}</Label>
-				<CustomerCombobox
-					value={editCustomerId}
-					customerName={editCustomerName}
-					onChange={handleEditCustomerSelect}
-					disabled={isCancelled}
-				/>
-			</div>
-
-			{/* Address */}
-			{editCustomerData && editCustomerData.addresses.length > 0 && (
-				<div className="space-y-1.5">
-					<Label>{t("orders:field.address")}</Label>
-					<Select
-						value={editAddressId ?? "none"}
-						onValueChange={(v) => setEditAddressId(v === "none" ? null : v)}
-						disabled={isCancelled}
-					>
-						<SelectTrigger>
-							<SelectValue placeholder={t("orders:form.selectAddress")} />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="none">{t("orders:form.selectAddress")}</SelectItem>
-							{editCustomerData.addresses.map((addr) => (
-								<SelectItem key={addr.id} value={addr.id}>
-									{addr.recipientName} · {addr.address.slice(0, 30)}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</div>
-			)}
-
-			<Separator />
-
-			{/* Line items */}
-			<div className="space-y-1.5">
-				<Label>{t("orders:detail.items")}</Label>
-
-				{editItems.length > 0 ? (
-					<div className="space-y-2">
-						{editItems.map((item) => (
-							<Card key={item.roundProductId} className="px-4 py-3">
-								<div className="flex items-center gap-3">
-									<div className="flex-1 min-w-0">
-										<Link
-											to="/products/$productId"
-											params={{ productId: item.productId }}
-											className="font-medium text-sm truncate hover:underline underline-offset-2 block"
-											onClick={(e) => e.stopPropagation()}
-										>
-											{item.productName}
-										</Link>
-										<p className="text-xs text-muted-foreground font-mono tabular-nums">
-											{item.unitPriceThb.toLocaleString("th-TH", {
-												minimumFractionDigits: 0,
-											})}{" "}
-											฿ × {item.quantity} ={" "}
-											{(item.unitPriceThb * item.quantity).toLocaleString("th-TH", {
-												minimumFractionDigits: 0,
-											})}{" "}
-											฿
-										</p>
-									</div>
-									<div className="flex items-center gap-2 shrink-0">
-										<Button
-											type="button"
-											variant="outline"
-											size="icon-xs"
-											disabled={isCancelled}
-											onClick={() =>
-												updateEditItemQty(item.roundProductId, item.quantity - 1)
-											}
-										>
-											<Minus size={12} />
-										</Button>
-										<span className="w-7 text-center font-mono text-sm tabular-nums">
-											{item.quantity}
-										</span>
-										<Button
-											type="button"
-											variant="outline"
-											size="icon-xs"
-											disabled={isCancelled}
-											onClick={() =>
-												updateEditItemQty(item.roundProductId, item.quantity + 1)
-											}
-										>
-											<Plus size={12} />
-										</Button>
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon-xs"
-											disabled={isCancelled}
-											onClick={() => removeEditItem(item.roundProductId)}
-											className="text-destructive hover:text-destructive"
-										>
-											<Trash2 size={12} />
-										</Button>
-									</div>
-								</div>
-							</Card>
-						))}
-					</div>
-				) : (
-					<p className="text-sm text-muted-foreground">{t("orders:form.noItems")}</p>
-				)}
-
-				{!isCancelled && (
-					<Popover open={productPickerOpen} onOpenChange={setProductPickerOpen}>
-						<PopoverTrigger asChild>
-							<Button
-								type="button"
-								variant="outline"
-								className="w-full justify-start text-muted-foreground font-normal mt-1"
+		<>
+			<div className="md:flex md:gap-8 md:items-start">
+				{/* Left column: form content */}
+				<div className="space-y-5 pb-32 md:pb-8 md:flex-1 md:min-w-0">
+					{/* Header */}
+					<div className="flex items-center gap-3">
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={() =>
+								navigate({ to: "/rounds/$roundId/orders", params: { roundId } })
+							}
+						>
+							<ArrowLeft size={18} />
+						</Button>
+						<div className="min-w-0 flex-1">
+							<p className="font-semibold text-lg truncate">{order.customerName}</p>
+							<p
+								className={`text-sm ${paymentStatusColors[order.paymentStatus] ?? "text-muted-foreground"}`}
 							>
-								<Package size={16} className="mr-2" />
-								{t("orders:form.addItem")}
-							</Button>
-						</PopoverTrigger>
-						<PopoverContent className="w-[340px] p-0" align="start">
-							<Command shouldFilter={false}>
-								<CommandInput
-									placeholder={t("orders:form.searchProducts")}
-									value={productQuery}
-									onValueChange={setProductQuery}
-								/>
-								<CommandList>
-									<CommandEmpty>ไม่พบสินค้า</CommandEmpty>
-									<CommandGroup>
-										{filteredRoundProducts.map((rp) => (
-											<CommandItem
-												key={rp.id}
-												value={rp.id}
-												onSelect={() => {
-													addEditItem(rp)
-													setProductPickerOpen(false)
-													setProductQuery("")
-												}}
-											>
-												<div className="min-w-0 flex-1">
-													<p className="font-medium truncate">{rp.productName}</p>
-													{rp.productBrand && (
-														<p className="text-xs text-muted-foreground">{rp.productBrand}</p>
-													)}
-												</div>
-												<span className="font-mono text-sm ml-2 shrink-0 tabular-nums">
-													{Number(rp.sellPriceThb).toLocaleString("th-TH", {
+								{t(`orders:paymentStatus.${order.paymentStatus}`)}
+								{isCancelled && (
+									<span className="ml-2 text-muted-foreground">
+										· {t("orders:status.cancelled")}
+									</span>
+								)}
+							</p>
+						</div>
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={copySummary}
+							title={t("orders:action.copySummary")}
+						>
+							{copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+						</Button>
+					</div>
+
+					{/* Customer */}
+					<div className="space-y-1.5">
+						<Label>{t("orders:field.customer")}</Label>
+						<CustomerCombobox
+							value={editCustomerId}
+							customerName={editCustomerName}
+							onChange={handleEditCustomerSelect}
+							disabled={isCancelled}
+						/>
+					</div>
+
+					{/* Address */}
+					{editCustomerData && editCustomerData.addresses.length > 0 && (
+						<div className="space-y-1.5">
+							<Label>{t("orders:field.address")}</Label>
+							<Select
+								value={editAddressId ?? "none"}
+								onValueChange={(v) => setEditAddressId(v === "none" ? null : v)}
+								disabled={isCancelled}
+							>
+								<SelectTrigger>
+									<SelectValue placeholder={t("orders:form.selectAddress")} />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="none">{t("orders:form.selectAddress")}</SelectItem>
+									{editCustomerData.addresses.map((addr) => (
+										<SelectItem key={addr.id} value={addr.id}>
+											{addr.recipientName} · {addr.address.slice(0, 30)}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					)}
+
+					<Separator />
+
+					{/* Line items */}
+					<div className="space-y-1.5">
+						<Label>{t("orders:detail.items")}</Label>
+
+						{editItems.length > 0 ? (
+							<div className="space-y-2">
+								{editItems.map((item) => (
+									<Card key={item.roundProductId} className="px-4 py-3">
+										<div className="flex items-center gap-3">
+											<div className="flex-1 min-w-0">
+												<Link
+													to="/products/$productId"
+													params={{ productId: item.productId }}
+													className="font-medium text-sm truncate hover:underline underline-offset-2 block"
+													onClick={(e) => e.stopPropagation()}
+												>
+													{item.productName}
+												</Link>
+												<p className="text-xs text-muted-foreground font-mono tabular-nums">
+													{item.unitPriceThb.toLocaleString("th-TH", {
+														minimumFractionDigits: 0,
+													})}{" "}
+													฿ × {item.quantity} ={" "}
+													{(item.unitPriceThb * item.quantity).toLocaleString("th-TH", {
 														minimumFractionDigits: 0,
 													})}{" "}
 													฿
+												</p>
+											</div>
+											<div className="flex items-center gap-2 shrink-0">
+												<Button
+													type="button"
+													variant="outline"
+													size="icon-xs"
+													disabled={isCancelled}
+													onClick={() =>
+														updateEditItemQty(item.roundProductId, item.quantity - 1)
+													}
+												>
+													<Minus size={12} />
+												</Button>
+												<span className="w-7 text-center font-mono text-sm tabular-nums">
+													{item.quantity}
 												</span>
-											</CommandItem>
-										))}
-									</CommandGroup>
-									<CommandSeparator />
-									<CommandGroup>
-										<CommandItem
-											value="__create_new__"
-											onSelect={() => {
-												setProductPickerOpen(false)
-												setInlineDialogOpen(true)
-											}}
-											className="text-brand font-medium"
-										>
-											<PlusCircle size={14} className="shrink-0" />
-											{productQuery.trim()
-												? t("orders:action.createProductQuery", { name: productQuery.trim() })
-												: t("orders:action.createProduct")}
-										</CommandItem>
-									</CommandGroup>
-								</CommandList>
-							</Command>
-						</PopoverContent>
-					</Popover>
-				)}
-			</div>
+												<Button
+													type="button"
+													variant="outline"
+													size="icon-xs"
+													disabled={isCancelled}
+													onClick={() =>
+														updateEditItemQty(item.roundProductId, item.quantity + 1)
+													}
+												>
+													<Plus size={12} />
+												</Button>
+												<Button
+													type="button"
+													variant="ghost"
+													size="icon-xs"
+													disabled={isCancelled}
+													onClick={() => removeEditItem(item.roundProductId)}
+													className="text-destructive hover:text-destructive"
+												>
+													<Trash2 size={12} />
+												</Button>
+											</div>
+										</div>
+									</Card>
+								))}
+							</div>
+						) : (
+							<p className="text-sm text-muted-foreground">{t("orders:form.noItems")}</p>
+						)}
 
-			<Separator />
+						{!isCancelled && (
+							<Popover open={productPickerOpen} onOpenChange={setProductPickerOpen}>
+								<PopoverTrigger asChild>
+									<Button
+										type="button"
+										variant="outline"
+										className="w-full justify-start text-muted-foreground font-normal mt-1"
+									>
+										<Package size={16} className="mr-2" />
+										{t("orders:form.addItem")}
+									</Button>
+								</PopoverTrigger>
+								<PopoverContent className="w-[340px] p-0" align="start">
+									<Command shouldFilter={false}>
+										<CommandInput
+											placeholder={t("orders:form.searchProducts")}
+											value={productQuery}
+											onValueChange={setProductQuery}
+										/>
+										<CommandList>
+											<CommandEmpty>ไม่พบสินค้า</CommandEmpty>
+											<CommandGroup>
+												{filteredRoundProducts.map((rp) => (
+													<CommandItem
+														key={rp.id}
+														value={rp.id}
+														onSelect={() => {
+															addEditItem(rp)
+															setProductPickerOpen(false)
+															setProductQuery("")
+														}}
+													>
+														<div className="min-w-0 flex-1">
+															<p className="font-medium truncate">{rp.productName}</p>
+															{rp.productBrand && (
+																<p className="text-xs text-muted-foreground">{rp.productBrand}</p>
+															)}
+														</div>
+														<span className="font-mono text-sm ml-2 shrink-0 tabular-nums">
+															{Number(rp.sellPriceThb).toLocaleString("th-TH", {
+																minimumFractionDigits: 0,
+															})}{" "}
+															฿
+														</span>
+													</CommandItem>
+												))}
+											</CommandGroup>
+											<CommandSeparator />
+											<CommandGroup>
+												<CommandItem
+													value="__create_new__"
+													onSelect={() => {
+														setProductPickerOpen(false)
+														setInlineDialogOpen(true)
+													}}
+													className="text-brand font-medium"
+												>
+													<PlusCircle size={14} className="shrink-0" />
+													{productQuery.trim()
+														? t("orders:action.createProductQuery", { name: productQuery.trim() })
+														: t("orders:action.createProduct")}
+												</CommandItem>
+											</CommandGroup>
+										</CommandList>
+									</Command>
+								</PopoverContent>
+							</Popover>
+						)}
+					</div>
 
-			{/* Shipping fee */}
-			<div className="space-y-2">
-				<Label>{t("orders:field.shippingFee")}</Label>
-				<div className="flex items-center gap-2">
-					<Input
-						type="number"
-						step="1"
-						min="0"
-						value={editShippingFee}
-						onChange={(e) => setEditShippingFee(Number(e.target.value))}
-						className="w-28 font-mono"
-						disabled={isCancelled}
-					/>
-					<div className="flex gap-1">
-						{shippingPresets.map((preset) => (
-							<Button
-								key={preset}
-								type="button"
-								variant={editShippingFee === preset ? "brand" : "outline"}
-								size="sm"
-								onClick={() => setEditShippingFee(preset)}
-								className="font-mono"
+					<Separator />
+
+					{/* Shipping fee */}
+					<div className="space-y-2">
+						<Label>{t("orders:field.shippingFee")}</Label>
+						<div className="flex items-center gap-2">
+							<Input
+								type="number"
+								step="1"
+								min="0"
+								value={editShippingFee}
+								onChange={(e) => setEditShippingFee(Number(e.target.value))}
+								className="w-28 font-mono"
 								disabled={isCancelled}
-							>
-								{preset}
-							</Button>
-						))}
+							/>
+							<div className="flex gap-1">
+								{shippingPresets.map((preset) => (
+									<Button
+										key={preset}
+										type="button"
+										variant={editShippingFee === preset ? "brand" : "outline"}
+										size="sm"
+										onClick={() => setEditShippingFee(preset)}
+										className="font-mono"
+										disabled={isCancelled}
+									>
+										{preset}
+									</Button>
+								))}
+							</div>
+						</div>
 					</div>
-				</div>
-			</div>
 
-			{/* Notes */}
-			<div className="space-y-1.5">
-				<Label>{t("orders:field.notes")}</Label>
-				<Input
-					value={editNotes}
-					onChange={(e) => setEditNotes(e.target.value)}
-					placeholder="..."
-					disabled={isCancelled}
-				/>
-			</div>
-
-			{/* Totals */}
-			<Card className="px-4 py-3 space-y-2">
-				<div className="flex justify-between text-sm">
-					<span className="text-muted-foreground">{t("orders:detail.subtotal")}</span>
-					<span className="font-mono tabular-nums">
-						{editSubtotal.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
-					</span>
-				</div>
-				<div className="flex justify-between text-sm">
-					<span className="text-muted-foreground">{t("orders:detail.shipping")}</span>
-					<span className="font-mono tabular-nums">
-						{editShippingFee.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
-					</span>
-				</div>
-				<Separator />
-				<div className="flex justify-between font-semibold">
-					<span>{t("orders:detail.total")}</span>
-					<span className="font-mono tabular-nums">
-						{editTotal.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
-					</span>
-				</div>
-				<div className="flex justify-between text-sm text-green-600 dark:text-green-400">
-					<span>{t("orders:detail.paid")}</span>
-					<span className="font-mono tabular-nums">
-						{paidAmountThb.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
-					</span>
-				</div>
-				{editBalance > 0 && (
-					<div className="flex justify-between text-sm font-medium text-amber-600 dark:text-amber-400">
-						<span>{t("orders:detail.balance")}</span>
-						<span className="font-mono tabular-nums">
-							{editBalance.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
-						</span>
+					{/* Notes */}
+					<div className="space-y-1.5">
+						<Label>{t("orders:field.notes")}</Label>
+						<Input
+							value={editNotes}
+							onChange={(e) => setEditNotes(e.target.value)}
+							placeholder="..."
+							disabled={isCancelled}
+						/>
 					</div>
-				)}
-			</Card>
 
-			{/* Payment history */}
-			{order.payments.length > 0 && (
-				<div>
-					<p className="text-sm font-medium mb-2">{t("payments:history.title")}</p>
-					<Card className="divide-y">
-						{order.payments.map((payment) => (
-							<div key={payment.id} className="flex items-center justify-between px-4 py-3">
-								<div>
-									<p className="text-sm font-medium">
-										{t(`payments:type.${payment.type}`)}
-									</p>
-									<p className="text-xs text-muted-foreground">
-										{payment.method ? t(`payments:method.${payment.method}`) : ""}
-										{payment.notes ? ` · ${payment.notes}` : ""}
-									</p>
-								</div>
-								<span className="font-mono text-sm tabular-nums">
-									{Number(payment.amountThb).toLocaleString("th-TH", {
-										minimumFractionDigits: 2,
-									})}{" "}
-									฿
+					{/* Totals + payment history — mobile only */}
+					<div className="md:hidden space-y-4">
+						<Card className="px-4 py-3 space-y-2">
+							<div className="flex justify-between text-sm">
+								<span className="text-muted-foreground">{t("orders:detail.subtotal")}</span>
+								<span className="font-mono tabular-nums">
+									{editSubtotal.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
 								</span>
 							</div>
-						))}
-					</Card>
+							<div className="flex justify-between text-sm">
+								<span className="text-muted-foreground">{t("orders:detail.shipping")}</span>
+								<span className="font-mono tabular-nums">
+									{editShippingFee.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+								</span>
+							</div>
+							<Separator />
+							<div className="flex justify-between font-semibold">
+								<span>{t("orders:detail.total")}</span>
+								<span className="font-mono tabular-nums">
+									{editTotal.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+								</span>
+							</div>
+							<div className="flex justify-between text-sm text-green-600 dark:text-green-400">
+								<span>{t("orders:detail.paid")}</span>
+								<span className="font-mono tabular-nums">
+									{paidAmountThb.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+								</span>
+							</div>
+							{editBalance > 0 && (
+								<div className="flex justify-between text-sm font-medium text-amber-600 dark:text-amber-400">
+									<span>{t("orders:detail.balance")}</span>
+									<span className="font-mono tabular-nums">
+										{editBalance.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+									</span>
+								</div>
+							)}
+						</Card>
+
+						{order.payments.length > 0 && (
+							<div>
+								<p className="text-sm font-medium mb-2">{t("payments:history.title")}</p>
+								<Card className="divide-y">
+									{order.payments.map((payment) => (
+										<div key={payment.id} className="flex items-center justify-between px-4 py-3">
+											<div>
+												<p className="text-sm font-medium">
+													{t(`payments:type.${payment.type}`)}
+												</p>
+												<p className="text-xs text-muted-foreground">
+													{payment.method ? t(`payments:method.${payment.method}`) : ""}
+													{payment.notes ? ` · ${payment.notes}` : ""}
+												</p>
+											</div>
+											<span className="font-mono text-sm tabular-nums">
+												{Number(payment.amountThb).toLocaleString("th-TH", {
+													minimumFractionDigits: 2,
+												})}{" "}
+												฿
+											</span>
+										</div>
+									))}
+								</Card>
+							</div>
+						)}
+					</div>
+
+					{/* Errors */}
+					{saveMutation.error && (
+						<Alert variant="destructive">
+							<AlertDescription>
+								{(saveMutation.error as Error).message}
+							</AlertDescription>
+						</Alert>
+					)}
+					{cancelMutation.error && (
+						<Alert variant="destructive">
+							<AlertDescription>
+								{(cancelMutation.error as Error).message}
+							</AlertDescription>
+						</Alert>
+					)}
 				</div>
-			)}
 
-			{/* Order notes (read-only display when no edit) */}
-			{saveMutation.error && (
-				<Alert variant="destructive">
-					<AlertDescription>
-						{(saveMutation.error as Error).message}
-					</AlertDescription>
-				</Alert>
-			)}
+				{/* Right column: sticky sidebar — desktop only */}
+				<div className="hidden md:flex md:flex-col md:gap-4 md:w-72 md:shrink-0 md:sticky md:top-[185px]">
+					<Card className="px-4 py-3 space-y-2">
+						<div className="flex justify-between text-sm">
+							<span className="text-muted-foreground">{t("orders:detail.subtotal")}</span>
+							<span className="font-mono tabular-nums">
+								{editSubtotal.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+							</span>
+						</div>
+						<div className="flex justify-between text-sm">
+							<span className="text-muted-foreground">{t("orders:detail.shipping")}</span>
+							<span className="font-mono tabular-nums">
+								{editShippingFee.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+							</span>
+						</div>
+						<Separator />
+						<div className="flex justify-between font-semibold">
+							<span>{t("orders:detail.total")}</span>
+							<span className="font-mono tabular-nums">
+								{editTotal.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+							</span>
+						</div>
+						<div className="flex justify-between text-sm text-green-600 dark:text-green-400">
+							<span>{t("orders:detail.paid")}</span>
+							<span className="font-mono tabular-nums">
+								{paidAmountThb.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+							</span>
+						</div>
+						{editBalance > 0 && (
+							<div className="flex justify-between text-sm font-medium text-amber-600 dark:text-amber-400">
+								<span>{t("orders:detail.balance")}</span>
+								<span className="font-mono tabular-nums">
+									{editBalance.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+								</span>
+							</div>
+						)}
+					</Card>
 
-			{cancelMutation.error && (
-				<Alert variant="destructive">
-					<AlertDescription>
-						{(cancelMutation.error as Error).message}
-					</AlertDescription>
-				</Alert>
-			)}
+					{order.payments.length > 0 && (
+						<div>
+							<p className="text-sm font-medium mb-2">{t("payments:history.title")}</p>
+							<Card className="divide-y">
+								{order.payments.map((payment) => (
+									<div key={payment.id} className="flex items-center justify-between px-4 py-3">
+										<div>
+											<p className="text-sm font-medium">
+												{t(`payments:type.${payment.type}`)}
+											</p>
+											<p className="text-xs text-muted-foreground">
+												{payment.method ? t(`payments:method.${payment.method}`) : ""}
+												{payment.notes ? ` · ${payment.notes}` : ""}
+											</p>
+										</div>
+										<span className="font-mono text-sm tabular-nums">
+											{Number(payment.amountThb).toLocaleString("th-TH", {
+												minimumFractionDigits: 2,
+											})}{" "}
+											฿
+										</span>
+									</div>
+								))}
+							</Card>
+						</div>
+					)}
 
-			{round && (
-				<InlineProductDialog
-					open={inlineDialogOpen}
-					onOpenChange={setInlineDialogOpen}
-					roundId={roundId}
-					sourceCurrency={round.sourceCurrency}
-					fxRate={Number(round.fxRate)}
-					perItemFeeThb={Number(round.perItemFeeTh)}
-					onCreated={(rp) => {
-						setEditItems((prev) => [
-							...prev,
-							{
-								roundProductId: rp.id,
-								productId: rp.productId,
-								productName: rp.productName,
-								productBrand: rp.productBrand,
-								unitPriceThb: Number(rp.sellPriceThb),
-								quantity: 1,
-							},
-						])
-					}}
-				/>
-			)}
+					{!isCancelled && (
+						<div className="flex flex-col gap-2">
+							<Button
+								variant="brand"
+								className="w-full"
+								disabled={!isDirty || saveMutation.isPending}
+								onClick={() => saveMutation.mutate()}
+							>
+								{saveMutation.isPending ? t("common:loading") : t("orders:action.saveChanges")}
+							</Button>
+							{!isPaid && (
+								<Button
+									variant="outline"
+									className="w-full gap-2"
+									onClick={() => setPaymentSheetOpen(true)}
+								>
+									<Banknote size={16} />
+									{t("orders:action.recordPayment")}
+								</Button>
+							)}
+							<Button
+								variant="outline"
+								className="w-full gap-2 text-destructive hover:text-destructive"
+								onClick={() => {
+									if (confirm(t("orders:action.cancelConfirm"))) {
+										cancelMutation.mutate()
+									}
+								}}
+								disabled={cancelMutation.isPending}
+							>
+								<Ban size={16} />
+								{t("orders:action.cancel")}
+							</Button>
+						</div>
+					)}
 
-			{/* Bottom action bar */}
+					{saveMutation.error && (
+						<Alert variant="destructive">
+							<AlertDescription>
+								{(saveMutation.error as Error).message}
+							</AlertDescription>
+						</Alert>
+					)}
+					{cancelMutation.error && (
+						<Alert variant="destructive">
+							<AlertDescription>
+								{(cancelMutation.error as Error).message}
+							</AlertDescription>
+						</Alert>
+					)}
+				</div>
+			</div>
+
+			{/* Mobile fixed bottom bar */}
 			{!isCancelled && (
-				<div className="fixed bottom-16 md:bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t px-4 py-3 flex gap-3 z-20">
+				<div className="md:hidden fixed bottom-16 left-0 right-0 bg-background/95 backdrop-blur-sm border-t px-4 py-3 flex gap-3 z-20">
 					<Button
 						variant="brand"
 						size="lg"
@@ -654,6 +752,30 @@ function OrderDetailPage() {
 				</div>
 			)}
 
+			{round && (
+				<InlineProductDialog
+					open={inlineDialogOpen}
+					onOpenChange={setInlineDialogOpen}
+					roundId={roundId}
+					sourceCurrency={round.sourceCurrency}
+					fxRate={Number(round.fxRate)}
+					perItemFeeThb={Number(round.perItemFeeTh)}
+					onCreated={(rp) => {
+						setEditItems((prev) => [
+							...prev,
+							{
+								roundProductId: rp.id,
+								productId: rp.productId,
+								productName: rp.productName,
+								productBrand: rp.productBrand,
+								unitPriceThb: Number(rp.sellPriceThb),
+								quantity: 1,
+							},
+						])
+					}}
+				/>
+			)}
+
 			<PaymentSheet
 				open={paymentSheetOpen}
 				onOpenChange={setPaymentSheetOpen}
@@ -662,6 +784,6 @@ function OrderDetailPage() {
 				totalThb={editTotal}
 				paidAmountThb={paidAmountThb}
 			/>
-		</div>
+		</>
 	)
 }

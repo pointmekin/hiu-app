@@ -91,6 +91,7 @@ function RoundOverview() {
 	}
 
 	return (
+		<div className="max-w-2xl">
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
 				<FormField
@@ -345,5 +346,6 @@ function RoundOverview() {
 				</Button>
 			</form>
 		</Form>
+		</div>
 	)
 }
