@@ -1,7 +1,7 @@
 {
-  "name": "ร้านหิ้ว",
+  "name": "OopsFoundThis",
   "short_name": "หิ้ว",
-  "description": "Admin app for ร้านหิ้ว personal shopper",
+  "description": "Admin app for OopsFoundThis personal shopper",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f6f1e9",

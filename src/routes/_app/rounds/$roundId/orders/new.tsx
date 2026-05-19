@@ -216,7 +216,7 @@ function NewOrderPage() {
 													roundProductId: rp.id,
 													productName: rp.productName,
 													productBrand: rp.productBrand,
-													unitPriceThb: Number(rp.sellPriceThb),
+													unitPriceThb: Number(rp.sellPriceThb) || 0,
 												})
 												setProductSearchOpen(false)
 												setProductQuery("")
@@ -229,10 +229,9 @@ function NewOrderPage() {
 												)}
 											</div>
 											<span className="font-mono text-sm ml-2 shrink-0">
-												{Number(rp.sellPriceThb).toLocaleString("th-TH", {
-													minimumFractionDigits: 0,
-												})}{" "}
-												฿
+												{Number.isFinite(Number(rp.sellPriceThb))
+													? `${Number(rp.sellPriceThb).toLocaleString("th-TH", { minimumFractionDigits: 0 })} ฿`
+													: "—"}
 											</span>
 										</CommandItem>
 									))}
@@ -394,7 +393,7 @@ function NewOrderPage() {
 						roundProductId: rp.id,
 						productName: rp.productName,
 						productBrand: rp.productBrand,
-						unitPriceThb: Number(rp.sellPriceThb),
+						unitPriceThb: Number(rp.sellPriceThb) || 0,
 					})
 				}}
 			/>

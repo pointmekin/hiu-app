@@ -52,7 +52,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 				media: "(prefers-color-scheme: dark)",
 			},
 			{ name: "apple-mobile-web-app-capable", content: "yes" },
-			{ title: "ร้านหิ้ว" },
+			{ title: "OopsFoundThis" },
 		],
 		links: [
 			{ rel: "stylesheet", href: appCss },
