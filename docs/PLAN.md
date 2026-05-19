@@ -755,6 +755,83 @@ All aggregation in SQL. Materialize `round_stats` view if any single dashboard q
   One-tap copy via `navigator.clipboard.writeText`. Brief toast confirmation on success.
 - **Exit criteria**: operator creates a brand-new product mid-order without leaving the screen; copy-pastes a formatted summary into LINE in under 3 seconds.
 
+### M7 — Purchase tracker: สรุปยอดที่ต้องซื้อ (1 week)
+
+A new tab on the round detail page (alongside orders, shipping, stats) that shows **what to buy, where, and how many** — the in-store buying checklist.
+
+#### Purpose
+
+When Chom (or her friend) walks into a store, they need to know exactly which products to pick up for which customers. This tab aggregates order_items by product, cross-references against what has already been physically bought, and surfaces the remaining gap.
+
+#### Schema addition
+
+One new column on `round_products`:
+
+```sql
+alter table round_products add column bought_qty int not null default 0;
+```
+
+No new table needed. `bought_qty` is manually incremented as items are physically purchased. All other buy-side data already lives on `round_products` (`store_location`, `foreign_price`) and `order_items` (ordered quantities).
+
+#### UI — tab layout
+
+```
+[ Orders ]  [ Shipping ]  [ ซื้อแล้ว ]  [ Stats ]
+                              ↑ new tab
+```
+
+**Header bar**
+```
+Group by  [ Store location ▼ ]     Filter  [ All stores ▼ ]
+```
+
+**Grouped rows (one group per store_location)**
+
+```
+▾ Don Quijote Shinjuku               2 / 4 รายการครบ
+  ─────────────────────────────────────────────────────
+  Product name         ต้องซื้อ   ซื้อแล้ว   คงเหลือ   Status
+  ──────────────────   ────────   ────────   ────────   ──────
+  UNO whitening foam      12        12          0       ✓ ครบ
+  Hada Labo lotion         8         5          3       ⚠ บางส่วน
+  SK-II essence            3         0          3       — ยังไม่ซื้อ
+  ─────────────────────────────────────────────────────
+▾ Matsumoto Kiyoshi       0 / 3 รายการครบ
+  ...
+```
+
+- **ต้องซื้อ** — sum of `order_items.quantity` for active (non-cancelled) orders, grouped by `round_product`.
+- **ซื้อแล้ว** — `round_products.bought_qty`, updated manually.
+- **คงเหลือ** — `ต้องซื้อ − ซื้อแล้ว`, floored at 0.
+- **Status chip**: `ครบ` (green) when `bought_qty >= ordered_qty`; `บางส่วน` (amber) when `0 < bought_qty < ordered_qty`; `ยังไม่ซื้อ` (muted) when `bought_qty = 0`.
+
+**Inline update** — tapping the `ซื้อแล้ว` cell opens a small number-input popover (mobile-friendly, numeric keyboard). Saves via `updateBoughtQty` server function. Writes to `audit_log`.
+
+#### Server function
+
+- `roundProducts/updateBoughtQty` — validates `0 ≤ bought_qty`, updates the row, writes audit entry.
+- `roundProducts/listForPurchaseTracker` — returns `round_products` joined with aggregated `order_items` quantities, ordered by `store_location` then `product.name`. Excludes cancelled-order items from the total.
+
+#### Filtering & grouping
+
+- **Group by**: store_location (default), product category, or none (flat list).
+- **Filter by store**: dropdown populated from distinct `store_location` values in the round.
+- **Hide completed**: toggle to hide rows where `bought_qty >= ordered_qty`.
+
+#### Mobile UX
+
+- Full-bleed cards per store group; collapsible.
+- Tap anywhere on the `ซื้อแล้ว` column to edit.
+- Sticky group header when scrolling within a group.
+- Progress bar per group (bought / total items complete).
+
+#### Exit criteria
+
+- Operator opens the tab for a live round with 30+ products across 3 stores.
+- Can filter to a single store and see only that store's items.
+- Can increment `ซื้อแล้ว` for 5 products in under 60 seconds on mobile.
+- Completed items can be hidden; total at-a-glance progress is visible without scrolling.
+
 ---
 
 ## 17. Deployment
