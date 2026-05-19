@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { sql } from "drizzle-orm";
+import { sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "#/db/index";
 import { requireSession } from "#/server/middleware";
@@ -35,6 +35,24 @@ function mapRow(p: ProductRow) {
 	};
 }
 
+function buildFilterAnd(brand?: string, category?: string, sourceCountry?: string): SQL {
+	const clauses: SQL[] = [];
+	if (brand) clauses.push(sql`brand = ${brand}`);
+	if (category) clauses.push(sql`category = ${category}`);
+	if (sourceCountry) clauses.push(sql`source_country = ${sourceCountry}`);
+	if (clauses.length === 0) return sql``;
+	return sql` and ${sql.join(clauses, sql` and `)}`;
+}
+
+function buildFilterWhere(brand?: string, category?: string, sourceCountry?: string): SQL {
+	const clauses: SQL[] = [];
+	if (brand) clauses.push(sql`brand = ${brand}`);
+	if (category) clauses.push(sql`category = ${category}`);
+	if (sourceCountry) clauses.push(sql`source_country = ${sourceCountry}`);
+	if (clauses.length === 0) return sql``;
+	return sql`where ${sql.join(clauses, sql` and `)}`;
+}
+
 const cursorSchema = z.object({
 	lastUsedAt: z.string().nullable(),
 	id: z.string().uuid(),
@@ -49,25 +67,31 @@ export const listProducts = createServerFn({ method: "GET" })
 			q: z.string().optional(),
 			limit: z.coerce.number().default(PAGE_SIZE),
 			cursor: cursorSchema.optional(),
+			brand: z.string().optional(),
+			category: z.string().optional(),
+			sourceCountry: z.string().optional(),
 		}),
 	)
 	.handler(async ({ data }) => {
 		await requireSession();
 		const limit = data.limit;
+		const { brand, category, sourceCountry } = data;
 
-		// Search path — return all matches without cursor pagination
+		// Search path — text match + optional filters, no cursor pagination
 		if (data.q?.trim()) {
 			const q = data.q.trim();
 			const queryWrap = `%${q}%`;
+			const filterAnd = buildFilterAnd(brand, category, sourceCountry);
 			const rows = await db.execute(sql`
 				select id, name, brand, source_country, category, image_key, thumb_key, last_used_at, created_at
 				from products
-				where name ilike ${queryWrap}
+				where (name ilike ${queryWrap}
 				   or brand ilike ${queryWrap}
 				   or category ilike ${queryWrap}
 				   or name % ${q}
 				   or coalesce(brand, '') % ${q}
-				   or coalesce(category, '') % ${q}
+				   or coalesce(category, '') % ${q})
+				${filterAnd}
 				order by greatest(
 				           similarity(name, ${q}),
 				           similarity(coalesce(brand, ''), ${q}),
@@ -82,35 +106,41 @@ export const listProducts = createServerFn({ method: "GET" })
 			};
 		}
 
-		// Browse path — keyset cursor pagination
+		// Browse path — keyset cursor pagination + optional filters
 		const fetchLimit = limit + 1;
 		let rows: Awaited<ReturnType<typeof db.execute>>;
 
 		if (!data.cursor) {
+			const filterWhere = buildFilterWhere(brand, category, sourceCountry);
 			rows = await db.execute(sql`
 				select id, name, brand, source_country, category, image_key, thumb_key, last_used_at, created_at
 				from products
+				${filterWhere}
 				order by last_used_at desc nulls last, id
 				limit ${fetchLimit}
 			`);
 		} else if (data.cursor.lastUsedAt !== null) {
 			const cursorTs = data.cursor.lastUsedAt;
 			const cursorId = data.cursor.id;
+			const filterAnd = buildFilterAnd(brand, category, sourceCountry);
 			rows = await db.execute(sql`
 				select id, name, brand, source_country, category, image_key, thumb_key, last_used_at, created_at
 				from products
-				where last_used_at < ${cursorTs}::timestamptz
+				where (last_used_at < ${cursorTs}::timestamptz
 				   or (last_used_at = ${cursorTs}::timestamptz and id > ${cursorId})
-				   or last_used_at is null
+				   or last_used_at is null)
+				${filterAnd}
 				order by last_used_at desc nulls last, id
 				limit ${fetchLimit}
 			`);
 		} else {
 			const cursorId = data.cursor.id;
+			const filterAnd = buildFilterAnd(brand, category, sourceCountry);
 			rows = await db.execute(sql`
 				select id, name, brand, source_country, category, image_key, thumb_key, last_used_at, created_at
 				from products
-				where last_used_at is null and id > ${cursorId}
+				where (last_used_at is null and id > ${cursorId})
+				${filterAnd}
 				order by last_used_at desc nulls last, id
 				limit ${fetchLimit}
 			`);
