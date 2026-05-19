@@ -99,12 +99,15 @@ function ProductsPage() {
 				<div className="mb-4 space-y-2">
 					<div className="grid grid-cols-3 gap-2">
 						{brands.length > 0 && (
-							<Select value={brandFilter} onValueChange={setBrandFilter}>
+							<Select
+								value={brandFilter || "__all__"}
+								onValueChange={(v) => setBrandFilter(v === "__all__" ? "" : v)}
+							>
 								<SelectTrigger className="h-8 text-xs">
 									<SelectValue placeholder={t("field.brand")} />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="">{t("field.brand")}</SelectItem>
+									<SelectItem value="__all__">{t("field.brand")}</SelectItem>
 									{brands.map((b) => (
 										<SelectItem key={b} value={b}>{b}</SelectItem>
 									))}
@@ -112,12 +115,15 @@ function ProductsPage() {
 							</Select>
 						)}
 						{categories.length > 0 && (
-							<Select value={categoryFilter} onValueChange={setCategoryFilter}>
+							<Select
+								value={categoryFilter || "__all__"}
+								onValueChange={(v) => setCategoryFilter(v === "__all__" ? "" : v)}
+							>
 								<SelectTrigger className="h-8 text-xs">
 									<SelectValue placeholder={t("field.category")} />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="">{t("field.category")}</SelectItem>
+									<SelectItem value="__all__">{t("field.category")}</SelectItem>
 									{categories.map((c) => (
 										<SelectItem key={c} value={c}>{c}</SelectItem>
 									))}
@@ -125,12 +131,15 @@ function ProductsPage() {
 							</Select>
 						)}
 						{countries.length > 0 && (
-							<Select value={countryFilter} onValueChange={setCountryFilter}>
+							<Select
+								value={countryFilter || "__all__"}
+								onValueChange={(v) => setCountryFilter(v === "__all__" ? "" : v)}
+							>
 								<SelectTrigger className="h-8 text-xs">
 									<SelectValue placeholder={t("field.sourceCountry")} />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="">{t("field.sourceCountry")}</SelectItem>
+									<SelectItem value="__all__">{t("field.sourceCountry")}</SelectItem>
 									{countries.map((c) => (
 										<SelectItem key={c} value={c}>{c}</SelectItem>
 									))}
