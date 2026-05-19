@@ -105,7 +105,13 @@ function OrderDetailPage() {
 				{order.items.map((item) => (
 					<div key={item.id} className="flex items-center justify-between px-4 py-3">
 						<div className="min-w-0">
-							<p className="text-sm font-medium truncate">{item.productName}</p>
+							<Link
+								to="/products/$productId"
+								params={{ productId: item.productId }}
+								className="text-sm font-medium truncate underline-offset-2 hover:underline"
+							>
+								{item.productName}
+							</Link>
 							{item.productBrand && (
 								<p className="text-xs text-muted-foreground">{item.productBrand}</p>
 							)}

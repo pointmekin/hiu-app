@@ -3,7 +3,7 @@ import {
 	useQueryClient,
 	useSuspenseQuery,
 } from "@tanstack/react-query"
-import { createFileRoute, useParams } from "@tanstack/react-router"
+import { createFileRoute, Link, useParams } from "@tanstack/react-router"
 import { Package, Plus, RefreshCw, Save, X } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -367,9 +367,13 @@ function MobileProductCard({
 						<div className="w-16 h-16 rounded bg-muted shrink-0" />
 					)}
 					<div className="min-w-0">
-						<p className="font-medium text-foreground leading-tight">
+						<Link
+							to="/products/$productId"
+							params={{ productId: row.productId }}
+							className="font-medium text-foreground leading-tight underline-offset-2 hover:underline"
+						>
 							{row.productName}
-						</p>
+						</Link>
 						{row.productBrand && (
 							<p className="text-xs text-muted-foreground">{row.productBrand}</p>
 						)}
@@ -500,9 +504,13 @@ function ProductRow({
 						<div className="w-12 h-12 rounded bg-muted shrink-0" />
 					)}
 					<div className="min-w-0">
-						<p className="font-medium text-foreground leading-tight">
+						<Link
+							to="/products/$productId"
+							params={{ productId: row.productId }}
+							className="font-medium text-foreground leading-tight underline-offset-2 hover:underline"
+						>
 							{row.productName}
-						</p>
+						</Link>
 						{row.productBrand && (
 							<p className="text-xs text-muted-foreground">{row.productBrand}</p>
 						)}
