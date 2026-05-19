@@ -95,9 +95,9 @@
 			"override": "Override",
 			"store": "Store"
 		},
-		"recompute": "Recompute prices",
+		"recompute": "Recompute",
 		"recomputeHint": "Recompute from current FX rate (leaves overrides alone)",
-		"saveAll": "Save all",
+		"saveAll": "Save",
 		"searchCatalog": "Search catalog...",
 		"searchPlaceholder": "Search products…"
 	}

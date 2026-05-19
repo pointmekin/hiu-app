@@ -14,17 +14,13 @@ export const listRoundProducts = createServerFn({ method: "GET" })
 		const rows = await db
 			.select({
 				id: roundProducts.id,
-				roundId: roundProducts.roundId,
 				productId: roundProducts.productId,
 				foreignPrice: roundProducts.foreignPrice,
 				sellPriceThb: roundProducts.sellPriceThb,
 				priceOverridden: roundProducts.priceOverridden,
 				storeLocation: roundProducts.storeLocation,
-				notes: roundProducts.notes,
-				createdAt: roundProducts.createdAt,
 				productName: products.name,
 				productBrand: products.brand,
-				productCategory: products.category,
 				productThumbKey: products.thumbKey,
 			})
 			.from(roundProducts)
@@ -32,7 +28,10 @@ export const listRoundProducts = createServerFn({ method: "GET" })
 			.where(eq(roundProducts.roundId, data.roundId))
 			.orderBy(products.name);
 
-		return rows.map((r) => ({ ...r, productThumbUrl: s3PublicUrl(r.productThumbKey) }));
+		return rows.map(({ productThumbKey, ...r }) => ({
+			...r,
+			productThumbUrl: s3PublicUrl(productThumbKey),
+		}));
 	});
 
 export type RoundProductWithProduct = Awaited<

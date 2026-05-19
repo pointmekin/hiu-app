@@ -9,7 +9,10 @@
       "Bash(cp /tmp/hiu-temp/components.json .)",
       "Bash(cp /tmp/hiu-temp/src/lib/utils.ts src/lib/utils.ts)",
       "Bash(cp /tmp/hiu-temp/src/lib/auth-client.ts src/lib/auth-client.ts)",
-      "Skill(frontend-design)"
+      "Skill(frontend-design)",
+      "mcp__chrome-devtools__list_pages",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__take_screenshot"
     ]
   }
 }

@@ -1,10 +1,15 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
-import { OrdersListSkeleton } from "#/components/round-skeletons";
+import {
+	createFileRoute,
+	Link,
+	useNavigate,
+	useParams,
+} from "@tanstack/react-router";
 import { Plus, Search, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EmptyState } from "#/components/empty-state";
+import { OrdersListSkeleton } from "#/components/round-skeletons";
 import { Button } from "#/components/ui/button";
 import { Card } from "#/components/ui/card";
 import { Input } from "#/components/ui/input";
@@ -53,7 +58,9 @@ function OrdersPage() {
 		? orders.filter(
 				(o) =>
 					o.customerName.toLowerCase().includes(needle) ||
-					o.items.some((item) => item.productName.toLowerCase().includes(needle)),
+					o.items.some((item) =>
+						item.productName.toLowerCase().includes(needle),
+					),
 			)
 		: orders;
 
@@ -62,7 +69,7 @@ function OrdersPage() {
 
 	return (
 		<div>
-			<div className="sticky top-[115px] md:top-[171px] z-10 bg-background pb-3 pt-1">
+			<div className="sticky top-[108px] md:top-[164px] z-10 bg-background pb-3 border-2 rounded-xl	p-3 shadow-2xl">
 				<div className="flex items-center justify-between mb-3">
 					<h2 className="text-lg font-semibold">{t("list.title")}</h2>
 					<Button asChild variant="default" size="sm">
@@ -74,7 +81,10 @@ function OrdersPage() {
 				</div>
 
 				<div className="relative mb-3">
-					<Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+					<Search
+						size={14}
+						className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+					/>
 					<Input
 						className="pl-8 h-8 text-sm"
 						placeholder={t("list.searchPlaceholder")}
@@ -101,6 +111,8 @@ function OrdersPage() {
 					))}
 				</div>
 			</div>
+
+			<div className="py-2"></div>
 
 			{activeOrders.length === 0 && cancelledOrders.length === 0 ? (
 				<EmptyState
@@ -215,7 +227,9 @@ function OrderCard({
 				</p>
 				{order.items.length > 0 && (
 					<p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-						{order.items.map((item) => `${item.productName} x${item.quantity}`).join(", ")}
+						{order.items
+							.map((item) => `${item.productName} x${item.quantity}`)
+							.join(", ")}
 					</p>
 				)}
 			</div>

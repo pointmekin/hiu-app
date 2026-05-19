@@ -1,19 +1,20 @@
 import {
 	useMutation,
+	useQuery,
 	useQueryClient,
 	useSuspenseQuery,
-} from "@tanstack/react-query"
-import { createFileRoute, Link, useParams } from "@tanstack/react-router"
-import { RoundProductsSkeleton } from "#/components/round-skeletons"
-import { Package, Plus, RefreshCw, Save, Search, X } from "lucide-react"
-import { useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { CatalogPickerDialog } from "#/components/catalog-picker-dialog"
-import { EmptyState } from "#/components/empty-state"
-import { Alert, AlertDescription } from "#/components/ui/alert"
-import { Button } from "#/components/ui/button"
-import { Checkbox } from "#/components/ui/checkbox"
-import { Input } from "#/components/ui/input"
+} from "@tanstack/react-query";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { Package, Plus, RefreshCw, Save, Search, X } from "lucide-react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { CatalogPickerDialog } from "#/components/catalog-picker-dialog";
+import { EmptyState } from "#/components/empty-state";
+import { RoundProductsSkeleton } from "#/components/round-skeletons";
+import { Alert, AlertDescription } from "#/components/ui/alert";
+import { Button } from "#/components/ui/button";
+import { Checkbox } from "#/components/ui/checkbox";
+import { Input } from "#/components/ui/input";
 import {
 	Table,
 	TableBody,
@@ -21,41 +22,34 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "#/components/ui/table"
-import { cn } from "#/lib/utils"
-import type { ProductListItem } from "#/server/functions/products/list"
-import { listRoundProducts } from "#/server/functions/round-products/list"
-import { recomputeFromFx } from "#/server/functions/round-products/recompute-from-fx"
-import { upsertRoundProducts } from "#/server/functions/round-products/upsert-many"
-import { getRound } from "#/server/functions/rounds/get"
+} from "#/components/ui/table";
+import { cn } from "#/lib/utils";
+import type { ProductListItem } from "#/server/functions/products/list";
+import { listRoundProducts } from "#/server/functions/round-products/list";
+import { recomputeFromFx } from "#/server/functions/round-products/recompute-from-fx";
+import { upsertRoundProducts } from "#/server/functions/round-products/upsert-many";
+import { getRound } from "#/server/functions/rounds/get";
 
 export const Route = createFileRoute("/_app/rounds/$roundId/products")({
 	loader: async ({ context: { queryClient }, params }) => {
-		await Promise.all([
-			queryClient.ensureQueryData({
-				queryKey: ["rounds", params.roundId],
-				queryFn: () => getRound({ data: { id: params.roundId } }),
-			}),
-			queryClient.ensureQueryData({
-				queryKey: ["round-products", params.roundId],
-				queryFn: () =>
-					listRoundProducts({ data: { roundId: params.roundId } }),
-			}),
-		])
+		await queryClient.ensureQueryData({
+			queryKey: ["rounds", params.roundId],
+			queryFn: () => getRound({ data: { id: params.roundId } }),
+		});
 	},
 	pendingComponent: RoundProductsSkeleton,
 	component: RoundProductsPage,
-})
+});
 
 interface DraftRow {
-	productId: string
-	productName: string
-	productBrand: string | null
-	productThumbUrl: string | null
-	foreignPrice: string
-	sellPriceThb: string
-	priceOverridden: boolean
-	storeLocation: string
+	productId: string;
+	productName: string;
+	productBrand: string | null;
+	productThumbUrl: string | null;
+	foreignPrice: string;
+	sellPriceThb: string;
+	priceOverridden: boolean;
+	storeLocation: string;
 }
 
 function computeSellPrice(
@@ -63,41 +57,31 @@ function computeSellPrice(
 	fxRate: number,
 	perItemFee: number,
 ): string {
-	return (foreignPrice * fxRate + perItemFee).toFixed(2)
+	return (foreignPrice * fxRate + perItemFee).toFixed(2);
 }
 
 function RoundProductsPage() {
-	const { t } = useTranslation(["rounds", "common"])
-	const { roundId } = useParams({ from: "/_app/rounds/$roundId/products" })
-	const queryClient = useQueryClient()
+	const { t } = useTranslation(["rounds", "common"]);
+	const { roundId } = useParams({ from: "/_app/rounds/$roundId/products" });
+	const queryClient = useQueryClient();
 
 	const { data: round } = useSuspenseQuery({
 		queryKey: ["rounds", roundId],
 		queryFn: () => getRound({ data: { id: roundId } }),
-	})
+	});
 
-	const { data: roundProductRows } = useSuspenseQuery({
+	const { data: roundProductRows, isPending: isLoadingProducts } = useQuery({
 		queryKey: ["round-products", roundId],
 		queryFn: () => listRoundProducts({ data: { roundId } }),
-	})
+	});
 
-	const fxRate = Number(round.fxRate)
-	const perItemFee = Number(round.perItemFeeTh)
+	const fxRate = Number(round.fxRate);
+	const perItemFee = Number(round.perItemFeeTh);
 
-	const [rows, setRows] = useState<DraftRow[]>(() =>
-		roundProductRows.map((rp) => ({
-			productId: rp.productId,
-			productName: rp.productName,
-			productBrand: rp.productBrand,
-			productThumbUrl: rp.productThumbUrl,
-			foreignPrice: rp.foreignPrice,
-			sellPriceThb: rp.sellPriceThb,
-			priceOverridden: rp.priceOverridden,
-			storeLocation: rp.storeLocation ?? "",
-		})),
-	)
+	const [rows, setRows] = useState<DraftRow[]>([]);
 
 	useEffect(() => {
+		if (!roundProductRows) return;
 		setRows(
 			roundProductRows.map((rp) => ({
 				productId: rp.productId,
@@ -109,20 +93,20 @@ function RoundProductsPage() {
 				priceOverridden: rp.priceOverridden,
 				storeLocation: rp.storeLocation ?? "",
 			})),
-		)
-	}, [roundProductRows])
+		);
+	}, [roundProductRows]);
 
-	const [showCatalog, setShowCatalog] = useState(false)
-	const [isDirty, setIsDirty] = useState(false)
-	const [textFilter, setTextFilter] = useState("")
+	const [showCatalog, setShowCatalog] = useState(false);
+	const [isDirty, setIsDirty] = useState(false);
+	const [textFilter, setTextFilter] = useState("");
 
-	const storeListId = `store-locs-${roundId}`
+	const storeListId = `store-locs-${roundId}`;
 	const storeLocationSuggestions = useMemo(
 		() => [...new Set(rows.map((r) => r.storeLocation).filter(Boolean))],
 		[rows],
-	)
+	);
 
-	const needle = textFilter.trim().toLowerCase()
+	const needle = textFilter.trim().toLowerCase();
 	const visibleRows = useMemo(
 		() =>
 			needle
@@ -133,34 +117,36 @@ function RoundProductsPage() {
 					)
 				: rows,
 		[rows, needle],
-	)
+	);
 
-	function updateRow(productId: string, patch: Partial<DraftRow>) {
-		setRows((prev) => {
-			const next = prev.map((row) => {
-				if (row.productId !== productId) return row
-				const updated = { ...row, ...patch }
-				if ("foreignPrice" in patch && !updated.priceOverridden) {
-					const fp = Number(patch.foreignPrice)
-					if (!Number.isNaN(fp) && fp > 0) {
-						updated.sellPriceThb = computeSellPrice(fp, fxRate, perItemFee)
+	const updateRow = useCallback(
+		(productId: string, patch: Partial<DraftRow>) => {
+			setRows((prev) =>
+				prev.map((row) => {
+					if (row.productId !== productId) return row;
+					const updated = { ...row, ...patch };
+					if ("foreignPrice" in patch && !updated.priceOverridden) {
+						const fp = Number(patch.foreignPrice);
+						if (!Number.isNaN(fp) && fp > 0) {
+							updated.sellPriceThb = computeSellPrice(fp, fxRate, perItemFee);
+						}
 					}
-				}
-				return updated
-			})
-			return next
-		})
-		setIsDirty(true)
-	}
+					return updated;
+				}),
+			);
+			setIsDirty(true);
+		},
+		[fxRate, perItemFee],
+	);
 
-	function removeRow(productId: string) {
-		setRows((prev) => prev.filter((r) => r.productId !== productId))
-		setIsDirty(true)
-	}
+	const removeRow = useCallback((productId: string) => {
+		setRows((prev) => prev.filter((r) => r.productId !== productId));
+		setIsDirty(true);
+	}, []);
 
 	function addFromCatalog(product: ProductListItem) {
-		const alreadyAdded = rows.some((r) => r.productId === product.id)
-		if (alreadyAdded) return
+		const alreadyAdded = rows.some((r) => r.productId === product.id);
+		if (alreadyAdded) return;
 		setRows((prev) => [
 			...prev,
 			{
@@ -173,8 +159,8 @@ function RoundProductsPage() {
 				priceOverridden: false,
 				storeLocation: "",
 			},
-		])
-		setIsDirty(true)
+		]);
+		setIsDirty(true);
 	}
 
 	const saveMutation = useMutation({
@@ -194,19 +180,23 @@ function RoundProductsPage() {
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: ["round-products", roundId],
-			})
-			setIsDirty(false)
+			});
+			setIsDirty(false);
 		},
-	})
+	});
 
 	const recomputeMutation = useMutation({
 		mutationFn: () => recomputeFromFx({ data: { roundId } }),
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: ["round-products", roundId],
-			})
+			});
 		},
-	})
+	});
+
+	if (isLoadingProducts) {
+		return <RoundProductsSkeleton />;
+	}
 
 	if (rows.length === 0) {
 		return (
@@ -229,49 +219,67 @@ function RoundProductsPage() {
 					onSelect={addFromCatalog}
 				/>
 			</>
-		)
+		);
 	}
 
 	return (
 		<div className="space-y-4">
-			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-				<div className="text-sm text-muted-foreground">
-					{round.sourceCurrency} @ {fxRate.toFixed(4)}
-					{perItemFee > 0 && ` + ฿${perItemFee}`}
-				</div>
-				<div className="flex items-center gap-2 flex-wrap">
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						onClick={() => recomputeMutation.mutate()}
-						disabled={recomputeMutation.isPending}
-						title={t("rounds:products.recomputeHint")}
-					>
-						<RefreshCw size={14} />
-						{t("rounds:products.recompute")}
-					</Button>
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						onClick={() => setShowCatalog(true)}
-					>
-						<Plus size={14} />
-						{t("rounds:products.addProduct")}
-					</Button>
-					<Button
-						type="button"
-						variant="default"
-						size="sm"
-						onClick={() => saveMutation.mutate()}
-						disabled={!isDirty || saveMutation.isPending}
-					>
-						<Save size={14} />
-						{saveMutation.isPending
-							? t("common:loading")
-							: t("rounds:products.saveAll")}
-					</Button>
+			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sticky top-[107px] md:top-[163px] z-20 bg-background py-2 -mx-4 px-4 border-b border-border/60">
+				<div className="flex flex-col md:flex-row justify-between gap-2 w-full">
+					<div className="flex gap-2">
+						<div className="flex items-center gap-2 flex-wrap">
+						{/* <div className="text-sm text-muted-foreground">
+							{round.sourceCurrency} @ {fxRate.toFixed(4)}
+							{perItemFee > 0 && ` + ฿${perItemFee}`}
+						</div> */}
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={() => recomputeMutation.mutate()}
+								disabled={recomputeMutation.isPending}
+								title={t("rounds:products.recomputeHint")}
+							>
+								<RefreshCw size={14} />
+								{t("rounds:products.recompute")}
+							</Button>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={() => setShowCatalog(true)}
+							>
+								<Plus size={14} />
+								{t("rounds:products.addProduct")}
+							</Button>
+							<Button
+								type="button"
+								variant="default"
+								size="sm"
+								onClick={() => saveMutation.mutate()}
+								disabled={!isDirty || saveMutation.isPending}
+							>
+								<Save size={14} />
+								{saveMutation.isPending
+									? t("common:loading")
+									: t("rounds:products.saveAll")}
+							</Button>
+						</div>
+					</div>
+
+					{/* Search */}
+					<div className="relative">
+						<Search
+							size={14}
+							className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+						/>
+						<Input
+							className="pl-8 h-8 text-sm"
+							placeholder={t("rounds:products.searchPlaceholder")}
+							value={textFilter}
+							onChange={(e) => setTextFilter(e.target.value)}
+						/>
+					</div>
 				</div>
 			</div>
 
@@ -283,26 +291,15 @@ function RoundProductsPage() {
 				</Alert>
 			)}
 
-			{/* Search */}
-			<div className="relative">
-				<Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-				<Input
-					className="pl-8 h-8 text-sm"
-					placeholder={t("rounds:products.searchPlaceholder")}
-					value={textFilter}
-					onChange={(e) => setTextFilter(e.target.value)}
-				/>
-			</div>
-
 			{/* Mobile cards */}
 			<div className="md:hidden space-y-3">
 				{visibleRows.map((row) => {
-					const fp = Number(row.foreignPrice)
+					const fp = Number(row.foreignPrice);
 					const computed = computeSellPrice(
 						Number.isNaN(fp) ? 0 : fp,
 						fxRate,
 						perItemFee,
-					)
+					);
 					return (
 						<MobileProductCard
 							key={row.productId}
@@ -310,10 +307,10 @@ function RoundProductsPage() {
 							computed={computed}
 							currency={round.sourceCurrency}
 							listId={storeListId}
-							onUpdate={(patch) => updateRow(row.productId, patch)}
-							onRemove={() => removeRow(row.productId)}
+							onUpdate={updateRow}
+							onRemove={removeRow}
 						/>
-					)
+					);
 				})}
 			</div>
 
@@ -343,12 +340,12 @@ function RoundProductsPage() {
 					</TableHeader>
 					<TableBody>
 						{visibleRows.map((row) => {
-							const fp = Number(row.foreignPrice)
+							const fp = Number(row.foreignPrice);
 							const computed = computeSellPrice(
 								Number.isNaN(fp) ? 0 : fp,
 								fxRate,
 								perItemFee,
-							)
+							);
 							return (
 								<ProductRow
 									key={row.productId}
@@ -356,10 +353,10 @@ function RoundProductsPage() {
 									computed={computed}
 									currency={round.sourceCurrency}
 									listId={storeListId}
-									onUpdate={(patch) => updateRow(row.productId, patch)}
-									onRemove={() => removeRow(row.productId)}
+									onUpdate={updateRow}
+									onRemove={removeRow}
 								/>
-							)
+							);
 						})}
 					</TableBody>
 				</Table>
@@ -378,10 +375,10 @@ function RoundProductsPage() {
 				onSelect={addFromCatalog}
 			/>
 		</div>
-	)
+	);
 }
 
-function MobileProductCard({
+const MobileProductCard = memo(function MobileProductCard({
 	row,
 	computed,
 	currency,
@@ -389,14 +386,22 @@ function MobileProductCard({
 	onUpdate,
 	onRemove,
 }: {
-	row: DraftRow
-	computed: string
-	currency: string
-	listId: string
-	onUpdate: (patch: Partial<DraftRow>) => void
-	onRemove: () => void
+	row: DraftRow;
+	computed: string;
+	currency: string;
+	listId: string;
+	onUpdate: (productId: string, patch: Partial<DraftRow>) => void;
+	onRemove: (productId: string) => void;
 }) {
-	const { t } = useTranslation(["rounds"])
+	const { t } = useTranslation(["rounds"]);
+	const handleUpdate = useCallback(
+		(patch: Partial<DraftRow>) => onUpdate(row.productId, patch),
+		[row.productId, onUpdate],
+	);
+	const handleRemove = useCallback(
+		() => onRemove(row.productId),
+		[row.productId, onRemove],
+	);
 	return (
 		<div className="border border-border rounded-lg p-3 space-y-3 bg-card">
 			<div className="flex items-start justify-between gap-2">
@@ -419,7 +424,9 @@ function MobileProductCard({
 							{row.productName}
 						</Link>
 						{row.productBrand && (
-							<p className="text-xs text-muted-foreground">{row.productBrand}</p>
+							<p className="text-xs text-muted-foreground">
+								{row.productBrand}
+							</p>
 						)}
 					</div>
 				</div>
@@ -427,7 +434,7 @@ function MobileProductCard({
 					type="button"
 					variant="ghost"
 					size="icon-sm"
-					onClick={onRemove}
+					onClick={handleRemove}
 					aria-label="Remove"
 					className="shrink-0 text-muted-foreground hover:text-destructive"
 				>
@@ -443,7 +450,7 @@ function MobileProductCard({
 					<Input
 						type="number"
 						value={row.foreignPrice}
-						onChange={(e) => onUpdate({ foreignPrice: e.target.value })}
+						onChange={(e) => handleUpdate({ foreignPrice: e.target.value })}
 						step="1"
 						min="0"
 						className="text-right font-mono"
@@ -455,7 +462,10 @@ function MobileProductCard({
 					</p>
 					<div className="h-10 flex items-center justify-end px-3 border border-border rounded-md bg-muted/40">
 						<span className="font-mono text-sm text-muted-foreground">
-							฿{Number(computed).toLocaleString("th-TH", { minimumFractionDigits: 2 })}
+							฿
+							{Number(computed).toLocaleString("th-TH", {
+								minimumFractionDigits: 2,
+							})}
 						</span>
 					</div>
 				</div>
@@ -471,15 +481,18 @@ function MobileProductCard({
 						checked={row.priceOverridden}
 						onCheckedChange={(checked) => {
 							if (!checked) {
-								const fp = Number(row.foreignPrice)
+								const fp = Number(row.foreignPrice);
 								const recomputed = computeSellPrice(
 									Number.isNaN(fp) ? 0 : fp,
 									Number(row.foreignPrice),
 									0,
-								)
-								onUpdate({ priceOverridden: false, sellPriceThb: recomputed })
+								);
+								handleUpdate({
+									priceOverridden: false,
+									sellPriceThb: recomputed,
+								});
 							} else {
-								onUpdate({ priceOverridden: true })
+								handleUpdate({ priceOverridden: true });
 							}
 						}}
 					/>
@@ -496,7 +509,10 @@ function MobileProductCard({
 						type="number"
 						value={row.sellPriceThb}
 						onChange={(e) =>
-							onUpdate({ sellPriceThb: e.target.value, priceOverridden: true })
+							handleUpdate({
+								sellPriceThb: e.target.value,
+								priceOverridden: true,
+							})
 						}
 						step="1"
 						min="0"
@@ -512,13 +528,13 @@ function MobileProductCard({
 				</p>
 				<StoreLocationInput
 					value={row.storeLocation}
-					onChange={(v) => onUpdate({ storeLocation: v })}
+					onChange={(v) => handleUpdate({ storeLocation: v })}
 					listId={listId}
 				/>
 			</div>
 		</div>
-	)
-}
+	);
+});
 
 function StoreLocationInput({
 	value,
@@ -526,29 +542,29 @@ function StoreLocationInput({
 	listId,
 	className,
 }: {
-	value: string
-	onChange: (v: string) => void
-	listId: string
-	className?: string
+	value: string;
+	onChange: (v: string) => void;
+	listId: string;
+	className?: string;
 }) {
-	const [local, setLocal] = useState(value)
-	const sentRef = useRef(value)
-	const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+	const [local, setLocal] = useState(value);
+	const sentRef = useRef(value);
+	const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
 	useEffect(() => {
-		if (value !== sentRef.current) setLocal(value)
-	}, [value])
+		if (value !== sentRef.current) setLocal(value);
+	}, [value]);
 
-	useEffect(() => () => clearTimeout(timerRef.current), [])
+	useEffect(() => () => clearTimeout(timerRef.current), []);
 
 	function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-		const v = e.target.value
-		setLocal(v)
-		clearTimeout(timerRef.current)
+		const v = e.target.value;
+		setLocal(v);
+		clearTimeout(timerRef.current);
 		timerRef.current = setTimeout(() => {
-			sentRef.current = v
-			onChange(v)
-		}, 300)
+			sentRef.current = v;
+			onChange(v);
+		}, 300);
 	}
 
 	return (
@@ -560,10 +576,10 @@ function StoreLocationInput({
 			placeholder="—"
 			className={cn(className, "w-24")}
 		/>
-	)
+	);
 }
 
-function ProductRow({
+const ProductRow = memo(function ProductRow({
 	row,
 	computed,
 	currency,
@@ -571,13 +587,21 @@ function ProductRow({
 	onUpdate,
 	onRemove,
 }: {
-	row: DraftRow
-	computed: string
-	currency: string
-	listId: string
-	onUpdate: (patch: Partial<DraftRow>) => void
-	onRemove: () => void
+	row: DraftRow;
+	computed: string;
+	currency: string;
+	listId: string;
+	onUpdate: (productId: string, patch: Partial<DraftRow>) => void;
+	onRemove: (productId: string) => void;
 }) {
+	const handleUpdate = useCallback(
+		(patch: Partial<DraftRow>) => onUpdate(row.productId, patch),
+		[row.productId, onUpdate],
+	);
+	const handleRemove = useCallback(
+		() => onRemove(row.productId),
+		[row.productId, onRemove],
+	);
 	return (
 		<TableRow>
 			<TableCell>
@@ -600,7 +624,9 @@ function ProductRow({
 							{row.productName}
 						</Link>
 						{row.productBrand && (
-							<p className="text-xs text-muted-foreground">{row.productBrand}</p>
+							<p className="text-xs text-muted-foreground">
+								{row.productBrand}
+							</p>
 						)}
 					</div>
 				</div>
@@ -611,7 +637,7 @@ function ProductRow({
 					<Input
 						type="number"
 						value={row.foreignPrice}
-						onChange={(e) => onUpdate({ foreignPrice: e.target.value })}
+						onChange={(e) => handleUpdate({ foreignPrice: e.target.value })}
 						step="1"
 						min="0"
 						className="w-28 text-right font-mono h-10 px-2"
@@ -619,7 +645,8 @@ function ProductRow({
 				</div>
 			</TableCell>
 			<TableCell className="text-right font-mono text-muted-foreground text-sm">
-				฿{Number(computed).toLocaleString("th-TH", { minimumFractionDigits: 2 })}
+				฿
+				{Number(computed).toLocaleString("th-TH", { minimumFractionDigits: 2 })}
 			</TableCell>
 			<TableCell className="text-right">
 				<div className="flex items-center justify-end gap-1">
@@ -628,7 +655,7 @@ function ProductRow({
 						type="number"
 						value={row.sellPriceThb}
 						onChange={(e) =>
-							onUpdate({
+							handleUpdate({
 								sellPriceThb: e.target.value,
 								priceOverridden: true,
 							})
@@ -645,15 +672,18 @@ function ProductRow({
 					checked={row.priceOverridden}
 					onCheckedChange={(checked) => {
 						if (!checked) {
-							const fp = Number(row.foreignPrice)
+							const fp = Number(row.foreignPrice);
 							const recomputed = computeSellPrice(
 								Number.isNaN(fp) ? 0 : fp,
 								Number(row.foreignPrice),
 								0,
-							)
-							onUpdate({ priceOverridden: false, sellPriceThb: recomputed })
+							);
+							handleUpdate({
+								priceOverridden: false,
+								sellPriceThb: recomputed,
+							});
 						} else {
-							onUpdate({ priceOverridden: true })
+							handleUpdate({ priceOverridden: true });
 						}
 					}}
 				/>
@@ -661,7 +691,7 @@ function ProductRow({
 			<TableCell>
 				<StoreLocationInput
 					value={row.storeLocation}
-					onChange={(v) => onUpdate({ storeLocation: v })}
+					onChange={(v) => handleUpdate({ storeLocation: v })}
 					listId={listId}
 					className="h-10 px-2"
 				/>
@@ -671,7 +701,7 @@ function ProductRow({
 					type="button"
 					variant="ghost"
 					size="icon-sm"
-					onClick={onRemove}
+					onClick={handleRemove}
 					aria-label="Remove"
 					className="text-muted-foreground hover:text-destructive"
 				>
@@ -679,5 +709,5 @@ function ProductRow({
 				</Button>
 			</TableCell>
 		</TableRow>
-	)
-}
+	);
+});
