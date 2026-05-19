@@ -1,14 +1,22 @@
-import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query"
+import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { Package, Plus } from "lucide-react"
+import { Package, Plus, X } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { EmptyState } from "#/components/empty-state"
 import { Button } from "#/components/ui/button"
 import { Card } from "#/components/ui/card"
 import { Input } from "#/components/ui/input"
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "#/components/ui/select"
 import { formatRelativeDate } from "#/lib/format-relative"
 import { useDebounce } from "#/lib/use-debounce"
+import { listProductFilterOptions } from "#/server/functions/products/list-filter-options"
 import type { ProductListCursor, ProductListItem } from "#/server/functions/products/list"
 import { listProducts } from "#/server/functions/products/list"
 
@@ -22,17 +30,48 @@ function ProductsPage() {
 	const { t, i18n } = useTranslation("products")
 	const [q, setQ] = useState("")
 	const debouncedQ = useDebounce(q, 250)
+	const [brandFilter, setBrandFilter] = useState("")
+	const [categoryFilter, setCategoryFilter] = useState("")
+	const [countryFilter, setCountryFilter] = useState("")
+
+	const hasActiveFilter = Boolean(brandFilter || categoryFilter || countryFilter)
+
+	const { data: filterOptions } = useQuery({
+		queryKey: ["products", "filter-options"],
+		queryFn: () => listProductFilterOptions(),
+		staleTime: 5 * 60 * 1000,
+	})
 
 	const query = useInfiniteQuery({
-		queryKey: ["products", "list", debouncedQ],
+		queryKey: ["products", "list", debouncedQ, brandFilter, categoryFilter, countryFilter],
 		queryFn: ({ pageParam }: { pageParam: ProductListCursor | null }) =>
-			listProducts({ data: { q: debouncedQ, limit: PAGE_SIZE, cursor: pageParam ?? undefined } }),
+			listProducts({
+				data: {
+					q: debouncedQ,
+					limit: PAGE_SIZE,
+					cursor: pageParam ?? undefined,
+					brand: brandFilter || undefined,
+					category: categoryFilter || undefined,
+					sourceCountry: countryFilter || undefined,
+				},
+			}),
 		initialPageParam: null as ProductListCursor | null,
 		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 		placeholderData: keepPreviousData,
 	})
 
 	const products = query.data?.pages.flatMap((p) => p.items) ?? []
+
+	const brands = filterOptions?.brands ?? []
+	const categories = filterOptions?.categories ?? []
+	const countries = filterOptions?.sourceCountries ?? []
+	const showFilters = brands.length > 0 || categories.length > 0 || countries.length > 0
+
+	function clearFilters() {
+		setBrandFilter("")
+		setCategoryFilter("")
+		setCountryFilter("")
+	}
 
 	return (
 		<div className="max-w-2xl mx-auto px-4 py-6">
@@ -53,8 +92,65 @@ function ProductsPage() {
 				value={q}
 				onChange={(e) => setQ(e.target.value)}
 				placeholder={t("list.search")}
-				className="mb-4"
+				className="mb-2"
 			/>
+
+			{showFilters && (
+				<div className="mb-4 space-y-2">
+					<div className="grid grid-cols-3 gap-2">
+						{brands.length > 0 && (
+							<Select value={brandFilter} onValueChange={setBrandFilter}>
+								<SelectTrigger className="h-8 text-xs">
+									<SelectValue placeholder={t("field.brand")} />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="">{t("field.brand")}</SelectItem>
+									{brands.map((b) => (
+										<SelectItem key={b} value={b}>{b}</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						)}
+						{categories.length > 0 && (
+							<Select value={categoryFilter} onValueChange={setCategoryFilter}>
+								<SelectTrigger className="h-8 text-xs">
+									<SelectValue placeholder={t("field.category")} />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="">{t("field.category")}</SelectItem>
+									{categories.map((c) => (
+										<SelectItem key={c} value={c}>{c}</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						)}
+						{countries.length > 0 && (
+							<Select value={countryFilter} onValueChange={setCountryFilter}>
+								<SelectTrigger className="h-8 text-xs">
+									<SelectValue placeholder={t("field.sourceCountry")} />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="">{t("field.sourceCountry")}</SelectItem>
+									{countries.map((c) => (
+										<SelectItem key={c} value={c}>{c}</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						)}
+					</div>
+
+					{hasActiveFilter && (
+						<button
+							type="button"
+							onClick={clearFilters}
+							className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+						>
+							<X size={12} />
+							{t("filter.clearFilters")}
+						</button>
+					)}
+				</div>
+			)}
 
 			{products.length === 0 && !query.isFetching ? (
 				<EmptyState

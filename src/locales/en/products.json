@@ -7,6 +7,9 @@
 		"search": "Search products...",
 		"loadMore": "Load more"
 	},
+	"filter": {
+		"clearFilters": "Clear filters"
+	},
 	"field": {
 		"name": "Product name",
 		"brand": "Brand",
