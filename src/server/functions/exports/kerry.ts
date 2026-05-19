@@ -1,7 +1,7 @@
 import path from "node:path";
-import ExcelJS from "exceljs";
 import { and, eq, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
+import ExcelJS from "exceljs";
 import { db } from "#/db/index";
 import { customerAddresses, customers, orders } from "#/db/schema";
 
@@ -69,10 +69,18 @@ export async function fetchKerryData(roundId: string): Promise<KerryRow[]> {
 			orderId: orders.id,
 			customerName: customers.displayName,
 			paymentStatus: orders.paymentStatus,
-			recipientName: sql<string | null>`COALESCE(${orderAddr.recipientName}, ${bestAddrSq("recipient_name")})`,
-			mobile: sql<string | null>`COALESCE(${orderAddr.mobile}, ${bestAddrSq("mobile")})`,
-			address: sql<string | null>`COALESCE(${orderAddr.address}, ${bestAddrSq("address")})`,
-			postalCode: sql<string | null>`COALESCE(${orderAddr.postalCode}, ${bestAddrSq("postal_code")})`,
+			recipientName: sql<
+				string | null
+			>`COALESCE(${orderAddr.recipientName}, ${bestAddrSq("recipient_name")})`,
+			mobile: sql<
+				string | null
+			>`COALESCE(${orderAddr.mobile}, ${bestAddrSq("mobile")})`,
+			address: sql<
+				string | null
+			>`COALESCE(${orderAddr.address}, ${bestAddrSq("address")})`,
+			postalCode: sql<
+				string | null
+			>`COALESCE(${orderAddr.postalCode}, ${bestAddrSq("postal_code")})`,
 		})
 		.from(orders)
 		.innerJoin(customers, eq(orders.customerId, customers.id))

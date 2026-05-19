@@ -1,11 +1,9 @@
-import { useQuery } from "@tanstack/react-query"
-import { Check, ChevronsUpDown, UserPlus } from "lucide-react"
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
-import { searchCustomers } from "#/server/functions/customers/search"
-import { useDebounce } from "#/lib/use-debounce"
-import { cn } from "#/lib/utils"
-import { Button } from "#/components/ui/button"
+import { useQuery } from "@tanstack/react-query";
+import { Check, ChevronsUpDown, UserPlus } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { CustomerForm } from "#/components/customer-form";
+import { Button } from "#/components/ui/button";
 import {
 	Command,
 	CommandEmpty,
@@ -14,34 +12,36 @@ import {
 	CommandItem,
 	CommandList,
 	CommandSeparator,
-} from "#/components/ui/command"
+} from "#/components/ui/command";
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
-} from "#/components/ui/dialog"
+} from "#/components/ui/dialog";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from "#/components/ui/popover"
-import { CustomerForm } from "#/components/customer-form"
+} from "#/components/ui/popover";
+import { useDebounce } from "#/lib/use-debounce";
+import { cn } from "#/lib/utils";
+import { searchCustomers } from "#/server/functions/customers/search";
 
 export interface CustomerOption {
-	id: string
-	display_name: string
-	phone: string | null
-	line_id: string | null
-	last_ordered_at: string | null
+	id: string;
+	display_name: string;
+	phone: string | null;
+	line_id: string | null;
+	last_ordered_at: string | null;
 }
 
 interface CustomerComboboxProps {
-	value: string | null
-	customerName: string | null
-	onChange: (customer: CustomerOption) => void
-	className?: string
-	disabled?: boolean
+	value: string | null;
+	customerName: string | null;
+	onChange: (customer: CustomerOption) => void;
+	className?: string;
+	disabled?: boolean;
 }
 
 export function CustomerCombobox({
@@ -51,25 +51,32 @@ export function CustomerCombobox({
 	className,
 	disabled,
 }: CustomerComboboxProps) {
-	const { t } = useTranslation("customers")
-	const [open, setOpen] = useState(false)
-	const [newDialogOpen, setNewDialogOpen] = useState(false)
-	const [query, setQuery] = useState("")
-	const debouncedQuery = useDebounce(query, 200)
+	const { t } = useTranslation("customers");
+	const [open, setOpen] = useState(false);
+	const [newDialogOpen, setNewDialogOpen] = useState(false);
+	const [query, setQuery] = useState("");
+	const debouncedQuery = useDebounce(query, 200);
 
 	const { data: results = [] } = useQuery({
 		queryKey: ["customers", "search", debouncedQuery],
-		queryFn: () => searchCustomers({ data: { query: debouncedQuery, limit: 8 } }),
-	})
+		queryFn: () =>
+			searchCustomers({ data: { query: debouncedQuery, limit: 8 } }),
+	});
 
 	function handleSelect(customer: CustomerOption) {
-		onChange(customer)
-		setOpen(false)
+		onChange(customer);
+		setOpen(false);
 	}
 
 	function handleNewCustomerCreated(id: string, displayName: string) {
-		onChange({ id, display_name: displayName, phone: null, line_id: null, last_ordered_at: null })
-		setNewDialogOpen(false)
+		onChange({
+			id,
+			display_name: displayName,
+			phone: null,
+			line_id: null,
+			last_ordered_at: null,
+		});
+		setNewDialogOpen(false);
 	}
 
 	return (
@@ -84,7 +91,7 @@ export function CustomerCombobox({
 						className={cn("w-full justify-between font-normal", className)}
 					>
 						<span className={cn("truncate", !value && "text-muted-foreground")}>
-							{value ? customerName ?? value : t("form.selectCustomer")}
+							{value ? (customerName ?? value) : t("form.selectCustomer")}
 						</span>
 						<ChevronsUpDown className="ml-2 shrink-0 opacity-50 size-4" />
 					</Button>
@@ -115,7 +122,9 @@ export function CustomerCombobox({
 										<div className="min-w-0">
 											<p className="font-medium truncate">{c.display_name}</p>
 											{c.phone && (
-												<p className="text-xs text-muted-foreground">{c.phone}</p>
+												<p className="text-xs text-muted-foreground">
+													{c.phone}
+												</p>
 											)}
 										</div>
 									</CommandItem>
@@ -125,8 +134,8 @@ export function CustomerCombobox({
 							<CommandGroup>
 								<CommandItem
 									onSelect={() => {
-										setOpen(false)
-										setNewDialogOpen(true)
+										setOpen(false);
+										setNewDialogOpen(true);
 									}}
 									className="text-muted-foreground"
 								>
@@ -148,5 +157,5 @@ export function CustomerCombobox({
 				</DialogContent>
 			</Dialog>
 		</>
-	)
+	);
 }

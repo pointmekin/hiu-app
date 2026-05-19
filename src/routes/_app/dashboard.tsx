@@ -10,9 +10,7 @@ function DashboardLayout() {
 
 	return (
 		<div className="p-4 md:p-6 max-w-6xl mx-auto">
-			<h1 className="font-display text-2xl font-semibold mb-6">
-				{t("title")}
-			</h1>
+			<h1 className="font-display text-2xl font-semibold mb-6">{t("title")}</h1>
 			<nav className="flex gap-4 mb-6 border-b border-border pb-3">
 				<NavLink to="/dashboard">{t("crossRound.title")}</NavLink>
 				<NavLink to="/dashboard/audit">{t("audit.title")}</NavLink>
@@ -22,13 +20,7 @@ function DashboardLayout() {
 	);
 }
 
-function NavLink({
-	to,
-	children,
-}: {
-	to: string;
-	children: React.ReactNode;
-}) {
+function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
 	return (
 		<Link
 			to={to}

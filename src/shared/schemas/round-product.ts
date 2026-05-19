@@ -16,7 +16,9 @@ export const upsertRoundProductsSchema = z.object({
 	rows: z.array(roundProductRowSchema).min(1),
 });
 
-export type UpsertRoundProductsInput = z.infer<typeof upsertRoundProductsSchema>;
+export type UpsertRoundProductsInput = z.infer<
+	typeof upsertRoundProductsSchema
+>;
 
 export const recomputeFromFxSchema = z.object({
 	roundId: z.string().uuid(),

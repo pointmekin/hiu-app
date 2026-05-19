@@ -1,9 +1,9 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useForm, type Resolver } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import { Alert, AlertDescription } from "#/components/ui/alert"
-import { Button } from "#/components/ui/button"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { type Resolver, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { Alert, AlertDescription } from "#/components/ui/alert";
+import { Button } from "#/components/ui/button";
 import {
 	Form,
 	FormControl,
@@ -11,15 +11,15 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "#/components/ui/form"
-import { Input } from "#/components/ui/input"
+} from "#/components/ui/form";
+import { Input } from "#/components/ui/input";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "#/components/ui/select"
+} from "#/components/ui/select";
 import {
 	Sheet,
 	SheetBody,
@@ -27,23 +27,23 @@ import {
 	SheetFooter,
 	SheetHeader,
 	SheetTitle,
-} from "#/components/ui/sheet"
-import { Textarea } from "#/components/ui/textarea"
-import { recordPayment } from "#/server/functions/payments/record"
+} from "#/components/ui/sheet";
+import { Textarea } from "#/components/ui/textarea";
+import { recordPayment } from "#/server/functions/payments/record";
 import {
 	PAYMENT_METHODS,
 	PAYMENT_TYPES,
 	type RecordPaymentInput,
 	recordPaymentSchema,
-} from "#/shared/schemas/payment"
+} from "#/shared/schemas/payment";
 
 interface PaymentSheetProps {
-	open: boolean
-	onOpenChange: (open: boolean) => void
-	orderId: string
-	orderNumber: string
-	totalThb: number
-	paidAmountThb: number
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	orderId: string;
+	orderNumber: string;
+	totalThb: number;
+	paidAmountThb: number;
 }
 
 export function PaymentSheet({
@@ -54,9 +54,9 @@ export function PaymentSheet({
 	totalThb,
 	paidAmountThb,
 }: PaymentSheetProps) {
-	const { t } = useTranslation("payments")
-	const { t: tc } = useTranslation("common")
-	const queryClient = useQueryClient()
+	const { t } = useTranslation("payments");
+	const { t: tc } = useTranslation("common");
+	const queryClient = useQueryClient();
 
 	const form = useForm<RecordPaymentInput>({
 		resolver: zodResolver(recordPaymentSchema) as Resolver<RecordPaymentInput>,
@@ -67,23 +67,23 @@ export function PaymentSheet({
 			method: "bank_transfer",
 			notes: "",
 		},
-	})
+	});
 
 	const mutation = useMutation({
 		mutationFn: (data: RecordPaymentInput) => recordPayment({ data }),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["orders", orderId] })
-			queryClient.invalidateQueries({ queryKey: ["orders"] })
-			form.reset()
-			onOpenChange(false)
+			queryClient.invalidateQueries({ queryKey: ["orders", orderId] });
+			queryClient.invalidateQueries({ queryKey: ["orders"] });
+			form.reset();
+			onOpenChange(false);
 		},
-	})
+	});
 
 	function onSubmit(data: RecordPaymentInput) {
-		mutation.mutate(data)
+		mutation.mutate(data);
 	}
 
-	const balance = totalThb - paidAmountThb
+	const balance = totalThb - paidAmountThb;
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
@@ -110,7 +110,10 @@ export function PaymentSheet({
 				</SheetHeader>
 
 				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
+					<form
+						onSubmit={form.handleSubmit(onSubmit)}
+						className="flex flex-col h-full"
+					>
 						<SheetBody className="space-y-4">
 							<FormField
 								control={form.control}
@@ -235,5 +238,5 @@ export function PaymentSheet({
 				</Form>
 			</SheetContent>
 		</Sheet>
-	)
+	);
 }

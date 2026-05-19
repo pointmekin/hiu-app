@@ -1,67 +1,76 @@
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
-import { createFileRoute } from "@tanstack/react-router"
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Alert, AlertDescription } from "#/components/ui/alert"
-import { Button } from "#/components/ui/button"
-import { Input } from "#/components/ui/input"
-import { Label } from "#/components/ui/label"
-import { getSettings } from "#/server/functions/settings/get"
-import { updateSettings } from "#/server/functions/settings/update"
-import type { AppSettings } from "#/shared/schemas/settings"
+import {
+	useMutation,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { RoundOverviewSkeleton } from "#/components/round-skeletons";
+import { Alert, AlertDescription } from "#/components/ui/alert";
+import { Button } from "#/components/ui/button";
+import { Input } from "#/components/ui/input";
+import { Label } from "#/components/ui/label";
+import { getSettings } from "#/server/functions/settings/get";
+import { updateSettings } from "#/server/functions/settings/update";
+import type { AppSettings } from "#/shared/schemas/settings";
 
 export const Route = createFileRoute("/_app/settings")({
 	loader: async ({ context: { queryClient } }) => {
-		await queryClient.ensureQueryData({
+		const promise = queryClient.ensureQueryData({
 			queryKey: ["settings"],
 			queryFn: () => getSettings(),
-		})
+		});
+		if (typeof window === "undefined") {
+			await promise;
+		}
 	},
+	pendingComponent: RoundOverviewSkeleton,
 	component: SettingsPage,
-})
+});
 
 function SettingsPage() {
-	const { t } = useTranslation(["settings", "common"])
-	const queryClient = useQueryClient()
+	const { t } = useTranslation(["settings", "common"]);
+	const queryClient = useQueryClient();
 
 	const { data: settings } = useSuspenseQuery({
 		queryKey: ["settings"],
 		queryFn: () => getSettings(),
-	})
+	});
 
 	const [presetsInput, setPresetsInput] = useState(
 		settings.shippingFeePresets.join(", "),
-	)
+	);
 	const [defaultFee, setDefaultFee] = useState(
 		String(settings.defaultShippingFee),
-	)
+	);
 	const [currencies, setCurrencies] = useState(
 		settings.sourceCurrencies.join(", "),
-	)
+	);
 
 	const mutation = useMutation({
 		mutationFn: (data: Partial<AppSettings>) => updateSettings({ data }),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["settings"] })
+			queryClient.invalidateQueries({ queryKey: ["settings"] });
 		},
-	})
+	});
 
 	function handleSave() {
 		const shippingFeePresets = presetsInput
 			.split(",")
 			.map((s) => Number(s.trim()))
-			.filter((n) => !Number.isNaN(n) && n > 0)
+			.filter((n) => !Number.isNaN(n) && n > 0);
 
 		const sourceCurrencies = currencies
 			.split(",")
 			.map((s) => s.trim().toUpperCase())
-			.filter(Boolean)
+			.filter(Boolean);
 
 		mutation.mutate({
 			shippingFeePresets,
 			defaultShippingFee: Number(defaultFee),
 			sourceCurrencies,
-		})
+		});
 	}
 
 	return (
@@ -82,7 +91,9 @@ function SettingsPage() {
 						value={presetsInput}
 						onChange={(e) => setPresetsInput(e.target.value)}
 					/>
-					<p className="text-xs text-muted-foreground">{t("settings:presetsHint")}</p>
+					<p className="text-xs text-muted-foreground">
+						{t("settings:presetsHint")}
+					</p>
 				</div>
 
 				<div className="space-y-1.5">
@@ -134,5 +145,5 @@ function SettingsPage() {
 				</Button>
 			</section>
 		</div>
-	)
+	);
 }

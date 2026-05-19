@@ -3,47 +3,66 @@ import {
 	Link,
 	Outlet,
 	redirect,
-} from "@tanstack/react-router"
-import { BarChart3, Globe, LogOut, Moon, Package, Settings, ShoppingBag, Sun, Users } from "lucide-react"
-import { useTranslation } from "react-i18next"
-import { PageProgressBar } from "#/components/page-progress-bar"
-import { Button } from "#/components/ui/button"
-import { useDarkMode } from "#/hooks/use-dark-mode"
-import { ShortcutHelpOverlay, useKeyboardShortcuts } from "#/hooks/use-keyboard-shortcuts.tsx"
-import { authClient } from "#/lib/auth-client"
-import i18n, { type Locale } from "#/lib/i18n"
+} from "@tanstack/react-router";
+import {
+	BarChart3,
+	Globe,
+	LogOut,
+	Moon,
+	Package,
+	Settings,
+	ShoppingBag,
+	Sun,
+	Users,
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { PageProgressBar } from "#/components/page-progress-bar";
+import { Button } from "#/components/ui/button";
+import { useDarkMode } from "#/hooks/use-dark-mode";
+import {
+	ShortcutHelpOverlay,
+	useKeyboardShortcuts,
+} from "#/hooks/use-keyboard-shortcuts.tsx";
+import { authClient } from "#/lib/auth-client";
+import i18n, { type Locale } from "#/lib/i18n";
 
 export const Route = createFileRoute("/_app")({
 	beforeLoad: ({ context }) => {
 		if (!context.session) {
-			throw redirect({ to: "/login" })
+			throw redirect({ to: "/login" });
 		}
 	},
 	component: AppLayout,
-})
+});
 
 function AppLayout() {
-	const { t } = useTranslation("common")
-	const { showHelp, setShowHelp } = useKeyboardShortcuts()
-	const { isDark, toggle: toggleDark } = useDarkMode()
+	const { t } = useTranslation("common");
+	const { showHelp, setShowHelp } = useKeyboardShortcuts();
+	const { isDark, toggle: toggleDark } = useDarkMode();
 
 	async function handleLogout() {
-		await authClient.signOut()
-		window.location.href = "/login"
+		await authClient.signOut();
+		window.location.href = "/login";
 	}
 
 	function handleLocaleChange(locale: Locale) {
-		i18n.changeLanguage(locale)
+		i18n.changeLanguage(locale);
 		// biome-ignore lint/suspicious/noDocumentCookie: locale cookie has no sensitive data; Cookie Store API support is limited
-		document.cookie = `locale=${locale}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
+		document.cookie = `locale=${locale}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
 	}
 
 	return (
 		<div className="flex flex-col min-h-dvh bg-background">
 			<PageProgressBar />
-			<ShortcutHelpOverlay showHelp={showHelp} onClose={() => setShowHelp(false)} />
+			<ShortcutHelpOverlay
+				showHelp={showHelp}
+				onClose={() => setShowHelp(false)}
+			/>
 			{/* Top bar — desktop only header */}
-			<header style={{ viewTransitionName: "app-header" }} className="hidden md:flex items-center justify-between gap-8 px-6 py-3 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
+			<header
+				style={{ viewTransitionName: "app-header" }}
+				className="hidden md:flex items-center justify-between gap-8 px-6 py-3 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40"
+			>
 				<span className="font-display font-semibold text-xl text-foreground text-nowrap">
 					{t("appName")}
 				</span>
@@ -107,7 +126,10 @@ function AppLayout() {
 			</main>
 
 			{/* Bottom tab bar — mobile only */}
-			<nav style={{ viewTransitionName: "app-bottom-nav" }} className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-sm border-t border-border safe-area-pb">
+			<nav
+				style={{ viewTransitionName: "app-bottom-nav" }}
+				className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-sm border-t border-border safe-area-pb"
+			>
 				<div className="grid grid-cols-4 h-16">
 					<BottomNavItem
 						to="/rounds"
@@ -132,7 +154,7 @@ function AppLayout() {
 				</div>
 			</nav>
 		</div>
-	)
+	);
 }
 
 function NavItem({
@@ -140,9 +162,9 @@ function NavItem({
 	icon,
 	label,
 }: {
-	to: string
-	icon: React.ReactNode
-	label: string
+	to: string;
+	icon: React.ReactNode;
+	label: string;
 }) {
 	return (
 		<Link
@@ -153,7 +175,7 @@ function NavItem({
 			{icon}
 			{label}
 		</Link>
-	)
+	);
 }
 
 function BottomNavItem({
@@ -161,9 +183,9 @@ function BottomNavItem({
 	icon,
 	label,
 }: {
-	to: string
-	icon: React.ReactNode
-	label: string
+	to: string;
+	icon: React.ReactNode;
+	label: string;
 }) {
 	return (
 		<Link
@@ -174,17 +196,17 @@ function BottomNavItem({
 			{icon}
 			<span className="text-[11px] font-medium">{label}</span>
 		</Link>
-	)
+	);
 }
 
 function LocaleSwitcher({
 	onLocaleChange,
 }: {
-	onLocaleChange: (locale: Locale) => void
+	onLocaleChange: (locale: Locale) => void;
 }) {
-	const { t, i18n: i18nInstance } = useTranslation("common")
-	const current = i18nInstance.language as Locale
-	const next: Locale = current === "th" ? "en" : "th"
+	const { t, i18n: i18nInstance } = useTranslation("common");
+	const current = i18nInstance.language as Locale;
+	const next: Locale = current === "th" ? "en" : "th";
 
 	return (
 		<Button
@@ -198,5 +220,5 @@ function LocaleSwitcher({
 			<Globe size={15} />
 			<span>{t(`language.${next}`)}</span>
 		</Button>
-	)
+	);
 }

@@ -37,7 +37,10 @@ const getSession = createServerFn({ method: "GET" }).handler(async () => {
 		.from(userRoles)
 		.where(eq(userRoles.userId, session.user.id))
 		.limit(1);
-	return { user: session.user, role: roleRow?.role ?? "operator" } as SessionWithRole;
+	return {
+		user: session.user,
+		role: roleRow?.role ?? "operator",
+	} as SessionWithRole;
 });
 
 export const Route = createRootRouteWithContext<RouterContext>()({

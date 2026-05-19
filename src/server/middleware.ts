@@ -1,12 +1,10 @@
-import { eq } from "drizzle-orm";
 import { getRequest } from "@tanstack/react-start/server";
+import { eq } from "drizzle-orm";
 import { db } from "#/db/index";
 import { userRoles } from "#/db/schema";
 import { auth } from "#/lib/auth";
 
-type SessionData = NonNullable<
-	Awaited<ReturnType<typeof auth.api.getSession>>
->;
+type SessionData = NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>;
 
 export async function requireSession(): Promise<SessionData> {
 	const request = getRequest();

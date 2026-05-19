@@ -13,7 +13,10 @@ export const updateOrder = createServerFn({ method: "POST" })
 		const { id, ...fields } = data;
 
 		const [current] = await db
-			.select({ subtotalThb: orders.subtotalThb, shippingFeeThb: orders.shippingFeeThb })
+			.select({
+				subtotalThb: orders.subtotalThb,
+				shippingFeeThb: orders.shippingFeeThb,
+			})
 			.from(orders)
 			.where(eq(orders.id, id))
 			.limit(1);
@@ -22,10 +25,12 @@ export const updateOrder = createServerFn({ method: "POST" })
 
 		const updateData: Record<string, unknown> = { updatedAt: new Date() };
 
-		if (fields.customerId !== undefined) updateData.customerId = fields.customerId;
+		if (fields.customerId !== undefined)
+			updateData.customerId = fields.customerId;
 		if (fields.addressId !== undefined) updateData.addressId = fields.addressId;
 		if (fields.notes !== undefined) updateData.notes = fields.notes;
-		if (fields.kerryTracking !== undefined) updateData.kerryTracking = fields.kerryTracking;
+		if (fields.kerryTracking !== undefined)
+			updateData.kerryTracking = fields.kerryTracking;
 
 		// Replace items when provided: delete existing, insert new
 		let newSubtotal: number | undefined;

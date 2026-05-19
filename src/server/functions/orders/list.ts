@@ -1,7 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "#/db/index";
-import { customers, orderItems, orders, products, roundProducts } from "#/db/schema";
+import {
+	customers,
+	orderItems,
+	orders,
+	products,
+	roundProducts,
+} from "#/db/schema";
 import { requireSession } from "#/server/middleware";
 import { listOrdersSchema } from "#/shared/schemas/order";
 
@@ -11,7 +17,8 @@ export const listOrders = createServerFn({ method: "GET" })
 		await requireSession();
 
 		const conditions = [eq(orders.roundId, data.roundId)];
-		if (data.paymentStatus) conditions.push(eq(orders.paymentStatus, data.paymentStatus));
+		if (data.paymentStatus)
+			conditions.push(eq(orders.paymentStatus, data.paymentStatus));
 		if (data.status) conditions.push(eq(orders.status, data.status));
 
 		const rows = await db
@@ -55,7 +62,11 @@ export const listOrders = createServerFn({ method: "GET" })
 
 		const itemsByOrderId = new Map<
 			string,
-			Array<{ productName: string; productBrand: string | null; quantity: number }>
+			Array<{
+				productName: string;
+				productBrand: string | null;
+				quantity: number;
+			}>
 		>();
 		for (const item of itemRows) {
 			const list = itemsByOrderId.get(item.orderId) ?? [];

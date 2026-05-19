@@ -18,10 +18,13 @@ import type { PaymentStatus } from "#/shared/schemas/order";
 
 export const Route = createFileRoute("/_app/rounds/$roundId/orders/")({
 	loader: async ({ context: { queryClient }, params }) => {
-		await queryClient.ensureQueryData({
+		const promise = queryClient.ensureQueryData({
 			queryKey: ["orders", params.roundId, "all"],
 			queryFn: () => listOrders({ data: { roundId: params.roundId } }),
 		});
+		if (typeof window === "undefined") {
+			await promise;
+		}
 	},
 	pendingComponent: OrdersListSkeleton,
 	component: OrdersPage,

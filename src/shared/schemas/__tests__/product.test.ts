@@ -10,11 +10,11 @@ describe("upsertProductSchema", () => {
 
 	it("accepts update input (with id)", () => {
 		const result = upsertProductSchema.parse({
-			id: "00000000-0000-0000-0000-000000000001",
+			id: "00000000-0000-4000-8000-000000000001",
 			name: "Updated name",
 			brand: "Dior",
 		});
-		expect(result.id).toBe("00000000-0000-0000-0000-000000000001");
+		expect(result.id).toBe("00000000-0000-4000-8000-000000000001");
 		expect(result.brand).toBe("Dior");
 	});
 

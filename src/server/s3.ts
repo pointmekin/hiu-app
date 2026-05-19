@@ -17,15 +17,17 @@ function getS3Config() {
 	}
 
 	const publicUrl =
-		process.env.S3_PUBLIC_URL ??
-		`https://${bucket}.s3.${region}.amazonaws.com`;
+		process.env.S3_PUBLIC_URL ?? `https://${bucket}.s3.${region}.amazonaws.com`;
 
 	return { region, accessKeyId, secretAccessKey, bucket, publicUrl };
 }
 
 function getClient() {
 	const { region, accessKeyId, secretAccessKey } = getS3Config();
-	return new S3Client({ region, credentials: { accessKeyId, secretAccessKey } });
+	return new S3Client({
+		region,
+		credentials: { accessKeyId, secretAccessKey },
+	});
 }
 
 export async function uploadToS3({

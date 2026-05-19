@@ -1,31 +1,31 @@
-import * as React from "react"
-import { XIcon } from "lucide-react"
-import { Dialog as DialogPrimitive } from "radix-ui"
+import { XIcon } from "lucide-react";
+import { Dialog as DialogPrimitive } from "radix-ui";
+import type * as React from "react";
 
-import { cn } from "#/lib/utils.ts"
+import { cn } from "#/lib/utils.ts";
 
 function Sheet({
 	...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
-	return <DialogPrimitive.Root data-slot="sheet" {...props} />
+	return <DialogPrimitive.Root data-slot="sheet" {...props} />;
 }
 
 function SheetTrigger({
 	...props
 }: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
-	return <DialogPrimitive.Trigger data-slot="sheet-trigger" {...props} />
+	return <DialogPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
 }
 
 function SheetClose({
 	...props
 }: React.ComponentProps<typeof DialogPrimitive.Close>) {
-	return <DialogPrimitive.Close data-slot="sheet-close" {...props} />
+	return <DialogPrimitive.Close data-slot="sheet-close" {...props} />;
 }
 
 function SheetPortal({
 	...props
 }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
-	return <DialogPrimitive.Portal data-slot="sheet-portal" {...props} />
+	return <DialogPrimitive.Portal data-slot="sheet-portal" {...props} />;
 }
 
 function SheetOverlay({
@@ -41,7 +41,7 @@ function SheetOverlay({
 			)}
 			{...props}
 		/>
-	)
+	);
 }
 
 function SheetContent({
@@ -75,7 +75,7 @@ function SheetContent({
 				{children}
 			</DialogPrimitive.Content>
 		</SheetPortal>
-	)
+	);
 }
 
 function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
@@ -85,7 +85,7 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
 			className={cn("flex flex-col gap-1.5 px-5 pt-5 pb-4 border-b", className)}
 			{...props}
 		/>
-	)
+	);
 }
 
 function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
@@ -98,7 +98,7 @@ function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
 			)}
 			{...props}
 		/>
-	)
+	);
 }
 
 function SheetTitle({
@@ -111,7 +111,7 @@ function SheetTitle({
 			className={cn("text-base font-semibold leading-none", className)}
 			{...props}
 		/>
-	)
+	);
 }
 
 function SheetDescription({
@@ -124,7 +124,7 @@ function SheetDescription({
 			className={cn("text-sm text-muted-foreground", className)}
 			{...props}
 		/>
-	)
+	);
 }
 
 function SheetBody({ className, ...props }: React.ComponentProps<"div">) {
@@ -134,7 +134,7 @@ function SheetBody({ className, ...props }: React.ComponentProps<"div">) {
 			className={cn("flex-1 overflow-y-auto px-5 py-4", className)}
 			{...props}
 		/>
-	)
+	);
 }
 
 export {
@@ -149,4 +149,4 @@ export {
 	SheetPortal,
 	SheetTitle,
 	SheetTrigger,
-}
+};

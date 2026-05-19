@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { sql, type SQL } from "drizzle-orm";
+import { type SQL, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "#/db/index";
 import { requireSession } from "#/server/middleware";
@@ -35,7 +35,11 @@ function mapRow(p: ProductRow) {
 	};
 }
 
-function buildFilterAnd(brand?: string, category?: string, sourceCountry?: string): SQL {
+function buildFilterAnd(
+	brand?: string,
+	category?: string,
+	sourceCountry?: string,
+): SQL {
 	const clauses: SQL[] = [];
 	if (brand) clauses.push(sql`brand = ${brand}`);
 	if (category) clauses.push(sql`category = ${category}`);
@@ -44,7 +48,11 @@ function buildFilterAnd(brand?: string, category?: string, sourceCountry?: strin
 	return sql` and ${sql.join(clauses, sql` and `)}`;
 }
 
-function buildFilterWhere(brand?: string, category?: string, sourceCountry?: string): SQL {
+function buildFilterWhere(
+	brand?: string,
+	category?: string,
+	sourceCountry?: string,
+): SQL {
 	const clauses: SQL[] = [];
 	if (brand) clauses.push(sql`brand = ${brand}`);
 	if (category) clauses.push(sql`category = ${category}`);
@@ -155,6 +163,8 @@ export const listProducts = createServerFn({ method: "GET" })
 		return {
 			items,
 			nextCursor:
-				hasMore && last ? { lastUsedAt: last.last_used_at ?? null, id: last.id } : null,
+				hasMore && last
+					? { lastUsedAt: last.last_used_at ?? null, id: last.id }
+					: null,
 		};
 	});

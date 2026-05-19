@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 
 const SEQUENCE_TIMEOUT_MS = 500;
 

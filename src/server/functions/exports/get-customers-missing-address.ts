@@ -33,19 +33,20 @@ export const getCustomersMissingAddress = createServerFn({ method: "GET" })
 			.select({
 				customerId: customers.id,
 				customerName: customers.displayName,
-				resolvedMobile: sql<string | null>`COALESCE(${orderAddr.mobile}, ${bestAddrSq("mobile")})`,
-				resolvedAddress: sql<string | null>`COALESCE(${orderAddr.address}, ${bestAddrSq("address")})`,
-				resolvedPostalCode: sql<string | null>`COALESCE(${orderAddr.postalCode}, ${bestAddrSq("postal_code")})`,
+				resolvedMobile: sql<
+					string | null
+				>`COALESCE(${orderAddr.mobile}, ${bestAddrSq("mobile")})`,
+				resolvedAddress: sql<
+					string | null
+				>`COALESCE(${orderAddr.address}, ${bestAddrSq("address")})`,
+				resolvedPostalCode: sql<
+					string | null
+				>`COALESCE(${orderAddr.postalCode}, ${bestAddrSq("postal_code")})`,
 			})
 			.from(orders)
 			.innerJoin(customers, eq(orders.customerId, customers.id))
 			.leftJoin(orderAddr, eq(orders.addressId, orderAddr.id))
-			.where(
-				and(
-					eq(orders.roundId, data.roundId),
-					eq(orders.status, "active"),
-				),
-			)
+			.where(and(eq(orders.roundId, data.roundId), eq(orders.status, "active")))
 			.orderBy(customers.displayName);
 
 		// Track customers as "has address" or "missing" across all their orders.
@@ -56,9 +57,12 @@ export const getCustomersMissingAddress = createServerFn({ method: "GET" })
 
 		for (const row of rows) {
 			const complete =
-				row.resolvedMobile != null && row.resolvedMobile.trim() !== "" &&
-				row.resolvedAddress != null && row.resolvedAddress.trim() !== "" &&
-				row.resolvedPostalCode != null && row.resolvedPostalCode.trim() !== "";
+				row.resolvedMobile != null &&
+				row.resolvedMobile.trim() !== "" &&
+				row.resolvedAddress != null &&
+				row.resolvedAddress.trim() !== "" &&
+				row.resolvedPostalCode != null &&
+				row.resolvedPostalCode.trim() !== "";
 
 			if (complete) {
 				hasAddress.add(row.customerId);

@@ -1,7 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { ScrollText } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { EmptyState } from "#/components/empty-state";
+import { Button } from "#/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card";
 import {
 	Select,
@@ -10,6 +13,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "#/components/ui/select";
+import { Skeleton } from "#/components/ui/skeleton";
 import {
 	Table,
 	TableBody,
@@ -18,10 +22,10 @@ import {
 	TableHeader,
 	TableRow,
 } from "#/components/ui/table";
-import { Button } from "#/components/ui/button";
-import { EmptyState } from "#/components/empty-state";
-import { listAuditLog, type AuditLogEntry } from "#/server/functions/audit/list";
-import { ScrollText } from "lucide-react";
+import {
+	type AuditLogEntry,
+	listAuditLog,
+} from "#/server/functions/audit/list";
 
 const ENTITY_OPTIONS = [
 	"order",
@@ -41,23 +45,50 @@ function AuditLogViewer() {
 	const { t } = useTranslation("dashboard");
 	const [entity, setEntity] = useState<string | undefined>(undefined);
 
-	const {
-		data,
-		fetchNextPage,
-		hasNextPage,
-		isFetchingNextPage,
-	} = useInfiniteQuery({
-		queryKey: ["audit", entity],
-		queryFn: ({ pageParam }) =>
-			listAuditLog({
-				data: { entity, limit: 50, cursor: pageParam as number | undefined },
-			}) as Promise<AuditLogEntry[]>,
-		initialPageParam: undefined as number | undefined,
-		getNextPageParam: (lastPage: AuditLogEntry[]) =>
-			lastPage.length > 0 ? lastPage[lastPage.length - 1].id : undefined,
-	});
+	const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+		useInfiniteQuery({
+			queryKey: ["audit", entity],
+			queryFn: ({ pageParam }) =>
+				listAuditLog({
+					data: { entity, limit: 50, cursor: pageParam as number | undefined },
+				}) as Promise<AuditLogEntry[]>,
+			initialPageParam: undefined as number | undefined,
+			getNextPageParam: (lastPage: AuditLogEntry[]) =>
+				lastPage.length > 0 ? lastPage[lastPage.length - 1].id : undefined,
+		});
 
-	const entries: AuditLogEntry[] = (data?.pages.flatMap((page) => page as AuditLogEntry[]) ?? []);
+	if (isLoading) {
+		return (
+			<Card>
+				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+					<CardTitle className="font-display text-lg">
+						{t("audit.title")}
+					</CardTitle>
+					<Skeleton className="h-9 w-48" />
+				</CardHeader>
+				<CardContent>
+					<div className="space-y-4">
+						{Array.from({ length: 8 }).map((_, i) => (
+							<div
+								// biome-ignore lint/suspicious/noArrayIndexKey: static list
+								key={i}
+								className="flex items-center justify-between py-3 border-b border-border last:border-0"
+							>
+								<Skeleton className="h-4 w-24" />
+								<Skeleton className="h-4 w-20" />
+								<Skeleton className="h-4 w-16" />
+								<Skeleton className="h-4 flex-1 mx-8 hidden md:block" />
+								<Skeleton className="h-4 w-32" />
+							</div>
+						))}
+					</div>
+				</CardContent>
+			</Card>
+		);
+	}
+
+	const entries: AuditLogEntry[] =
+		data?.pages.flatMap((page) => page as AuditLogEntry[]) ?? [];
 
 	return (
 		<Card>
@@ -84,10 +115,7 @@ function AuditLogViewer() {
 			</CardHeader>
 			<CardContent>
 				{entries.length === 0 ? (
-					<EmptyState
-						icon={<ScrollText />}
-						title={t("audit.empty")}
-					/>
+					<EmptyState icon={<ScrollText />} title={t("audit.empty")} />
 				) : (
 					<>
 						<Table>
@@ -115,9 +143,7 @@ function AuditLogViewer() {
 											{actionLabel(entry.action, t)}
 										</TableCell>
 										<TableCell className="hidden md:table-cell text-xs text-muted-foreground max-w-48 truncate">
-											{entry.diff
-												? entry.diff.slice(0, 80)
-												: "—"}
+											{entry.diff ? entry.diff.slice(0, 80) : "—"}
 										</TableCell>
 										<TableCell className="text-xs text-muted-foreground whitespace-nowrap">
 											{formatTimestamp(entry.at)}

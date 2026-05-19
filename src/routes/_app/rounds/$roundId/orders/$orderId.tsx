@@ -1,19 +1,38 @@
-import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
+import {
+	useMutation,
+	useQuery,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
 import {
 	createFileRoute,
 	Link,
 	useNavigate,
 	useParams,
-} from "@tanstack/react-router"
-import { ArrowLeft, Ban, Banknote, Check, Copy, Minus, Package, Plus, PlusCircle, Trash2 } from "lucide-react"
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
-import { CustomerCombobox, type CustomerOption } from "#/components/customer-combobox"
-import { InlineProductDialog } from "#/components/inline-product-dialog"
-import { PaymentSheet } from "#/components/payment-sheet"
-import { Alert, AlertDescription } from "#/components/ui/alert"
-import { Button } from "#/components/ui/button"
-import { Card } from "#/components/ui/card"
+} from "@tanstack/react-router";
+import {
+	ArrowLeft,
+	Ban,
+	Banknote,
+	Check,
+	Copy,
+	Minus,
+	Package,
+	Plus,
+	PlusCircle,
+	Trash2,
+} from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+	CustomerCombobox,
+	type CustomerOption,
+} from "#/components/customer-combobox";
+import { InlineProductDialog } from "#/components/inline-product-dialog";
+import { PaymentSheet } from "#/components/payment-sheet";
+import { Alert, AlertDescription } from "#/components/ui/alert";
+import { Button } from "#/components/ui/button";
+import { Card } from "#/components/ui/card";
 import {
 	Command,
 	CommandEmpty,
@@ -22,66 +41,78 @@ import {
 	CommandItem,
 	CommandList,
 	CommandSeparator,
-} from "#/components/ui/command"
-import { Input } from "#/components/ui/input"
-import { Label } from "#/components/ui/label"
-import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover"
+} from "#/components/ui/command";
+import { Input } from "#/components/ui/input";
+import { Label } from "#/components/ui/label";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "#/components/ui/popover";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "#/components/ui/select"
-import { Separator } from "#/components/ui/separator"
-import { getCustomer } from "#/server/functions/customers/get"
-import { cancelOrder } from "#/server/functions/orders/cancel"
-import { getOrder } from "#/server/functions/orders/get"
-import { updateOrder } from "#/server/functions/orders/update"
-import { listRoundProducts } from "#/server/functions/round-products/list"
-import { getRound } from "#/server/functions/rounds/get"
-import { getSettings } from "#/server/functions/settings/get"
+} from "#/components/ui/select";
+import { Separator } from "#/components/ui/separator";
+import { getCustomer } from "#/server/functions/customers/get";
+import { cancelOrder } from "#/server/functions/orders/cancel";
+import { getOrder } from "#/server/functions/orders/get";
+import { updateOrder } from "#/server/functions/orders/update";
+import { listRoundProducts } from "#/server/functions/round-products/list";
+import { getRound } from "#/server/functions/rounds/get";
+import { getSettings } from "#/server/functions/settings/get";
 
 type EditItem = {
-	roundProductId: string
-	productId: string
-	productName: string
-	productBrand: string | null
-	productThumbUrl: string | null
-	unitPriceThb: number
-	quantity: number
-}
+	roundProductId: string;
+	productId: string;
+	productName: string;
+	productBrand: string | null;
+	productThumbUrl: string | null;
+	unitPriceThb: number;
+	quantity: number;
+};
 
-export const Route = createFileRoute(
-	"/_app/rounds/$roundId/orders/$orderId",
-)({
+import { OrderDetailSkeleton } from "#/components/round-skeletons";
+
+export const Route = createFileRoute("/_app/rounds/$roundId/orders/$orderId")({
 	loader: async ({ context: { queryClient }, params }) => {
-		await queryClient.ensureQueryData({
+		const promise = queryClient.ensureQueryData({
 			queryKey: ["orders", params.orderId],
 			queryFn: () => getOrder({ data: { id: params.orderId } }),
-		})
+		});
+		if (typeof window === "undefined") {
+			await promise;
+		}
 	},
+	pendingComponent: OrderDetailSkeleton,
 	component: OrderDetailPage,
-})
+});
 
 function OrderDetailPage() {
-	const { t } = useTranslation(["orders", "payments", "common"])
+	const { t } = useTranslation(["orders", "payments", "common"]);
 	const { roundId, orderId } = useParams({
 		from: "/_app/rounds/$roundId/orders/$orderId",
-	})
-	const navigate = useNavigate()
-	const queryClient = useQueryClient()
+	});
+	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 
 	// ── Server data ───────────────────────────────────────────────────────────────
 	const { data: order } = useSuspenseQuery({
 		queryKey: ["orders", orderId],
 		queryFn: () => getOrder({ data: { id: orderId } }),
-	})
+	});
 
 	// ── Form state (always on, initialised once from order) ───────────────────────
-	const [editCustomerId, setEditCustomerId] = useState(() => order.customerId)
-	const [editCustomerName, setEditCustomerName] = useState(() => order.customerName)
-	const [editAddressId, setEditAddressId] = useState<string | null>(() => order.addressId ?? null)
+	const [editCustomerId, setEditCustomerId] = useState(() => order.customerId);
+	const [editCustomerName, setEditCustomerName] = useState(
+		() => order.customerName,
+	);
+	const [editAddressId, setEditAddressId] = useState<string | null>(
+		() => order.addressId ?? null,
+	);
 	const [editItems, setEditItems] = useState<EditItem[]>(() =>
 		order.items.map((item) => ({
 			roundProductId: item.roundProductId,
@@ -92,67 +123,79 @@ function OrderDetailPage() {
 			unitPriceThb: Number(item.unitPriceThb) || 0,
 			quantity: item.quantity,
 		})),
-	)
-	const [editShippingFee, setEditShippingFee] = useState(() => Number(order.shippingFeeThb))
-	const [editNotes, setEditNotes] = useState(() => order.notes ?? "")
-	const [productPickerOpen, setProductPickerOpen] = useState(false)
-	const [productQuery, setProductQuery] = useState("")
-	const [inlineDialogOpen, setInlineDialogOpen] = useState(false)
-	const [paymentSheetOpen, setPaymentSheetOpen] = useState(false)
-	const [copied, setCopied] = useState(false)
+	);
+	const [editShippingFee, setEditShippingFee] = useState(() =>
+		Number(order.shippingFeeThb),
+	);
+	const [editNotes, setEditNotes] = useState(() => order.notes ?? "");
+	const [productPickerOpen, setProductPickerOpen] = useState(false);
+	const [productQuery, setProductQuery] = useState("");
+	const [inlineDialogOpen, setInlineDialogOpen] = useState(false);
+	const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
+	const [copied, setCopied] = useState(false);
 
 	// ── Supporting queries ────────────────────────────────────────────────────────
 	const { data: roundProductRows = [] } = useQuery({
 		queryKey: ["round-products", roundId],
 		queryFn: () => listRoundProducts({ data: { roundId } }),
-	})
+	});
 
 	const { data: editCustomerData } = useQuery({
 		queryKey: ["customers", editCustomerId],
 		queryFn: () => getCustomer({ data: { id: editCustomerId } }),
 		enabled: !!editCustomerId,
-	})
+	});
 
 	const { data: settings } = useQuery({
 		queryKey: ["settings"],
 		queryFn: () => getSettings(),
-	})
+	});
 
 	const { data: round } = useQuery({
 		queryKey: ["rounds", roundId],
 		queryFn: () => getRound({ data: { id: roundId } }),
-	})
+	});
 
 	// ── Derived ───────────────────────────────────────────────────────────────────
-	const shippingPresets: number[] = settings?.shippingFeePresets ?? [39, 50, 80]
-	const paidAmountThb = Number(order.paidAmountThb)
+	const shippingPresets: number[] = settings?.shippingFeePresets ?? [
+		39, 50, 80,
+	];
+	const paidAmountThb = Number(order.paidAmountThb);
 
-	const editSubtotal = editItems.reduce((s, i) => s + i.unitPriceThb * i.quantity, 0)
-	const editTotal = editSubtotal + editShippingFee
-	const editBalance = editTotal - paidAmountThb
+	const editSubtotal = editItems.reduce(
+		(s, i) => s + i.unitPriceThb * i.quantity,
+		0,
+	);
+	const editTotal = editSubtotal + editShippingFee;
+	const editBalance = editTotal - paidAmountThb;
 
 	const summaryText = (() => {
-		const fmt = (n: number) => n.toLocaleString("th-TH", { minimumFractionDigits: 0 })
-		const lines: string[] = ["ขออนุญาติรวมยอดค่ะ 🙏", "รายการ:"]
+		const fmt = (n: number) =>
+			n.toLocaleString("th-TH", { minimumFractionDigits: 0 });
+		const lines: string[] = ["ขออนุญาติรวมยอดค่ะ 🙏", "รายการ:"];
 		editItems.forEach((item, i) => {
-			lines.push(`${i + 1}. ${item.productName} ×${item.quantity}: ${fmt(item.unitPriceThb * item.quantity)}`)
-		})
-		lines.push(`ค่าส่ง: ${fmt(editShippingFee)}`)
-		lines.push(`รวมทั้งหมด: ${fmt(editTotal)}`)
-		if (paidAmountThb > 0) lines.push(`ชำระแล้ว: ${fmt(paidAmountThb)}`)
+			lines.push(
+				`${i + 1}. ${item.productName} ×${item.quantity}: ${fmt(item.unitPriceThb * item.quantity)}`,
+			);
+		});
+		lines.push(`ค่าส่ง: ${fmt(editShippingFee)}`);
+		lines.push(`รวมทั้งหมด: ${fmt(editTotal)}`);
+		if (paidAmountThb > 0) lines.push(`ชำระแล้ว: ${fmt(paidAmountThb)}`);
 		// if (editBalance > 0) lines.push(`คงเหลือ: ${fmt(editBalance)}`)
-		return lines.join("\n")
-	})()
+		return lines.join("\n");
+	})();
 
 	const filteredRoundProducts = roundProductRows.filter(
 		(rp) =>
 			!productQuery ||
 			rp.productName.toLowerCase().includes(productQuery.toLowerCase()) ||
-			(rp.productBrand ?? "").toLowerCase().includes(productQuery.toLowerCase()),
-	)
+			(rp.productBrand ?? "")
+				.toLowerCase()
+				.includes(productQuery.toLowerCase()),
+	);
 
-	const isCancelled = order.status === "cancelled"
-	const isPaid = order.paymentStatus === "paid"
+	const isCancelled = order.status === "cancelled";
+	const isPaid = order.paymentStatus === "paid";
 
 	// isDirty: compare form state to last-saved order. Goes false again after refetch.
 	const isDirty =
@@ -162,31 +205,35 @@ function OrderDetailPage() {
 		editNotes !== (order.notes ?? "") ||
 		editItems.length !== order.items.length ||
 		editItems.some((item, i) => {
-			const orig = order.items[i]
-			return !orig || item.roundProductId !== orig.roundProductId || item.quantity !== orig.quantity
-		})
+			const orig = order.items[i];
+			return (
+				!orig ||
+				item.roundProductId !== orig.roundProductId ||
+				item.quantity !== orig.quantity
+			);
+		});
 
 	const paymentStatusColors: Record<string, string> = {
 		pending: "text-muted-foreground",
 		partial: "text-amber-600 dark:text-amber-400",
 		paid: "text-green-600 dark:text-green-400",
 		refunded: "text-blue-600",
-	}
+	};
 
 	// ── Handlers ──────────────────────────────────────────────────────────────────
 	function handleEditCustomerSelect(customer: CustomerOption) {
-		setEditCustomerId(customer.id)
-		setEditCustomerName(customer.display_name)
-		setEditAddressId(null)
+		setEditCustomerId(customer.id);
+		setEditCustomerName(customer.display_name);
+		setEditAddressId(null);
 	}
 
 	function addEditItem(rp: (typeof roundProductRows)[number]) {
 		setEditItems((prev) => {
-			const existing = prev.find((i) => i.roundProductId === rp.id)
+			const existing = prev.find((i) => i.roundProductId === rp.id);
 			if (existing) {
 				return prev.map((i) =>
 					i.roundProductId === rp.id ? { ...i, quantity: i.quantity + 1 } : i,
-				)
+				);
 			}
 			return [
 				...prev,
@@ -199,45 +246,52 @@ function OrderDetailPage() {
 					unitPriceThb: Number(rp.sellPriceThb) || 0,
 					quantity: 1,
 				},
-			]
-		})
+			];
+		});
 	}
 
 	function updateEditItemQty(roundProductId: string, qty: number) {
 		if (qty <= 0) {
-			setEditItems((prev) => prev.filter((i) => i.roundProductId !== roundProductId))
+			setEditItems((prev) =>
+				prev.filter((i) => i.roundProductId !== roundProductId),
+			);
 		} else {
 			setEditItems((prev) =>
-				prev.map((i) => (i.roundProductId === roundProductId ? { ...i, quantity: qty } : i)),
-			)
+				prev.map((i) =>
+					i.roundProductId === roundProductId ? { ...i, quantity: qty } : i,
+				),
+			);
 		}
 	}
 
 	function removeEditItem(roundProductId: string) {
-		setEditItems((prev) => prev.filter((i) => i.roundProductId !== roundProductId))
+		setEditItems((prev) =>
+			prev.filter((i) => i.roundProductId !== roundProductId),
+		);
 	}
 
 	async function copySummary() {
-		await navigator.clipboard.writeText(summaryText)
-		setCopied(true)
-		setTimeout(() => setCopied(false), 2000)
+		await navigator.clipboard.writeText(summaryText);
+		setCopied(true);
+		setTimeout(() => setCopied(false), 2000);
 	}
 
 	// ── Mutations ─────────────────────────────────────────────────────────────────
 	const cancelMutation = useMutation({
 		mutationFn: () => cancelOrder({ data: { id: orderId } }),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["orders", orderId] })
-			queryClient.invalidateQueries({ queryKey: ["orders", roundId] })
+			queryClient.invalidateQueries({ queryKey: ["orders", orderId] });
+			queryClient.invalidateQueries({ queryKey: ["orders", roundId] });
 		},
-	})
+	});
 
 	const saveMutation = useMutation({
 		mutationFn: () =>
 			updateOrder({
 				data: {
 					id: orderId,
-					customerId: editCustomerId !== order.customerId ? editCustomerId : undefined,
+					customerId:
+						editCustomerId !== order.customerId ? editCustomerId : undefined,
 					addressId: editAddressId,
 					shippingFeeThb: editShippingFee,
 					notes: editNotes || null,
@@ -250,10 +304,10 @@ function OrderDetailPage() {
 			}),
 		onSuccess: () => {
 			// Refetch causes order to update → isDirty becomes false naturally
-			queryClient.invalidateQueries({ queryKey: ["orders", orderId] })
-			queryClient.invalidateQueries({ queryKey: ["orders", roundId] })
+			queryClient.invalidateQueries({ queryKey: ["orders", orderId] });
+			queryClient.invalidateQueries({ queryKey: ["orders", roundId] });
 		},
-	})
+	});
 
 	// ── Render ────────────────────────────────────────────────────────────────────
 	return (
@@ -273,7 +327,9 @@ function OrderDetailPage() {
 							<ArrowLeft size={18} />
 						</Button>
 						<div className="min-w-0 flex-1">
-							<p className="font-semibold text-lg truncate">{order.customerName}</p>
+							<p className="font-semibold text-lg truncate">
+								{order.customerName}
+							</p>
 							<p
 								className={`text-sm ${paymentStatusColors[order.paymentStatus] ?? "text-muted-foreground"}`}
 							>
@@ -311,7 +367,9 @@ function OrderDetailPage() {
 									<SelectValue placeholder={t("orders:form.selectAddress")} />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="none">{t("orders:form.selectAddress")}</SelectItem>
+									<SelectItem value="none">
+										{t("orders:form.selectAddress")}
+									</SelectItem>
 									{editCustomerData.addresses.map((addr) => (
 										<SelectItem key={addr.id} value={addr.id}>
 											{addr.recipientName} · {addr.address.slice(0, 30)}
@@ -335,9 +393,16 @@ function OrderDetailPage() {
 										<div className="flex items-center gap-3">
 											<div className="size-10 rounded-lg bg-muted flex items-center justify-center shrink-0 overflow-hidden">
 												{item.productThumbUrl ? (
-													<img src={item.productThumbUrl} alt="" className="h-full w-full object-cover" />
+													<img
+														src={item.productThumbUrl}
+														alt=""
+														className="h-full w-full object-cover"
+													/>
 												) : (
-													<Package size={18} className="text-muted-foreground" />
+													<Package
+														size={18}
+														className="text-muted-foreground"
+													/>
 												)}
 											</div>
 											<div className="flex-1 min-w-0">
@@ -354,9 +419,12 @@ function OrderDetailPage() {
 														minimumFractionDigits: 0,
 													})}{" "}
 													฿ × {item.quantity} ={" "}
-													{(item.unitPriceThb * item.quantity).toLocaleString("th-TH", {
-														minimumFractionDigits: 0,
-													})}{" "}
+													{(item.unitPriceThb * item.quantity).toLocaleString(
+														"th-TH",
+														{
+															minimumFractionDigits: 0,
+														},
+													)}{" "}
 													฿
 												</p>
 											</div>
@@ -367,7 +435,10 @@ function OrderDetailPage() {
 													size="icon-xs"
 													disabled={isCancelled}
 													onClick={() =>
-														updateEditItemQty(item.roundProductId, item.quantity - 1)
+														updateEditItemQty(
+															item.roundProductId,
+															item.quantity - 1,
+														)
 													}
 												>
 													<Minus size={12} />
@@ -381,7 +452,10 @@ function OrderDetailPage() {
 													size="icon-xs"
 													disabled={isCancelled}
 													onClick={() =>
-														updateEditItemQty(item.roundProductId, item.quantity + 1)
+														updateEditItemQty(
+															item.roundProductId,
+															item.quantity + 1,
+														)
 													}
 												>
 													<Plus size={12} />
@@ -402,11 +476,16 @@ function OrderDetailPage() {
 								))}
 							</div>
 						) : (
-							<p className="text-sm text-muted-foreground">{t("orders:form.noItems")}</p>
+							<p className="text-sm text-muted-foreground">
+								{t("orders:form.noItems")}
+							</p>
 						)}
 
 						{!isCancelled && (
-							<Popover open={productPickerOpen} onOpenChange={setProductPickerOpen}>
+							<Popover
+								open={productPickerOpen}
+								onOpenChange={setProductPickerOpen}
+							>
 								<PopoverTrigger asChild>
 									<Button
 										type="button"
@@ -432,15 +511,19 @@ function OrderDetailPage() {
 														key={rp.id}
 														value={rp.id}
 														onSelect={() => {
-															addEditItem(rp)
-															setProductPickerOpen(false)
-															setProductQuery("")
+															addEditItem(rp);
+															setProductPickerOpen(false);
+															setProductQuery("");
 														}}
 													>
 														<div className="min-w-0 flex-1">
-															<p className="font-medium truncate">{rp.productName}</p>
+															<p className="font-medium truncate">
+																{rp.productName}
+															</p>
 															{rp.productBrand && (
-																<p className="text-xs text-muted-foreground">{rp.productBrand}</p>
+																<p className="text-xs text-muted-foreground">
+																	{rp.productBrand}
+																</p>
 															)}
 														</div>
 														<span className="font-mono text-sm ml-2 shrink-0 tabular-nums">
@@ -456,14 +539,16 @@ function OrderDetailPage() {
 												<CommandItem
 													value="__create_new__"
 													onSelect={() => {
-														setProductPickerOpen(false)
-														setInlineDialogOpen(true)
+														setProductPickerOpen(false);
+														setInlineDialogOpen(true);
 													}}
 													className="text-brand font-medium"
 												>
 													<PlusCircle size={14} className="shrink-0" />
 													{productQuery.trim()
-														? t("orders:action.createProductQuery", { name: productQuery.trim() })
+														? t("orders:action.createProductQuery", {
+																name: productQuery.trim(),
+															})
 														: t("orders:action.createProduct")}
 												</CommandItem>
 											</CommandGroup>
@@ -522,35 +607,54 @@ function OrderDetailPage() {
 					<div className="md:hidden space-y-4">
 						<Card className="px-4 py-3 space-y-2">
 							<div className="flex justify-between text-sm">
-								<span className="text-muted-foreground">{t("orders:detail.subtotal")}</span>
+								<span className="text-muted-foreground">
+									{t("orders:detail.subtotal")}
+								</span>
 								<span className="font-mono tabular-nums">
-									{editSubtotal.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+									{editSubtotal.toLocaleString("th-TH", {
+										minimumFractionDigits: 2,
+									})}{" "}
+									฿
 								</span>
 							</div>
 							<div className="flex justify-between text-sm">
-								<span className="text-muted-foreground">{t("orders:detail.shipping")}</span>
+								<span className="text-muted-foreground">
+									{t("orders:detail.shipping")}
+								</span>
 								<span className="font-mono tabular-nums">
-									{editShippingFee.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+									{editShippingFee.toLocaleString("th-TH", {
+										minimumFractionDigits: 2,
+									})}{" "}
+									฿
 								</span>
 							</div>
 							<Separator />
 							<div className="flex justify-between font-semibold">
 								<span>{t("orders:detail.total")}</span>
 								<span className="font-mono tabular-nums">
-									{editTotal.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+									{editTotal.toLocaleString("th-TH", {
+										minimumFractionDigits: 2,
+									})}{" "}
+									฿
 								</span>
 							</div>
 							<div className="flex justify-between text-sm text-green-600 dark:text-green-400">
 								<span>{t("orders:detail.paid")}</span>
 								<span className="font-mono tabular-nums">
-									{paidAmountThb.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+									{paidAmountThb.toLocaleString("th-TH", {
+										minimumFractionDigits: 2,
+									})}{" "}
+									฿
 								</span>
 							</div>
 							{editBalance > 0 && (
 								<div className="flex justify-between text-sm font-medium text-amber-600 dark:text-amber-400">
 									<span>{t("orders:detail.balance")}</span>
 									<span className="font-mono tabular-nums">
-										{editBalance.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+										{editBalance.toLocaleString("th-TH", {
+											minimumFractionDigits: 2,
+										})}{" "}
+										฿
 									</span>
 								</div>
 							)}
@@ -558,9 +662,15 @@ function OrderDetailPage() {
 
 						<Card className="px-4 py-3">
 							<div className="flex items-center justify-between mb-2">
-								<p className="text-sm font-medium">{t("orders:action.copySummary")}</p>
+								<p className="text-sm font-medium">
+									{t("orders:action.copySummary")}
+								</p>
 								<Button variant="ghost" size="icon-xs" onClick={copySummary}>
-									{copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+									{copied ? (
+										<Check size={14} className="text-green-500" />
+									) : (
+										<Copy size={14} />
+									)}
 								</Button>
 							</div>
 							<div className="text-xs whitespace-pre-wrap text-foreground bg-muted/50 rounded-md p-3 leading-relaxed">
@@ -570,16 +680,23 @@ function OrderDetailPage() {
 
 						{order.payments.length > 0 && (
 							<div>
-								<p className="text-sm font-medium mb-2">{t("payments:history.title")}</p>
+								<p className="text-sm font-medium mb-2">
+									{t("payments:history.title")}
+								</p>
 								<Card className="divide-y">
 									{order.payments.map((payment) => (
-										<div key={payment.id} className="flex items-center justify-between px-4 py-3">
+										<div
+											key={payment.id}
+											className="flex items-center justify-between px-4 py-3"
+										>
 											<div>
 												<p className="text-sm font-medium">
 													{t(`payments:type.${payment.type}`)}
 												</p>
 												<p className="text-xs text-muted-foreground">
-													{payment.method ? t(`payments:method.${payment.method}`) : ""}
+													{payment.method
+														? t(`payments:method.${payment.method}`)
+														: ""}
 													{payment.notes ? ` · ${payment.notes}` : ""}
 												</p>
 											</div>
@@ -617,35 +734,54 @@ function OrderDetailPage() {
 				<div className="hidden md:flex md:flex-col md:gap-4 md:w-72 md:shrink-0 md:sticky md:top-[185px]">
 					<Card className="px-4 py-3 space-y-2">
 						<div className="flex justify-between text-sm">
-							<span className="text-muted-foreground">{t("orders:detail.subtotal")}</span>
+							<span className="text-muted-foreground">
+								{t("orders:detail.subtotal")}
+							</span>
 							<span className="font-mono tabular-nums">
-								{editSubtotal.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+								{editSubtotal.toLocaleString("th-TH", {
+									minimumFractionDigits: 2,
+								})}{" "}
+								฿
 							</span>
 						</div>
 						<div className="flex justify-between text-sm">
-							<span className="text-muted-foreground">{t("orders:detail.shipping")}</span>
+							<span className="text-muted-foreground">
+								{t("orders:detail.shipping")}
+							</span>
 							<span className="font-mono tabular-nums">
-								{editShippingFee.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+								{editShippingFee.toLocaleString("th-TH", {
+									minimumFractionDigits: 2,
+								})}{" "}
+								฿
 							</span>
 						</div>
 						<Separator />
 						<div className="flex justify-between font-semibold">
 							<span>{t("orders:detail.total")}</span>
 							<span className="font-mono tabular-nums">
-								{editTotal.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+								{editTotal.toLocaleString("th-TH", {
+									minimumFractionDigits: 2,
+								})}{" "}
+								฿
 							</span>
 						</div>
 						<div className="flex justify-between text-sm text-green-600 dark:text-green-400">
 							<span>{t("orders:detail.paid")}</span>
 							<span className="font-mono tabular-nums">
-								{paidAmountThb.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+								{paidAmountThb.toLocaleString("th-TH", {
+									minimumFractionDigits: 2,
+								})}{" "}
+								฿
 							</span>
 						</div>
 						{editBalance > 0 && (
 							<div className="flex justify-between text-sm font-medium text-amber-600 dark:text-amber-400">
 								<span>{t("orders:detail.balance")}</span>
 								<span className="font-mono tabular-nums">
-									{editBalance.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+									{editBalance.toLocaleString("th-TH", {
+										minimumFractionDigits: 2,
+									})}{" "}
+									฿
 								</span>
 							</div>
 						)}
@@ -653,9 +789,15 @@ function OrderDetailPage() {
 
 					<Card className="px-4 py-3">
 						<div className="flex items-center justify-between mb-2">
-							<p className="text-sm font-medium">{t("orders:action.copySummary")}</p>
+							<p className="text-sm font-medium">
+								{t("orders:action.copySummary")}
+							</p>
 							<Button variant="ghost" size="icon-xs" onClick={copySummary}>
-								{copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+								{copied ? (
+									<Check size={14} className="text-green-500" />
+								) : (
+									<Copy size={14} />
+								)}
 							</Button>
 						</div>
 						<div className="text-xs whitespace-pre-wrap text-foreground bg-muted/50 rounded-md p-3 leading-relaxed">
@@ -665,16 +807,23 @@ function OrderDetailPage() {
 
 					{order.payments.length > 0 && (
 						<div>
-							<p className="text-sm font-medium mb-2">{t("payments:history.title")}</p>
+							<p className="text-sm font-medium mb-2">
+								{t("payments:history.title")}
+							</p>
 							<Card className="divide-y">
 								{order.payments.map((payment) => (
-									<div key={payment.id} className="flex items-center justify-between px-4 py-3">
+									<div
+										key={payment.id}
+										className="flex items-center justify-between px-4 py-3"
+									>
 										<div>
 											<p className="text-sm font-medium">
 												{t(`payments:type.${payment.type}`)}
 											</p>
 											<p className="text-xs text-muted-foreground">
-												{payment.method ? t(`payments:method.${payment.method}`) : ""}
+												{payment.method
+													? t(`payments:method.${payment.method}`)
+													: ""}
 												{payment.notes ? ` · ${payment.notes}` : ""}
 											</p>
 										</div>
@@ -698,7 +847,9 @@ function OrderDetailPage() {
 								disabled={!isDirty || saveMutation.isPending}
 								onClick={() => saveMutation.mutate()}
 							>
-								{saveMutation.isPending ? t("common:loading") : t("orders:action.saveChanges")}
+								{saveMutation.isPending
+									? t("common:loading")
+									: t("orders:action.saveChanges")}
 							</Button>
 							{!isPaid && (
 								<Button
@@ -715,7 +866,7 @@ function OrderDetailPage() {
 								className="w-full gap-2 text-destructive hover:text-destructive"
 								onClick={() => {
 									if (confirm(t("orders:action.cancelConfirm"))) {
-										cancelMutation.mutate()
+										cancelMutation.mutate();
 									}
 								}}
 								disabled={cancelMutation.isPending}
@@ -753,7 +904,9 @@ function OrderDetailPage() {
 						disabled={!isDirty || saveMutation.isPending}
 						onClick={() => saveMutation.mutate()}
 					>
-						{saveMutation.isPending ? t("common:loading") : t("orders:action.saveChanges")}
+						{saveMutation.isPending
+							? t("common:loading")
+							: t("orders:action.saveChanges")}
 					</Button>
 					{!isPaid && (
 						<Button
@@ -770,7 +923,7 @@ function OrderDetailPage() {
 						size="lg"
 						onClick={() => {
 							if (confirm(t("orders:action.cancelConfirm"))) {
-								cancelMutation.mutate()
+								cancelMutation.mutate();
 							}
 						}}
 						disabled={cancelMutation.isPending}
@@ -801,7 +954,7 @@ function OrderDetailPage() {
 								unitPriceThb: Number(rp.sellPriceThb) || 0,
 								quantity: 1,
 							},
-						])
+						]);
 					}}
 				/>
 			)}
@@ -815,5 +968,5 @@ function OrderDetailPage() {
 				paidAmountThb={paidAmountThb}
 			/>
 		</>
-	)
+	);
 }

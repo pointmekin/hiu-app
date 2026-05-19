@@ -3,7 +3,12 @@ import { z } from "zod";
 export const ORDER_STATUSES = ["active", "cancelled"] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
-export const PAYMENT_STATUSES = ["pending", "partial", "paid", "refunded"] as const;
+export const PAYMENT_STATUSES = [
+	"pending",
+	"partial",
+	"paid",
+	"refunded",
+] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 
 export const orderItemInputSchema = z.object({
