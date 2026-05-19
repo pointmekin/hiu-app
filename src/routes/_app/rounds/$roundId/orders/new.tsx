@@ -4,8 +4,10 @@ import {
 	useNavigate,
 	useParams,
 } from "@tanstack/react-router"
-import { Minus, Package, Plus, Trash2 } from "lucide-react"
+import { Minus, Package, Plus, PlusCircle, Trash2 } from "lucide-react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { InlineProductDialog } from "#/components/inline-product-dialog"
 import { CustomerCombobox, type CustomerOption } from "#/components/customer-combobox"
 import { Alert, AlertDescription } from "#/components/ui/alert"
 import { Button } from "#/components/ui/button"
@@ -17,6 +19,7 @@ import {
 	CommandInput,
 	CommandItem,
 	CommandList,
+	CommandSeparator,
 } from "#/components/ui/command"
 import { Input } from "#/components/ui/input"
 import { Label } from "#/components/ui/label"
@@ -38,7 +41,6 @@ import {
 	useOrderDraft,
 	useOrderDraftTotal,
 } from "#/store/order-draft"
-import { useState } from "react"
 
 export const Route = createFileRoute("/_app/rounds/$roundId/orders/new")({
 	loader: async ({ context: { queryClient }, params }) => {
@@ -100,6 +102,7 @@ function NewOrderPage() {
 
 	const [productSearchOpen, setProductSearchOpen] = useState(false)
 	const [productQuery, setProductQuery] = useState("")
+	const [inlineDialogOpen, setInlineDialogOpen] = useState(false)
 
 	const filteredProducts = roundProductRows.filter(
 		(rp) =>
@@ -233,6 +236,22 @@ function NewOrderPage() {
 										</CommandItem>
 									))}
 								</CommandGroup>
+								<CommandSeparator />
+								<CommandGroup>
+									<CommandItem
+										value="__create_new__"
+										onSelect={() => {
+											setProductSearchOpen(false)
+											setInlineDialogOpen(true)
+										}}
+										className="text-brand font-medium"
+									>
+										<PlusCircle size={14} className="shrink-0" />
+										{productQuery.trim()
+											? t("orders:action.createProductQuery", { name: productQuery.trim() })
+											: t("orders:action.createProduct")}
+									</CommandItem>
+								</CommandGroup>
 							</CommandList>
 						</Command>
 					</PopoverContent>
@@ -348,6 +367,23 @@ function NewOrderPage() {
 					</AlertDescription>
 				</Alert>
 			)}
+
+			<InlineProductDialog
+				open={inlineDialogOpen}
+				onOpenChange={setInlineDialogOpen}
+				roundId={roundId}
+				sourceCurrency={round.sourceCurrency}
+				fxRate={Number(round.fxRate)}
+				perItemFeeThb={Number(round.perItemFeeTh)}
+				onCreated={(rp) => {
+					draft.addItem({
+						roundProductId: rp.id,
+						productName: rp.productName,
+						productBrand: rp.productBrand,
+						unitPriceThb: Number(rp.sellPriceThb),
+					})
+				}}
+			/>
 
 			{/* Sticky bottom CTA */}
 			<div className="fixed bottom-16 md:bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t px-4 py-3 flex items-center justify-between gap-4 z-20">

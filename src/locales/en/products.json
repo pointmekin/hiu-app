@@ -15,7 +15,8 @@
 		"brand": "Brand",
 		"sourceCountry": "Country",
 		"category": "Category",
-		"photo": "Product photo"
+		"photo": "Product photo",
+		"foreignPrice": "Price ({{currency}})"
 	},
 	"form": {
 		"createTitle": "Add new product",

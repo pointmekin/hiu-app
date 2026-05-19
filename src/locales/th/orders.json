@@ -63,7 +63,10 @@
 		"editing": "กำลังแก้ไข",
 		"discardEdit": "ยกเลิกการแก้ไข",
 		"saveChanges": "บันทึกการเปลี่ยนแปลง",
-		"discardEditConfirm": "ยกเลิกการแก้ไขทั้งหมด?"
+		"discardEditConfirm": "ยกเลิกการแก้ไขทั้งหมด?",
+		"copySummary": "คัดลอกสรุปยอด",
+		"createProduct": "สร้างสินค้าใหม่",
+		"createProductQuery": "สร้าง \"{{name}}\""
 	},
 	"item": {
 		"qty": "จำนวน",

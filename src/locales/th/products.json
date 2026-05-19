@@ -15,7 +15,8 @@
 		"brand": "แบรนด์",
 		"sourceCountry": "ประเทศที่ซื้อ",
 		"category": "หมวดหมู่",
-		"photo": "รูปสินค้า"
+		"photo": "รูปสินค้า",
+		"foreignPrice": "ราคา ({{currency}})"
 	},
 	"form": {
 		"createTitle": "เพิ่มสินค้าใหม่",
