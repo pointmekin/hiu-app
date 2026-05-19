@@ -51,6 +51,7 @@ export const getOrder = createServerFn({ method: "GET" })
 				quantity: orderItems.quantity,
 				unitPriceThb: orderItems.unitPriceThb,
 				lineTotalThb: orderItems.lineTotalThb,
+				productId: products.id,
 				productName: products.name,
 				productBrand: products.brand,
 			})
