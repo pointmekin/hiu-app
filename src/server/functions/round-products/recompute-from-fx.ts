@@ -23,7 +23,10 @@ export const recomputeFromFx = createServerFn({ method: "POST" })
 		const perItemFee = Number(round.perItemFeeTh);
 
 		const nonOverridden = await db
-			.select({ id: roundProducts.id, foreignPrice: roundProducts.foreignPrice })
+			.select({
+				id: roundProducts.id,
+				foreignPrice: roundProducts.foreignPrice,
+			})
 			.from(roundProducts)
 			.where(
 				and(

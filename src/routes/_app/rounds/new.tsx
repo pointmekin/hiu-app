@@ -1,10 +1,10 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { useForm, type Resolver } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import { Alert, AlertDescription } from "#/components/ui/alert"
-import { Button } from "#/components/ui/button"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { type Resolver, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { Alert, AlertDescription } from "#/components/ui/alert";
+import { Button } from "#/components/ui/button";
 import {
 	Form,
 	FormControl,
@@ -13,31 +13,31 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "#/components/ui/form"
-import { Input } from "#/components/ui/input"
+} from "#/components/ui/form";
+import { Input } from "#/components/ui/input";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "#/components/ui/select"
-import { Textarea } from "#/components/ui/textarea"
-import { createRound } from "#/server/functions/rounds/create"
+} from "#/components/ui/select";
+import { Textarea } from "#/components/ui/textarea";
+import { createRound } from "#/server/functions/rounds/create";
 import {
 	type CreateRoundInput,
 	createRoundSchema,
 	SOURCE_CURRENCIES,
-} from "#/shared/schemas/round"
+} from "#/shared/schemas/round";
 
 export const Route = createFileRoute("/_app/rounds/new")({
 	component: NewRoundPage,
-})
+});
 
 function NewRoundPage() {
-	const { t } = useTranslation(["rounds", "common"])
-	const navigate = useNavigate()
-	const queryClient = useQueryClient()
+	const { t } = useTranslation(["rounds", "common"]);
+	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 
 	const form = useForm<CreateRoundInput>({
 		resolver: zodResolver(createRoundSchema) as Resolver<CreateRoundInput>,
@@ -48,24 +48,24 @@ function NewRoundPage() {
 			perItemFeeTh: 0,
 			defaultShippingFee: 50,
 		},
-	})
+	});
 
-	const fxRate = form.watch("fxRate") ?? 0
-	const perItemFee = form.watch("perItemFeeTh") ?? 0
-	const currency = form.watch("sourceCurrency")
-	const exampleForeign = currency === "JPY" ? 2800 : 100
-	const computedThb = exampleForeign * fxRate + perItemFee
+	const fxRate = form.watch("fxRate") ?? 0;
+	const perItemFee = form.watch("perItemFeeTh") ?? 0;
+	const currency = form.watch("sourceCurrency");
+	const exampleForeign = currency === "JPY" ? 2800 : 100;
+	const computedThb = exampleForeign * fxRate + perItemFee;
 
 	const mutation = useMutation({
 		mutationFn: (data: CreateRoundInput) => createRound({ data }),
 		onSuccess: (round) => {
-			queryClient.invalidateQueries({ queryKey: ["rounds"] })
-			navigate({ to: "/rounds/$roundId", params: { roundId: round.id } })
+			queryClient.invalidateQueries({ queryKey: ["rounds"] });
+			navigate({ to: "/rounds/$roundId", params: { roundId: round.id } });
 		},
-	})
+	});
 
 	function onSubmit(data: CreateRoundInput) {
-		mutation.mutate(data)
+		mutation.mutate(data);
 	}
 
 	return (
@@ -163,7 +163,9 @@ function NewRoundPage() {
 											onChange={(e) => field.onChange(e.target.valueAsNumber)}
 										/>
 									</FormControl>
-									<FormDescription>{t("rounds:form.fxRateHint")}</FormDescription>
+									<FormDescription>
+										{t("rounds:form.fxRateHint")}
+									</FormDescription>
 									<FormMessage />
 								</FormItem>
 							)}
@@ -308,5 +310,5 @@ function NewRoundPage() {
 				</form>
 			</Form>
 		</div>
-	)
+	);
 }

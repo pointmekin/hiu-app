@@ -1,9 +1,6 @@
-import ExcelJS from "exceljs";
+import type ExcelJS from "exceljs";
 import { describe, expect, it } from "vitest";
-import {
-	JAPAN05_SHEET_NAMES,
-	buildJapan05WorkbookFromData,
-} from "../japan05";
+import { buildJapan05WorkbookFromData, JAPAN05_SHEET_NAMES } from "../japan05";
 
 const MOCK_ROWS = [
 	{

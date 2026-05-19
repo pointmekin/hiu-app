@@ -1,9 +1,9 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useForm, type Resolver } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import { Alert, AlertDescription } from "#/components/ui/alert"
-import { Button } from "#/components/ui/button"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { type Resolver, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { Alert, AlertDescription } from "#/components/ui/alert";
+import { Button } from "#/components/ui/button";
 import {
 	Form,
 	FormControl,
@@ -11,21 +11,21 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "#/components/ui/form"
-import { Input } from "#/components/ui/input"
-import { Separator } from "#/components/ui/separator"
-import { Textarea } from "#/components/ui/textarea"
-import { upsertCustomer } from "#/server/functions/customers/upsert"
+} from "#/components/ui/form";
+import { Input } from "#/components/ui/input";
+import { Separator } from "#/components/ui/separator";
+import { Textarea } from "#/components/ui/textarea";
+import { upsertCustomer } from "#/server/functions/customers/upsert";
 import {
 	type UpsertCustomerInput,
 	upsertCustomerSchema,
-} from "#/shared/schemas/customer"
+} from "#/shared/schemas/customer";
 
 interface CustomerFormProps {
-	initialValues?: Partial<UpsertCustomerInput>
-	onSuccess?: (id: string, displayName: string) => void
-	withAddress?: boolean
-	addressOnly?: boolean
+	initialValues?: Partial<UpsertCustomerInput>;
+	onSuccess?: (id: string, displayName: string) => void;
+	withAddress?: boolean;
+	addressOnly?: boolean;
 }
 
 export function CustomerForm({
@@ -34,12 +34,14 @@ export function CustomerForm({
 	withAddress = true,
 	addressOnly = false,
 }: CustomerFormProps) {
-	const { t } = useTranslation("customers")
-	const { t: tc } = useTranslation("common")
-	const queryClient = useQueryClient()
+	const { t } = useTranslation("customers");
+	const { t: tc } = useTranslation("common");
+	const queryClient = useQueryClient();
 
 	const form = useForm<UpsertCustomerInput>({
-		resolver: zodResolver(upsertCustomerSchema) as Resolver<UpsertCustomerInput>,
+		resolver: zodResolver(
+			upsertCustomerSchema,
+		) as Resolver<UpsertCustomerInput>,
 		defaultValues: {
 			displayName: "",
 			lineId: "",
@@ -58,19 +60,19 @@ export function CustomerForm({
 					}
 				: undefined,
 		},
-	})
+	});
 
 	const mutation = useMutation({
 		mutationFn: (data: UpsertCustomerInput) => upsertCustomer({ data }),
 		onSuccess: (result) => {
-			queryClient.invalidateQueries({ queryKey: ["customers"] })
-			const name = form.getValues("displayName")
-			onSuccess?.(result.id, name)
+			queryClient.invalidateQueries({ queryKey: ["customers"] });
+			const name = form.getValues("displayName");
+			onSuccess?.(result.id, name);
 		},
-	})
+	});
 
 	function onSubmit(data: UpsertCustomerInput) {
-		mutation.mutate(data)
+		mutation.mutate(data);
 	}
 
 	return (
@@ -140,7 +142,9 @@ export function CustomerForm({
 				{(withAddress || addressOnly) && (
 					<>
 						{!addressOnly && <Separator />}
-						{!addressOnly && <p className="text-sm font-medium">{t("form.addressSection")}</p>}
+						{!addressOnly && (
+							<p className="text-sm font-medium">{t("form.addressSection")}</p>
+						)}
 
 						<FormField
 							control={form.control}
@@ -218,5 +222,5 @@ export function CustomerForm({
 				</Button>
 			</form>
 		</Form>
-	)
+	);
 }

@@ -28,7 +28,9 @@ export const uploadProductImage = createServerFn({ method: "POST" })
 	.handler(async ({ data }) => {
 		const session = await requireSession();
 
-		if (!ALLOWED_MIME.includes(data.mimeType as (typeof ALLOWED_MIME)[number])) {
+		if (
+			!ALLOWED_MIME.includes(data.mimeType as (typeof ALLOWED_MIME)[number])
+		) {
 			throw new Error(`Unsupported file type: ${data.mimeType}`);
 		}
 
@@ -42,7 +44,12 @@ export const uploadProductImage = createServerFn({ method: "POST" })
 
 		const [canonical, thumb] = await Promise.all([
 			sharp(raw)
-				.resize({ width: 1024, height: 1024, fit: "inside", withoutEnlargement: true })
+				.resize({
+					width: 1024,
+					height: 1024,
+					fit: "inside",
+					withoutEnlargement: true,
+				})
 				.webp({ quality: 80 })
 				.toBuffer(),
 			sharp(raw)
@@ -55,7 +62,11 @@ export const uploadProductImage = createServerFn({ method: "POST" })
 		const thumbKey = `${baseKey}/thumb-${hash}.webp`;
 
 		await Promise.all([
-			uploadToS3({ key: canonicalKey, body: canonical, contentType: "image/webp" }),
+			uploadToS3({
+				key: canonicalKey,
+				body: canonical,
+				contentType: "image/webp",
+			}),
 			uploadToS3({ key: thumbKey, body: thumb, contentType: "image/webp" }),
 		]);
 

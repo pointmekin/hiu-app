@@ -4,16 +4,25 @@ import {
 	useSuspenseQuery,
 } from "@tanstack/react-query";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { PurchaseTrackerSkeleton } from "#/components/round-skeletons";
-import { ChevronDown, ChevronRight, Minus, Plus, Search, ShoppingCart, X } from "lucide-react";
+import {
+	ChevronDown,
+	ChevronRight,
+	Minus,
+	Plus,
+	Search,
+	ShoppingCart,
+	X,
+} from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { PurchaseTrackerItem } from "#/server/functions/round-products/list-for-purchase-tracker";
-import { listForPurchaseTracker } from "#/server/functions/round-products/list-for-purchase-tracker";
-import { updateBoughtQty } from "#/server/functions/round-products/update-bought-qty";
+import { PurchaseTrackerSkeleton } from "#/components/round-skeletons";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "#/components/ui/popover";
 import {
 	Select,
 	SelectContent,
@@ -22,14 +31,20 @@ import {
 	SelectValue,
 } from "#/components/ui/select";
 import { cn } from "#/lib/utils";
+import type { PurchaseTrackerItem } from "#/server/functions/round-products/list-for-purchase-tracker";
+import { listForPurchaseTracker } from "#/server/functions/round-products/list-for-purchase-tracker";
+import { updateBoughtQty } from "#/server/functions/round-products/update-bought-qty";
 
 export const Route = createFileRoute("/_app/rounds/$roundId/purchase")({
 	loader: async ({ context: { queryClient }, params }) => {
-		await queryClient.ensureQueryData({
+		const promise = queryClient.ensureQueryData({
 			queryKey: ["purchase-tracker", params.roundId],
 			queryFn: () =>
 				listForPurchaseTracker({ data: { roundId: params.roundId } }),
 		});
+		if (typeof window === "undefined") {
+			await promise;
+		}
 	},
 	pendingComponent: PurchaseTrackerSkeleton,
 	component: PurchasePage,
@@ -162,9 +177,8 @@ function PurchaseRow({
 			queryClient.setQueryData<PurchaseTrackerItem[]>(
 				["purchase-tracker", roundId],
 				(old) =>
-					old?.map((i) =>
-						i.id === item.id ? { ...i, boughtQty: qty } : i,
-					) ?? [],
+					old?.map((i) => (i.id === item.id ? { ...i, boughtQty: qty } : i)) ??
+					[],
 			);
 			return { prev };
 		},
@@ -174,7 +188,9 @@ function PurchaseRow({
 			}
 		},
 		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: ["purchase-tracker", roundId] });
+			queryClient.invalidateQueries({
+				queryKey: ["purchase-tracker", roundId],
+			});
 		},
 	});
 
@@ -395,12 +411,7 @@ function ItemGroupCard({
 			{open && (
 				<div>
 					{group.items.map((item) => (
-						<PurchaseRow
-							key={item.id}
-							item={item}
-							roundId={roundId}
-							t={t}
-						/>
+						<PurchaseRow key={item.id} item={item} roundId={roundId} t={t} />
 					))}
 				</div>
 			)}
@@ -524,9 +535,7 @@ function PurchasePage() {
 							<SelectItem value="category">
 								{t("purchase.groupBy.category")}
 							</SelectItem>
-							<SelectItem value="none">
-								{t("purchase.groupBy.none")}
-							</SelectItem>
+							<SelectItem value="none">{t("purchase.groupBy.none")}</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
@@ -573,12 +582,14 @@ function PurchasePage() {
 					{searchQuery.trim() ? t("purchase.noResults") : t("purchase.allDone")}
 				</div>
 			) : (
-				<div className={cn(
-					"gap-3",
-					groupBy !== "none"
-						? "grid grid-cols-1 md:grid-cols-2"
-						: "space-y-3",
-				)}>
+				<div
+					className={cn(
+						"gap-3",
+						groupBy !== "none"
+							? "grid grid-cols-1 md:grid-cols-2"
+							: "space-y-3",
+					)}
+				>
 					{groups.map((group) => (
 						<ItemGroupCard
 							key={group.key}

@@ -1,31 +1,36 @@
-import { useSuspenseQuery } from "@tanstack/react-query"
-import { createFileRoute, Link } from "@tanstack/react-router"
-import { Plus, ShoppingBag } from "lucide-react"
-import { useTranslation } from "react-i18next"
-import { EmptyState } from "#/components/empty-state"
-import { RoundStatusBadge } from "#/components/round-status-badge"
-import { Button } from "#/components/ui/button"
-import { Card } from "#/components/ui/card"
-import type { Round } from "#/db/schema"
-import { listRounds } from "#/server/functions/rounds/list"
-import type { RoundStatus } from "#/shared/schemas/round"
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Plus, ShoppingBag } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { EmptyState } from "#/components/empty-state";
+import { RoundsListSkeleton } from "#/components/round-skeletons";
+import { RoundStatusBadge } from "#/components/round-status-badge";
+import { Button } from "#/components/ui/button";
+import { Card } from "#/components/ui/card";
+import type { Round } from "#/db/schema";
+import { listRounds } from "#/server/functions/rounds/list";
+import type { RoundStatus } from "#/shared/schemas/round";
 
 export const Route = createFileRoute("/_app/rounds/")({
 	loader: async ({ context: { queryClient } }) => {
-		await queryClient.ensureQueryData({
+		const promise = queryClient.ensureQueryData({
 			queryKey: ["rounds"],
 			queryFn: () => listRounds(),
-		})
+		});
+		if (typeof window === "undefined") {
+			await promise;
+		}
 	},
+	pendingComponent: RoundsListSkeleton,
 	component: RoundsPage,
-})
+});
 
 function RoundsPage() {
-	const { t } = useTranslation("rounds")
+	const { t } = useTranslation("rounds");
 	const { data: rounds } = useSuspenseQuery({
 		queryKey: ["rounds"],
 		queryFn: () => listRounds(),
-	})
+	});
 
 	return (
 		<div className="max-w-5xl mx-auto px-4 py-6">
@@ -55,13 +60,17 @@ function RoundsPage() {
 				</ul>
 			)}
 		</div>
-	)
+	);
 }
 
 function RoundCard({ round }: { round: Round }) {
 	return (
 		<li>
-			<Link to="/rounds/$roundId" params={{ roundId: round.id }} className="block">
+			<Link
+				to="/rounds/$roundId"
+				params={{ roundId: round.id }}
+				className="block"
+			>
 				<Card className="flex items-start justify-between px-4 py-3 hover:bg-accent/50 transition-colors">
 					<div className="min-w-0">
 						<p className="font-medium text-foreground truncate">{round.name}</p>
@@ -76,5 +85,5 @@ function RoundCard({ round }: { round: Round }) {
 				</Card>
 			</Link>
 		</li>
-	)
+	);
 }

@@ -1,5 +1,5 @@
-import ExcelJS from "exceljs";
 import { and, eq } from "drizzle-orm";
+import ExcelJS from "exceljs";
 import { db } from "#/db/index";
 import {
 	customers,
@@ -12,8 +12,8 @@ import {
 
 export const JAPAN05_SHEET_NAMES = ["ออเดอร์", "สรุปยอด", "รวมยอดลูกค้า"] as const;
 
-const THB_FMT = '#,##0.00';
-const QTY_FMT = '#,##0';
+const THB_FMT = "#,##0.00";
+const QTY_FMT = "#,##0";
 
 interface ItemRow {
 	orderId: string;
@@ -78,7 +78,9 @@ function applySheetStyle(sheet: ExcelJS.Worksheet, lastCol: string): void {
 	sheet.autoFilter = { from: "A1", to: `${lastCol}1` };
 }
 
-export function buildJapan05WorkbookFromData(rows: ItemRow[]): ExcelJS.Workbook {
+export function buildJapan05WorkbookFromData(
+	rows: ItemRow[],
+): ExcelJS.Workbook {
 	const workbook = new ExcelJS.Workbook();
 
 	// ── Sheet 1: ออเดอร์ (one row per order item) ──────────────────────────────
@@ -139,7 +141,8 @@ export function buildJapan05WorkbookFromData(rows: ItemRow[]): ExcelJS.Workbook 
 			productMap.set(key, {
 				...existing,
 				totalQty: existing.totalQty + row.quantity,
-				foreignTotal: existing.foreignTotal + row.quantity * Number(row.foreignPrice),
+				foreignTotal:
+					existing.foreignTotal + row.quantity * Number(row.foreignPrice),
 				totalThb: existing.totalThb + Number(row.lineTotalThb),
 			});
 		} else {
@@ -208,7 +211,8 @@ export function buildJapan05WorkbookFromData(rows: ItemRow[]): ExcelJS.Workbook 
 				refunded: 3,
 			};
 			const worstStatus =
-				(statusPriority[row.paymentStatus] ?? 0) < (statusPriority[existing.paymentStatus] ?? 0)
+				(statusPriority[row.paymentStatus] ?? 0) <
+				(statusPriority[existing.paymentStatus] ?? 0)
 					? row.paymentStatus
 					: existing.paymentStatus;
 			customerMap.set(row.customerId, {
@@ -252,7 +256,9 @@ export function buildJapan05WorkbookFromData(rows: ItemRow[]): ExcelJS.Workbook 
 	return workbook;
 }
 
-export async function buildJapan05Workbook(roundId: string): Promise<ArrayBuffer> {
+export async function buildJapan05Workbook(
+	roundId: string,
+): Promise<ArrayBuffer> {
 	const data = await fetchJapan05Data(roundId);
 	const workbook = buildJapan05WorkbookFromData(data);
 	return workbook.xlsx.writeBuffer();

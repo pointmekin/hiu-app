@@ -32,10 +32,13 @@ import { getRound } from "#/server/functions/rounds/get";
 
 export const Route = createFileRoute("/_app/rounds/$roundId/products")({
 	loader: async ({ context: { queryClient }, params }) => {
-		await queryClient.ensureQueryData({
+		const promise = queryClient.ensureQueryData({
 			queryKey: ["rounds", params.roundId],
 			queryFn: () => getRound({ data: { id: params.roundId } }),
 		});
+		if (typeof window === "undefined") {
+			await promise;
+		}
 	},
 	pendingComponent: RoundProductsSkeleton,
 	component: RoundProductsPage,
@@ -228,7 +231,7 @@ function RoundProductsPage() {
 				<div className="flex flex-col md:flex-row justify-between gap-2 w-full">
 					<div className="flex gap-2">
 						<div className="flex items-center gap-2 flex-wrap">
-						{/* <div className="text-sm text-muted-foreground">
+							{/* <div className="text-sm text-muted-foreground">
 							{round.sourceCurrency} @ {fxRate.toFixed(4)}
 							{perItemFee > 0 && ` + ฿${perItemFee}`}
 						</div> */}

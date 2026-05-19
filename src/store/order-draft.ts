@@ -21,7 +21,11 @@ interface OrderDraftState {
 
 interface OrderDraftActions {
 	initDraft: (roundId: string, defaultShippingFee: number) => void;
-	setCustomer: (customerId: string, customerName: string, addressId?: string) => void;
+	setCustomer: (
+		customerId: string,
+		customerName: string,
+		addressId?: string,
+	) => void;
 	setAddress: (addressId: string) => void;
 	addItem: (item: Omit<DraftItem, "quantity"> & { quantity?: number }) => void;
 	updateItemQty: (roundProductId: string, quantity: number) => void;
@@ -74,20 +78,18 @@ export const useOrderDraft = create<OrderDraftState & OrderDraftActions>()(
 						};
 					}
 					return {
-						items: [
-							...state.items,
-							{ ...item, quantity: item.quantity ?? 1 },
-						],
+						items: [...state.items, { ...item, quantity: item.quantity ?? 1 }],
 					};
 				}),
 
 			updateItemQty: (roundProductId, quantity) =>
 				set((state) => ({
-					items: quantity <= 0
-						? state.items.filter((i) => i.roundProductId !== roundProductId)
-						: state.items.map((i) =>
-								i.roundProductId === roundProductId ? { ...i, quantity } : i,
-							),
+					items:
+						quantity <= 0
+							? state.items.filter((i) => i.roundProductId !== roundProductId)
+							: state.items.map((i) =>
+									i.roundProductId === roundProductId ? { ...i, quantity } : i,
+								),
 				})),
 
 			removeItem: (roundProductId) =>

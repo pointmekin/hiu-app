@@ -1,7 +1,13 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { Button } from "#/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "#/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "#/components/ui/card";
 
 export const Route = createFileRoute("/_app/rounds/$roundId/summary")({
 	component: SummaryPage,
@@ -20,7 +26,8 @@ function SummaryPage() {
 				</CardHeader>
 				<CardContent>
 					<p className="text-sm text-muted-foreground mb-4">
-						{t("exports:japan05.sheets.orders")} · {t("exports:japan05.sheets.summary")} ·{" "}
+						{t("exports:japan05.sheets.orders")} ·{" "}
+						{t("exports:japan05.sheets.summary")} ·{" "}
 						{t("exports:japan05.sheets.customers")}
 					</p>
 					<Button asChild variant="default">

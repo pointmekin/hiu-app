@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-	createRoundSchema,
-	updateRoundSchema,
-} from "#/shared/schemas/round";
+import { createRoundSchema, updateRoundSchema } from "#/shared/schemas/round";
 
 describe("createRoundSchema", () => {
 	it("accepts valid input", () => {
@@ -23,7 +20,11 @@ describe("createRoundSchema", () => {
 
 	it("rejects missing required fields", () => {
 		expect(() =>
-			createRoundSchema.parse({ country: "Japan", sourceCurrency: "JPY", fxRate: 0.2 }),
+			createRoundSchema.parse({
+				country: "Japan",
+				sourceCurrency: "JPY",
+				fxRate: 0.2,
+			}),
 		).toThrow();
 	});
 
@@ -66,17 +67,15 @@ describe("createRoundSchema", () => {
 
 describe("updateRoundSchema", () => {
 	it("requires id", () => {
-		expect(() =>
-			updateRoundSchema.parse({ name: "New name" }),
-		).toThrow();
+		expect(() => updateRoundSchema.parse({ name: "New name" })).toThrow();
 	});
 
 	it("accepts partial update with id", () => {
 		const result = updateRoundSchema.parse({
-			id: "00000000-0000-0000-0000-000000000001",
+			id: "00000000-0000-4000-8000-000000000001",
 			name: "Updated name",
 		});
-		expect(result.id).toBe("00000000-0000-0000-0000-000000000001");
+		expect(result.id).toBe("00000000-0000-4000-8000-000000000001");
 		expect(result.name).toBe("Updated name");
 		expect(result.country).toBeUndefined();
 	});

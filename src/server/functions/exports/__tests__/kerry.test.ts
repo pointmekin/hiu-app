@@ -1,9 +1,9 @@
 import ExcelJS from "exceljs";
 import { describe, expect, it } from "vitest";
 import {
+	addDataToKerryWorkbook,
 	KERRY_HEADERS,
 	KERRY_TEMPLATE_PATH,
-	addDataToKerryWorkbook,
 	type KerryRow,
 } from "../kerry";
 

@@ -1,9 +1,15 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { ShippingSkeleton } from "#/components/round-skeletons";
 import { useTranslation } from "react-i18next";
+import { ShippingSkeleton } from "#/components/round-skeletons";
 import { Button } from "#/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "#/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "#/components/ui/card";
 import {
 	Table,
 	TableBody,
@@ -17,16 +23,20 @@ import { getKerryRows } from "#/server/functions/exports/get-kerry-rows";
 
 export const Route = createFileRoute("/_app/rounds/$roundId/shipping")({
 	loader: async ({ context: { queryClient }, params }) => {
-		await Promise.all([
+		const promises = Promise.all([
 			queryClient.ensureQueryData({
 				queryKey: ["kerry", params.roundId],
 				queryFn: () => getKerryRows({ data: { roundId: params.roundId } }),
 			}),
 			queryClient.ensureQueryData({
 				queryKey: ["customers-missing-address", params.roundId],
-				queryFn: () => getCustomersMissingAddress({ data: { roundId: params.roundId } }),
+				queryFn: () =>
+					getCustomersMissingAddress({ data: { roundId: params.roundId } }),
 			}),
 		]);
+		if (typeof window === "undefined") {
+			await promises;
+		}
 	},
 	pendingComponent: ShippingSkeleton,
 	component: ShippingPage,
@@ -116,7 +126,9 @@ function ShippingPage() {
 											<TableCell className="font-mono">{row.no}</TableCell>
 											<TableCell>
 												<div className="flex items-center gap-2">
-													<span>{row.recipientName || t("exports:kerry.noAddress")}</span>
+													<span>
+														{row.recipientName || t("exports:kerry.noAddress")}
+													</span>
 													{row.paymentStatus === "pending" && (
 														<span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full font-medium">
 															{t("exports:kerry.unpaidBadge")}
@@ -126,7 +138,9 @@ function ShippingPage() {
 											</TableCell>
 											<TableCell className="font-mono">{row.mobile}</TableCell>
 											<TableCell>{row.address}</TableCell>
-											<TableCell className="font-mono">{row.postalCode}</TableCell>
+											<TableCell className="font-mono">
+												{row.postalCode}
+											</TableCell>
 										</TableRow>
 									))}
 								</TableBody>

@@ -3,7 +3,12 @@ import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "#/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "#/components/ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "#/components/ui/dialog";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
 import { createProductAndAddToRound } from "#/server/functions/products/create-and-add-to-round";
@@ -60,7 +65,13 @@ export function InlineProductDialog({
 			}),
 		onSuccess: (rp) => {
 			queryClient.invalidateQueries({ queryKey: ["round-products", roundId] });
-			onCreated({ id: rp.id, productId: rp.productId, productName: rp.productName, productBrand: rp.productBrand, sellPriceThb: rp.sellPriceThb });
+			onCreated({
+				id: rp.id,
+				productId: rp.productId,
+				productName: rp.productName,
+				productBrand: rp.productBrand,
+				sellPriceThb: rp.sellPriceThb,
+			});
 			setName("");
 			setBrand("");
 			setForeignPriceStr("");
@@ -68,7 +79,11 @@ export function InlineProductDialog({
 		},
 	});
 
-	const canSave = name.trim().length > 0 && foreignPrice !== null && foreignPrice >= 0 && !mutation.isPending;
+	const canSave =
+		name.trim().length > 0 &&
+		foreignPrice !== null &&
+		foreignPrice >= 0 &&
+		!mutation.isPending;
 
 	function handleOpenChange(next: boolean) {
 		if (!mutation.isPending) {
@@ -100,7 +115,9 @@ export function InlineProductDialog({
 					<div className="space-y-1.5">
 						<Label>
 							{t("products:field.brand")}{" "}
-							<span className="text-muted-foreground text-xs font-normal">({t("common:optional")})</span>
+							<span className="text-muted-foreground text-xs font-normal">
+								({t("common:optional")})
+							</span>
 						</Label>
 						<Input
 							value={brand}
@@ -110,7 +127,9 @@ export function InlineProductDialog({
 					</div>
 
 					<div className="space-y-1.5">
-						<Label>{t("products:field.foreignPrice", { currency: sourceCurrency })}</Label>
+						<Label>
+							{t("products:field.foreignPrice", { currency: sourceCurrency })}
+						</Label>
 						<div className="relative">
 							<span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-mono">
 								{sourceCurrency}
@@ -129,14 +148,19 @@ export function InlineProductDialog({
 							<p className="text-sm text-muted-foreground">
 								≈{" "}
 								<span className="font-mono tabular-nums">
-									{previewThb.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+									{previewThb.toLocaleString("th-TH", {
+										minimumFractionDigits: 2,
+									})}{" "}
+									฿
 								</span>
 							</p>
 						)}
 					</div>
 
 					{mutation.error && (
-						<p className="text-sm text-destructive">{(mutation.error as Error).message}</p>
+						<p className="text-sm text-destructive">
+							{(mutation.error as Error).message}
+						</p>
 					)}
 				</div>
 

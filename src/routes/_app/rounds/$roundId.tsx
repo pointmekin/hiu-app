@@ -6,9 +6,9 @@ import {
 	useLocation,
 	useParams,
 } from "@tanstack/react-router";
-import { RoundLayoutSkeleton } from "#/components/round-skeletons";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { RoundLayoutSkeleton } from "#/components/round-skeletons";
 import { RoundStatusBadge } from "#/components/round-status-badge";
 import { Tabs, TabsList, TabsTrigger } from "#/components/ui/tabs";
 import { getRound } from "#/server/functions/rounds/get";
@@ -16,10 +16,13 @@ import type { RoundStatus } from "#/shared/schemas/round";
 
 export const Route = createFileRoute("/_app/rounds/$roundId")({
 	loader: async ({ context: { queryClient }, params }) => {
-		await queryClient.ensureQueryData({
+		const promise = queryClient.ensureQueryData({
 			queryKey: ["rounds", params.roundId],
 			queryFn: () => getRound({ data: { id: params.roundId } }),
 		});
+		if (typeof window === "undefined") {
+			await promise;
+		}
 	},
 	pendingComponent: RoundLayoutSkeleton,
 	component: RoundLayout,

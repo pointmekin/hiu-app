@@ -1,49 +1,66 @@
-import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query"
-import { createFileRoute, Link } from "@tanstack/react-router"
-import { Package, Plus, X } from "lucide-react"
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
-import { EmptyState } from "#/components/empty-state"
-import { Button } from "#/components/ui/button"
-import { Card } from "#/components/ui/card"
-import { Input } from "#/components/ui/input"
+import {
+	keepPreviousData,
+	useInfiniteQuery,
+	useQuery,
+} from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Package, Plus, X } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { EmptyState } from "#/components/empty-state";
+import { ProductsListSkeleton } from "#/components/round-skeletons";
+import { Button } from "#/components/ui/button";
+import { Card } from "#/components/ui/card";
+import { Input } from "#/components/ui/input";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "#/components/ui/select"
-import { formatRelativeDate } from "#/lib/format-relative"
-import { useDebounce } from "#/lib/use-debounce"
-import type { ProductListCursor, ProductListItem } from "#/server/functions/products/list"
-import { listProducts } from "#/server/functions/products/list"
-import { listProductFilterOptions } from "#/server/functions/products/list-filter-options"
+} from "#/components/ui/select";
+import { formatRelativeDate } from "#/lib/format-relative";
+import { useDebounce } from "#/lib/use-debounce";
+import type {
+	ProductListCursor,
+	ProductListItem,
+} from "#/server/functions/products/list";
+import { listProducts } from "#/server/functions/products/list";
+import { listProductFilterOptions } from "#/server/functions/products/list-filter-options";
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 20;
 
 export const Route = createFileRoute("/_app/products/")({
 	component: ProductsPage,
-})
+});
 
 function ProductsPage() {
-	const { t, i18n } = useTranslation("products")
-	const [q, setQ] = useState("")
-	const debouncedQ = useDebounce(q, 250)
-	const [brandFilter, setBrandFilter] = useState("")
-	const [categoryFilter, setCategoryFilter] = useState("")
-	const [countryFilter, setCountryFilter] = useState("")
+	const { t, i18n } = useTranslation("products");
+	const [q, setQ] = useState("");
+	const debouncedQ = useDebounce(q, 250);
+	const [brandFilter, setBrandFilter] = useState("");
+	const [categoryFilter, setCategoryFilter] = useState("");
+	const [countryFilter, setCountryFilter] = useState("");
 
-	const hasActiveFilter = Boolean(brandFilter || categoryFilter || countryFilter)
+	const hasActiveFilter = Boolean(
+		brandFilter || categoryFilter || countryFilter,
+	);
 
 	const { data: filterOptions } = useQuery({
 		queryKey: ["products", "filter-options"],
 		queryFn: () => listProductFilterOptions(),
 		staleTime: 5 * 60 * 1000,
-	})
+	});
 
 	const query = useInfiniteQuery({
-		queryKey: ["products", "list", debouncedQ, brandFilter, categoryFilter, countryFilter],
+		queryKey: [
+			"products",
+			"list",
+			debouncedQ,
+			brandFilter,
+			categoryFilter,
+			countryFilter,
+		],
 		queryFn: ({ pageParam }: { pageParam: ProductListCursor | null }) =>
 			listProducts({
 				data: {
@@ -58,19 +75,20 @@ function ProductsPage() {
 		initialPageParam: null as ProductListCursor | null,
 		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 		placeholderData: keepPreviousData,
-	})
+	});
 
-	const products = query.data?.pages.flatMap((p) => p.items) ?? []
+	const products = query.data?.pages.flatMap((p) => p.items) ?? [];
 
-	const brands = filterOptions?.brands ?? []
-	const categories = filterOptions?.categories ?? []
-	const countries = filterOptions?.sourceCountries ?? []
-	const showFilters = brands.length > 0 || categories.length > 0 || countries.length > 0
+	const brands = filterOptions?.brands ?? [];
+	const categories = filterOptions?.categories ?? [];
+	const countries = filterOptions?.sourceCountries ?? [];
+	const showFilters =
+		brands.length > 0 || categories.length > 0 || countries.length > 0;
 
 	function clearFilters() {
-		setBrandFilter("")
-		setCategoryFilter("")
-		setCountryFilter("")
+		setBrandFilter("");
+		setCategoryFilter("");
+		setCountryFilter("");
 	}
 
 	return (
@@ -109,7 +127,9 @@ function ProductsPage() {
 								<SelectContent>
 									<SelectItem value="__all__">{t("field.brand")}</SelectItem>
 									{brands.map((b) => (
-										<SelectItem key={b} value={b}>{b}</SelectItem>
+										<SelectItem key={b} value={b}>
+											{b}
+										</SelectItem>
 									))}
 								</SelectContent>
 							</Select>
@@ -117,7 +137,9 @@ function ProductsPage() {
 						{categories.length > 0 && (
 							<Select
 								value={categoryFilter || "__all__"}
-								onValueChange={(v) => setCategoryFilter(v === "__all__" ? "" : v)}
+								onValueChange={(v) =>
+									setCategoryFilter(v === "__all__" ? "" : v)
+								}
 							>
 								<SelectTrigger className="h-8 text-xs">
 									<SelectValue placeholder={t("field.category")} />
@@ -125,7 +147,9 @@ function ProductsPage() {
 								<SelectContent>
 									<SelectItem value="__all__">{t("field.category")}</SelectItem>
 									{categories.map((c) => (
-										<SelectItem key={c} value={c}>{c}</SelectItem>
+										<SelectItem key={c} value={c}>
+											{c}
+										</SelectItem>
 									))}
 								</SelectContent>
 							</Select>
@@ -133,15 +157,21 @@ function ProductsPage() {
 						{countries.length > 0 && (
 							<Select
 								value={countryFilter || "__all__"}
-								onValueChange={(v) => setCountryFilter(v === "__all__" ? "" : v)}
+								onValueChange={(v) =>
+									setCountryFilter(v === "__all__" ? "" : v)
+								}
 							>
 								<SelectTrigger className="h-8 text-xs">
 									<SelectValue placeholder={t("field.sourceCountry")} />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="__all__">{t("field.sourceCountry")}</SelectItem>
+									<SelectItem value="__all__">
+										{t("field.sourceCountry")}
+									</SelectItem>
 									{countries.map((c) => (
-										<SelectItem key={c} value={c}>{c}</SelectItem>
+										<SelectItem key={c} value={c}>
+											{c}
+										</SelectItem>
 									))}
 								</SelectContent>
 							</Select>
@@ -161,7 +191,9 @@ function ProductsPage() {
 				</div>
 			)}
 
-			{products.length === 0 && !query.isFetching ? (
+			{query.isLoading ? (
+				<ProductsListSkeleton />
+			) : products.length === 0 ? (
 				<EmptyState
 					icon={<Package size={32} className="text-ink-muted" />}
 					title={t("list.empty")}
@@ -191,27 +223,29 @@ function ProductsPage() {
 								onClick={() => query.fetchNextPage()}
 								disabled={query.isFetchingNextPage}
 							>
-								{query.isFetchingNextPage ? t("common:loading") : t("list.loadMore")}
+								{query.isFetchingNextPage
+									? t("common:loading")
+									: t("list.loadMore")}
 							</Button>
 						</div>
 					)}
 				</>
 			)}
 		</div>
-	)
+	);
 }
 
 interface ProductCardProps {
-	product: ProductListItem
-	locale: string
+	product: ProductListItem;
+	locale: string;
 }
 
 function ProductCard({ product, locale }: ProductCardProps) {
 	const meta = [product.brand, product.category, product.sourceCountry]
 		.filter(Boolean)
-		.join(" · ")
+		.join(" · ");
 
-	const relDate = formatRelativeDate(product.lastUsedAt, locale)
+	const relDate = formatRelativeDate(product.lastUsedAt, locale);
 
 	return (
 		<Card className="flex flex-row items-center gap-3 px-3 py-3 hover:bg-accent/50 transition-colors min-h-[56px]">
@@ -244,5 +278,5 @@ function ProductCard({ product, locale }: ProductCardProps) {
 				</p>
 			)}
 		</Card>
-	)
+	);
 }

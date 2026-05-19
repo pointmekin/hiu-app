@@ -1,15 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { BarChart3, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
-	BarChart,
 	Bar,
+	BarChart,
+	Cell,
+	ResponsiveContainer,
+	Tooltip,
 	XAxis,
 	YAxis,
-	Tooltip,
-	ResponsiveContainer,
-	Cell,
 } from "recharts";
-import { useTranslation } from "react-i18next";
+import { EmptyState } from "#/components/empty-state";
+import { DashboardSkeleton } from "#/components/round-skeletons";
 import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card";
 import {
 	Table,
@@ -20,17 +23,19 @@ import {
 	TableRow,
 } from "#/components/ui/table";
 import { getCrossRoundStats } from "#/server/functions/dashboard/cross-round-stats";
-import { EmptyState } from "#/components/empty-state";
-import { BarChart3, Users } from "lucide-react";
 
 export const Route = createFileRoute("/_app/dashboard/")({
-	component: CrossRoundDashboard,
 	loader: async ({ context: { queryClient } }) => {
-		await queryClient.ensureQueryData({
+		const promise = queryClient.ensureQueryData({
 			queryKey: ["dashboard", "cross-round"],
 			queryFn: () => getCrossRoundStats(),
 		});
+		if (typeof window === "undefined") {
+			await promise;
+		}
 	},
+	pendingComponent: DashboardSkeleton,
+	component: CrossRoundDashboard,
 });
 
 const THB = new Intl.NumberFormat("th-TH", {
@@ -65,7 +70,10 @@ function CrossRoundDashboard() {
 					/>
 				) : (
 					<ResponsiveContainer width="100%" height={300}>
-						<BarChart data={recentRounds} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+						<BarChart
+							data={recentRounds}
+							margin={{ top: 8, right: 8, bottom: 8, left: 8 }}
+						>
 							<XAxis dataKey="name" tick={{ fontSize: 12 }} />
 							<YAxis
 								tickFormatter={(v: number) => THB.format(v)}
@@ -131,8 +139,16 @@ function CrossRoundDashboard() {
 									margin={{ top: 0, right: 8, bottom: 0, left: 40 }}
 								>
 									<XAxis type="number" allowDecimals={false} />
-									<YAxis dataKey="country" type="category" tick={{ fontSize: 12 }} />
-									<Bar dataKey="roundCount" fill="var(--ink-muted)" radius={[0, 4, 4, 0]}>
+									<YAxis
+										dataKey="country"
+										type="category"
+										tick={{ fontSize: 12 }}
+									/>
+									<Bar
+										dataKey="roundCount"
+										fill="var(--ink-muted)"
+										radius={[0, 4, 4, 0]}
+									>
 										{data.countryBreakdown.map((_, i) => (
 											<Cell
 												key={String(i)}

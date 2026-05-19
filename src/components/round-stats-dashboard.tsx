@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
 	Bar,
 	BarChart,
@@ -10,7 +11,6 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card";
 import { PAYMENT_FUNNEL_COLORS } from "#/lib/chart-theme";
 import { getRoundStats } from "#/server/functions/dashboard/round-stats";
@@ -53,11 +53,23 @@ export function RoundStatsDashboard({ roundId }: { roundId: string }) {
 
 	const kpis = [
 		{ label: t("round.totalOrders"), value: String(data.totalOrders) },
-		{ label: t("round.totalRevenue"), value: THB.format(Number(data.totalRevenue)) },
+		{
+			label: t("round.totalRevenue"),
+			value: THB.format(Number(data.totalRevenue)),
+		},
 		{ label: t("round.totalCost"), value: THB.format(Number(data.totalCost)) },
-		{ label: t("round.grossMargin"), value: THB.format(Number(data.grossMargin)) },
-		{ label: t("round.outstandingBalance"), value: THB.format(Number(data.outstandingBalance)) },
-		{ label: t("round.paidCount"), value: `${data.paidCount} / ${data.totalActiveOrders}` },
+		{
+			label: t("round.grossMargin"),
+			value: THB.format(Number(data.grossMargin)),
+		},
+		{
+			label: t("round.outstandingBalance"),
+			value: THB.format(Number(data.outstandingBalance)),
+		},
+		{
+			label: t("round.paidCount"),
+			value: `${data.paidCount} / ${data.totalActiveOrders}`,
+		},
 	];
 
 	return (

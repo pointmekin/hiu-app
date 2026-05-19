@@ -1,12 +1,6 @@
 import { z } from "zod";
 
-export const SOURCE_CURRENCIES = [
-	"JPY",
-	"USD",
-	"GBP",
-	"HKD",
-	"AUD",
-] as const;
+export const SOURCE_CURRENCIES = ["JPY", "USD", "GBP", "HKD", "AUD"] as const;
 export type SourceCurrency = (typeof SOURCE_CURRENCIES)[number];
 
 export const ROUND_STATUSES = [

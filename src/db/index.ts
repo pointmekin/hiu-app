@@ -3,7 +3,7 @@ import { drizzle } from "drizzle-orm/neon-serverless";
 import * as schema from "./schema";
 
 const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl && typeof window === 'undefined') {
+if (!databaseUrl && typeof window === "undefined") {
 	throw new Error("DATABASE_URL environment variable is required");
 }
 
