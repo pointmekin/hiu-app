@@ -1,0 +1,56 @@
+{
+	"title": "แดชบอร์ด",
+	"crossRound": {
+		"title": "ภาพรวมทุกรอบ",
+		"recentRounds": "รอบล่าสุด",
+		"revenue": "รายรับ",
+		"margin": "กำไร",
+		"orders": "ออเดอร์",
+		"repeatRate": "อัตราลูกค้าซ้ำ",
+		"repeatRateHint": "ลูกค้าที่สั่งมากกว่า 1 รอบ",
+		"topCustomers": "ลูกค้าที่สั่งมากที่สุดตลอดกาล",
+		"countryBreakdown": "จำนวนรอบตามประเทศ"
+	},
+	"round": {
+		"title": "สถิติรอบ",
+		"totalOrders": "ออเดอร์ทั้งหมด",
+		"totalRevenue": "รายรับรวม",
+		"totalCost": "ต้นทุนรวม",
+		"grossMargin": "กำไรขั้นต้น",
+		"outstandingBalance": "ยอดค้างชำระ",
+		"paidCount": "ชำระแล้ว",
+		"paymentFunnel": {
+			"title": "สถานะชำระเงิน",
+			"pending": "รอชำระ",
+			"partial": "มัดจำ",
+			"paid": "ชำระแล้ว",
+			"count": "จำนวน",
+			"amount": "จำนวนเงิน"
+		},
+		"topProducts": "สินค้าขายดี (10 อันดับ)",
+		"topCustomers": "ลูกค้ายอดสูง (10 อันดับ)",
+		"dailyOrders": "ออเดอร์รายวัน",
+		"revenue": "รายรับ",
+		"orderCount": "จำนวนออเดอร์"
+	},
+	"audit": {
+		"title": "ประวัติการใช้งาน",
+		"entity": "ประเภท",
+		"action": "การกระทำ",
+		"user": "ผู้ใช้",
+		"timestamp": "เวลา",
+		"details": "รายละเอียด",
+		"empty": "ยังไม่มีประวัติ",
+		"loadMore": "โหลดเพิ่มเติม",
+		"filter": {
+			"all": "ทั้งหมด",
+			"placeholder": "กรองตามประเภท..."
+		},
+		"actions": {
+			"create": "สร้าง",
+			"update": "แก้ไข",
+			"record": "บันทึก",
+			"cancel": "ยกเลิก"
+		}
+	}
+}

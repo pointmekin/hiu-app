@@ -1,0 +1,56 @@
+{
+	"title": "Dashboard",
+	"crossRound": {
+		"title": "All Rounds Overview",
+		"recentRounds": "Recent Rounds",
+		"revenue": "Revenue",
+		"margin": "Margin",
+		"orders": "Orders",
+		"repeatRate": "Repeat Customer Rate",
+		"repeatRateHint": "Customers who ordered in more than 1 round",
+		"topCustomers": "Top All-Time Customers",
+		"countryBreakdown": "Rounds by Country"
+	},
+	"round": {
+		"title": "Round Stats",
+		"totalOrders": "Total Orders",
+		"totalRevenue": "Total Revenue",
+		"totalCost": "Total Cost",
+		"grossMargin": "Gross Margin",
+		"outstandingBalance": "Outstanding Balance",
+		"paidCount": "Paid",
+		"paymentFunnel": {
+			"title": "Payment Status",
+			"pending": "Pending",
+			"partial": "Deposit",
+			"paid": "Paid",
+			"count": "Count",
+			"amount": "Amount"
+		},
+		"topProducts": "Top Products (10)",
+		"topCustomers": "Top Customers (10)",
+		"dailyOrders": "Daily Orders",
+		"revenue": "Revenue",
+		"orderCount": "Order Count"
+	},
+	"audit": {
+		"title": "Audit Log",
+		"entity": "Entity",
+		"action": "Action",
+		"user": "User",
+		"timestamp": "Time",
+		"details": "Details",
+		"empty": "No audit entries yet",
+		"loadMore": "Load more",
+		"filter": {
+			"all": "All",
+			"placeholder": "Filter by entity..."
+		},
+		"actions": {
+			"create": "Create",
+			"update": "Update",
+			"record": "Record",
+			"cancel": "Cancel"
+		}
+	}
+}

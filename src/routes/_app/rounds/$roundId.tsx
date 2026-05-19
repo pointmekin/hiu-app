@@ -3,11 +3,13 @@ import {
 	createFileRoute,
 	Link,
 	Outlet,
+	useLocation,
 	useParams,
 } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 import { getRound } from "#/server/functions/rounds/get"
 import { RoundStatusBadge } from "#/components/round-status-badge"
+import { Tabs, TabsList, TabsTrigger } from "#/components/ui/tabs"
 import type { RoundStatus } from "#/shared/schemas/round"
 
 export const Route = createFileRoute("/_app/rounds/$roundId")({
@@ -20,14 +22,28 @@ export const Route = createFileRoute("/_app/rounds/$roundId")({
 	component: RoundLayout,
 })
 
+const TAB_PATHS = ["overview", "products", "orders", "summary", "shipping", "stats"] as const
+type TabValue = (typeof TAB_PATHS)[number]
+
+function getActiveTab(roundId: string, pathname: string): TabValue {
+	if (pathname.endsWith(`/rounds/${roundId}`)) return "overview"
+	for (const tab of TAB_PATHS) {
+		if (tab !== "overview" && pathname.includes(`/rounds/${roundId}/${tab}`)) return tab
+	}
+	return "overview"
+}
+
 function RoundLayout() {
 	const { t } = useTranslation("rounds")
 	const { roundId } = useParams({ from: "/_app/rounds/$roundId" })
+	const { pathname } = useLocation()
 
 	const { data: round } = useSuspenseQuery({
 		queryKey: ["rounds", roundId],
 		queryFn: () => getRound({ data: { id: roundId } }),
 	})
+
+	const activeTab = getActiveTab(roundId, pathname)
 
 	return (
 		<div className="flex flex-col min-h-full">
@@ -50,33 +66,31 @@ function RoundLayout() {
 						<RoundStatusBadge status={round.status as RoundStatus} />
 					</div>
 
-					<nav className="-mb-px flex gap-0 overflow-x-auto">
-						<TabLink
-							to="/rounds/$roundId"
-							params={{ roundId }}
-							label={t("tab.overview")}
-						/>
-						<TabLink
-							to="/rounds/$roundId/products"
-							params={{ roundId }}
-							label={t("tab.products")}
-						/>
-						<TabLink
-							to="/rounds/$roundId/orders"
-							params={{ roundId }}
-							label={t("tab.orders")}
-						/>
-						<TabLink
-							to="/rounds/$roundId/summary"
-							params={{ roundId }}
-							label={t("tab.summary")}
-						/>
-						<TabLink
-							to="/rounds/$roundId/shipping"
-							params={{ roundId }}
-							label={t("tab.shipping")}
-						/>
-					</nav>
+					<Tabs value={activeTab}>
+						<TabsList
+							variant="line"
+							className="h-auto w-full justify-start gap-0 rounded-none bg-transparent p-0 overflow-x-auto"
+						>
+							<NavTrigger value="overview" roundId={roundId} to="/rounds/$roundId">
+								{t("tab.overview")}
+							</NavTrigger>
+							<NavTrigger value="products" roundId={roundId} to="/rounds/$roundId/products">
+								{t("tab.products")}
+							</NavTrigger>
+							<NavTrigger value="orders" roundId={roundId} to="/rounds/$roundId/orders">
+								{t("tab.orders")}
+							</NavTrigger>
+							<NavTrigger value="summary" roundId={roundId} to="/rounds/$roundId/summary">
+								{t("tab.summary")}
+							</NavTrigger>
+							<NavTrigger value="shipping" roundId={roundId} to="/rounds/$roundId/shipping">
+								{t("tab.shipping")}
+							</NavTrigger>
+							<NavTrigger value="stats" roundId={roundId} to="/rounds/$roundId/stats">
+								{t("tab.stats")}
+							</NavTrigger>
+						</TabsList>
+					</Tabs>
 				</div>
 			</div>
 
@@ -87,37 +101,26 @@ function RoundLayout() {
 	)
 }
 
-function TabLink({
+function NavTrigger({
+	value,
+	roundId,
 	to,
-	params,
-	label,
-	disabled,
+	children,
 }: {
+	value: TabValue
+	roundId: string
 	to: string
-	params: Record<string, string>
-	label: string
-	disabled?: boolean
+	children: React.ReactNode
 }) {
-	if (disabled) {
-		return (
-			<span className="shrink-0 px-4 py-2.5 text-sm font-medium text-muted-foreground/50 cursor-not-allowed border-b-2 border-transparent">
-				{label}
-			</span>
-		)
-	}
-
 	return (
-		<Link
-			to={to}
-			params={params}
-			className="shrink-0 px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground border-b-2 border-transparent transition-colors"
-			activeProps={{
-				className:
-					"shrink-0 px-4 py-2.5 text-sm font-medium text-foreground border-b-2 border-hanko",
-			}}
-			activeOptions={{ exact: to.endsWith("$roundId") }}
+		<TabsTrigger
+			value={value}
+			className="shrink-0 rounded-none border-0 px-4 py-2.5 after:bg-hanko data-[state=inactive]:font-normal"
+			asChild
 		>
-			{label}
-		</Link>
+			<Link to={to} params={{ roundId }}>
+				{children}
+			</Link>
+		</TabsTrigger>
 	)
 }

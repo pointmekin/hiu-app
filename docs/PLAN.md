@@ -709,6 +709,32 @@ All aggregation in SQL. Materialize `round_stats` view if any single dashboard q
 - OCR-from-screenshot of chat messages.
 - **Purchasing-companion mode** (in-store screen for the friend) — strong v1.1 candidate; schema already supports it.
 
+### M6 — Order editing + inline product creation + order summary message (1 week)
+- **Full order editing** — orders are editable after creation. On the order detail page (`orders/$orderId`), the operator can:
+  - Change the customer.
+  - Change the shipping address.
+  - Adjust quantities on existing line items, or remove items entirely.
+  - Add new line items via the product picker (same combobox as new-order page).
+  - Update the shipping fee and notes.
+  - All edits are persisted via an `updateOrder` server function that re-calculates subtotal and total. Payment history is never auto-adjusted (manual refund/adjustment only). Edits write to `audit_log`.
+- **Inline product creation from combobox** — in both the new-order page and order-detail product picker, add a "Create new product" option at the bottom of the product combobox dropdown when no exact match is found. Opens a small dialog/modal with product name, brand, and foreign price. On save, the product is created, added to the current round as a `round_product` (priced via the round's FX rate), and immediately inserted as a line item. Eliminates the round-trip to the catalog page mid-order.
+- **Export filenames use round name + delivery date** — the `japan05.xlsx` and `kerry.xlsx` exports set `Content-Disposition` filenames to `{roundName} - {deliveryDate}.xlsx` (e.g. `Japan 05 - 2026-05-30.xlsx`). The round data is fetched in the export route handler to populate the filename. Makes downloads self-documenting without the operator having to rename files manually.
+- **Product name links to edit page everywhere** — wherever a product name is displayed (order line items, order detail, round-products editor, summary/exports tables), it renders as a `Link` to `/products/$productId`. Lets the operator jump straight to fix a typo, update a price, or add a photo without navigating through the catalog. Consistent with the customer name linking pattern already in orders and shipping pages.
+- **Copyable order summary message** — on the order detail page, add a "Copy summary" button that generates a Thai-language message suitable for pasting into LINE/chat, formatted like:
+  ```
+  ขออนุญาติรวมยอดค่ะ 🙏
+  รายการ:
+  1. [Product name] ×[qty] — [line total] ฿
+  2. [Product name] ×[qty] — [line total] ฿
+  ...
+  ค่าส่ง — [shipping] ฿
+  รวมทั้งหมด — [total] ฿
+  ชำระแล้ว — [paid] ฿
+  คงเหลือ — [balance] ฿
+  ```
+  One-tap copy via `navigator.clipboard.writeText`. Shows a brief toast confirmation. Useful for sending payment reminders or order confirmations to customers.
+- **Exit criteria**: operator can create a brand-new product mid-order without leaving the screen; operator can edit any field on an existing order; operator can copy-paste a formatted order summary into LINE in under 3 seconds.
+
 ---
 
 ## 17. Deployment
