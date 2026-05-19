@@ -73,10 +73,14 @@
 			"save": "Save",
 			"cancel": "Cancel"
 		},
+		"search": {
+			"placeholder": "Search items…"
+		},
 		"noStore": "No store",
 		"noCategory": "No category",
 		"empty": "No products in this round",
-		"allDone": "Nothing pending"
+		"allDone": "Nothing pending",
+		"noResults": "No items match your search"
 	},
 	"products": {
 		"title": "Products in round",

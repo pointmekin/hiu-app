@@ -6,10 +6,11 @@ import {
 	useLocation,
 	useParams,
 } from "@tanstack/react-router"
+import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { getRound } from "#/server/functions/rounds/get"
 import { RoundStatusBadge } from "#/components/round-status-badge"
 import { Tabs, TabsList, TabsTrigger } from "#/components/ui/tabs"
+import { getRound } from "#/server/functions/rounds/get"
 import type { RoundStatus } from "#/shared/schemas/round"
 
 export const Route = createFileRoute("/_app/rounds/$roundId")({
@@ -44,11 +45,17 @@ function RoundLayout() {
 	})
 
 	const activeTab = getActiveTab(roundId, pathname)
+	const tabsListRef = useRef<HTMLDivElement>(null)
+
+	useEffect(() => {
+		const activeEl = tabsListRef.current?.querySelector<HTMLElement>('[data-state="active"]')
+		activeEl?.scrollIntoView({ behavior: "smooth", inline: "nearest", block: "nearest" })
+	}, [activeTab])
 
 	return (
 		<div className="flex flex-col min-h-full">
 			<div className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 md:top-[57px] z-30">
-				<div className="max-w-4xl mx-auto px-4 pt-4 pb-0">
+				<div className="max-w-swv mx-auto px-4 pt-2 pb-0">
 					<div className="flex items-start justify-between gap-3 mb-3">
 						<div className="min-w-0">
 							<h1 className="text-xl font-semibold text-foreground truncate">
@@ -68,8 +75,9 @@ function RoundLayout() {
 
 					<Tabs value={activeTab}>
 						<TabsList
+							ref={tabsListRef}
 							variant="line"
-							className="h-auto w-full justify-start gap-0 rounded-none bg-transparent p-0 overflow-x-auto"
+							className="h-auto w-full justify-start gap-0 rounded-none bg-transparent p-0 pb-[6px] overflow-x-auto overflow-y-hidden"
 						>
 							<NavTrigger value="overview" roundId={roundId} to="/rounds/$roundId">
 								{t("tab.overview")}
@@ -97,7 +105,7 @@ function RoundLayout() {
 				</div>
 			</div>
 
-			<div className="flex-1 max-w-4xl w-full mx-auto px-4 py-6">
+			<div className="flex-1 max-w-svw w-full mx-auto px-4 py-6">
 				<Outlet />
 			</div>
 		</div>

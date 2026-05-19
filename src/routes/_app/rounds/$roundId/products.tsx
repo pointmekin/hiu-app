@@ -5,13 +5,10 @@ import {
 } from "@tanstack/react-query"
 import { createFileRoute, Link, useParams } from "@tanstack/react-router"
 import { Package, Plus, RefreshCw, Save, X } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import type { ProductListItem } from "#/server/functions/products/list"
-import { listRoundProducts } from "#/server/functions/round-products/list"
-import { recomputeFromFx } from "#/server/functions/round-products/recompute-from-fx"
-import { upsertRoundProducts } from "#/server/functions/round-products/upsert-many"
-import { getRound } from "#/server/functions/rounds/get"
+import { CatalogPickerDialog } from "#/components/catalog-picker-dialog"
+import { EmptyState } from "#/components/empty-state"
 import { Alert, AlertDescription } from "#/components/ui/alert"
 import { Button } from "#/components/ui/button"
 import { Checkbox } from "#/components/ui/checkbox"
@@ -24,8 +21,12 @@ import {
 	TableHeader,
 	TableRow,
 } from "#/components/ui/table"
-import { CatalogPickerDialog } from "#/components/catalog-picker-dialog"
-import { EmptyState } from "#/components/empty-state"
+import { cn } from "#/lib/utils"
+import type { ProductListItem } from "#/server/functions/products/list"
+import { listRoundProducts } from "#/server/functions/round-products/list"
+import { recomputeFromFx } from "#/server/functions/round-products/recompute-from-fx"
+import { upsertRoundProducts } from "#/server/functions/round-products/upsert-many"
+import { getRound } from "#/server/functions/rounds/get"
 
 export const Route = createFileRoute("/_app/rounds/$roundId/products")({
 	loader: async ({ context: { queryClient }, params }) => {
@@ -111,6 +112,12 @@ function RoundProductsPage() {
 
 	const [showCatalog, setShowCatalog] = useState(false)
 	const [isDirty, setIsDirty] = useState(false)
+
+	const storeListId = `store-locs-${roundId}`
+	const storeLocationSuggestions = useMemo(
+		() => [...new Set(rows.map((r) => r.storeLocation).filter(Boolean))],
+		[rows],
+	)
 
 	function updateRow(index: number, patch: Partial<DraftRow>) {
 		setRows((prev) => {
@@ -275,6 +282,7 @@ function RoundProductsPage() {
 							row={row}
 							computed={computed}
 							currency={round.sourceCurrency}
+							listId={storeListId}
 							onUpdate={(patch) => updateRow(index, patch)}
 							onRemove={() => removeRow(index)}
 						/>
@@ -320,6 +328,7 @@ function RoundProductsPage() {
 									row={row}
 									computed={computed}
 									currency={round.sourceCurrency}
+									listId={storeListId}
 									onUpdate={(patch) => updateRow(index, patch)}
 									onRemove={() => removeRow(index)}
 								/>
@@ -328,6 +337,12 @@ function RoundProductsPage() {
 					</TableBody>
 				</Table>
 			</div>
+
+			<datalist id={storeListId}>
+				{storeLocationSuggestions.map((loc) => (
+					<option key={loc} value={loc} />
+				))}
+			</datalist>
 
 			<CatalogPickerDialog
 				open={showCatalog}
@@ -343,12 +358,14 @@ function MobileProductCard({
 	row,
 	computed,
 	currency,
+	listId,
 	onUpdate,
 	onRemove,
 }: {
 	row: DraftRow
 	computed: string
 	currency: string
+	listId: string
 	onUpdate: (patch: Partial<DraftRow>) => void
 	onRemove: () => void
 }) {
@@ -466,14 +483,56 @@ function MobileProductCard({
 				<p className="text-xs text-muted-foreground">
 					{t("rounds:products.column.store")}
 				</p>
-				<Input
-					type="text"
+				<StoreLocationInput
 					value={row.storeLocation}
-					onChange={(e) => onUpdate({ storeLocation: e.target.value })}
-					placeholder="—"
+					onChange={(v) => onUpdate({ storeLocation: v })}
+					listId={listId}
 				/>
 			</div>
 		</div>
+	)
+}
+
+function StoreLocationInput({
+	value,
+	onChange,
+	listId,
+	className,
+}: {
+	value: string
+	onChange: (v: string) => void
+	listId: string
+	className?: string
+}) {
+	const [local, setLocal] = useState(value)
+	const sentRef = useRef(value)
+	const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+	useEffect(() => {
+		if (value !== sentRef.current) setLocal(value)
+	}, [value])
+
+	useEffect(() => () => clearTimeout(timerRef.current), [])
+
+	function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+		const v = e.target.value
+		setLocal(v)
+		clearTimeout(timerRef.current)
+		timerRef.current = setTimeout(() => {
+			sentRef.current = v
+			onChange(v)
+		}, 300)
+	}
+
+	return (
+		<Input
+			type="text"
+			value={local}
+			onChange={handleChange}
+			list={listId}
+			placeholder="—"
+			className={cn(className, "w-24")}
+		/>
 	)
 }
 
@@ -481,12 +540,14 @@ function ProductRow({
 	row,
 	computed,
 	currency,
+	listId,
 	onUpdate,
 	onRemove,
 }: {
 	row: DraftRow
 	computed: string
 	currency: string
+	listId: string
 	onUpdate: (patch: Partial<DraftRow>) => void
 	onRemove: () => void
 }) {
@@ -526,7 +587,7 @@ function ProductRow({
 						onChange={(e) => onUpdate({ foreignPrice: e.target.value })}
 						step="1"
 						min="0"
-						className="w-20 text-right font-mono h-10 px-2"
+						className="w-28 text-right font-mono h-10 px-2"
 					/>
 				</div>
 			</TableCell>
@@ -548,7 +609,7 @@ function ProductRow({
 						step="1"
 						min="0"
 						disabled={!row.priceOverridden}
-						className="w-20 text-right font-mono h-10 px-2"
+						className="w-24 text-right font-mono h-10 px-2"
 					/>
 				</div>
 			</TableCell>
@@ -571,11 +632,10 @@ function ProductRow({
 				/>
 			</TableCell>
 			<TableCell>
-				<Input
-					type="text"
+				<StoreLocationInput
 					value={row.storeLocation}
-					onChange={(e) => onUpdate({ storeLocation: e.target.value })}
-					placeholder="—"
+					onChange={(v) => onUpdate({ storeLocation: v })}
+					listId={listId}
 					className="h-10 px-2"
 				/>
 			</TableCell>
