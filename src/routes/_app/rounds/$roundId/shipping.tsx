@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { ShippingSkeleton } from "#/components/round-skeletons";
 import { useTranslation } from "react-i18next";
 import { Button } from "#/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "#/components/ui/card";
@@ -27,6 +28,7 @@ export const Route = createFileRoute("/_app/rounds/$roundId/shipping")({
 			}),
 		]);
 	},
+	pendingComponent: ShippingSkeleton,
 	component: ShippingPage,
 });
 

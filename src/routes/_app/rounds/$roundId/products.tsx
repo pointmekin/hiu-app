@@ -4,6 +4,7 @@ import {
 	useSuspenseQuery,
 } from "@tanstack/react-query"
 import { createFileRoute, Link, useParams } from "@tanstack/react-router"
+import { RoundProductsSkeleton } from "#/components/round-skeletons"
 import { Package, Plus, RefreshCw, Save, Search, X } from "lucide-react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -42,6 +43,7 @@ export const Route = createFileRoute("/_app/rounds/$roundId/products")({
 			}),
 		])
 	},
+	pendingComponent: RoundProductsSkeleton,
 	component: RoundProductsPage,
 })
 

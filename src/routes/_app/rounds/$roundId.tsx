@@ -1,56 +1,73 @@
-import { useSuspenseQuery } from "@tanstack/react-query"
+import { useSuspenseQuery } from "@tanstack/react-query";
 import {
 	createFileRoute,
 	Link,
 	Outlet,
 	useLocation,
 	useParams,
-} from "@tanstack/react-router"
-import { useEffect, useRef } from "react"
-import { useTranslation } from "react-i18next"
-import { RoundStatusBadge } from "#/components/round-status-badge"
-import { Tabs, TabsList, TabsTrigger } from "#/components/ui/tabs"
-import { getRound } from "#/server/functions/rounds/get"
-import type { RoundStatus } from "#/shared/schemas/round"
+} from "@tanstack/react-router";
+import { RoundLayoutSkeleton } from "#/components/round-skeletons";
+import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { RoundStatusBadge } from "#/components/round-status-badge";
+import { Tabs, TabsList, TabsTrigger } from "#/components/ui/tabs";
+import { getRound } from "#/server/functions/rounds/get";
+import type { RoundStatus } from "#/shared/schemas/round";
 
 export const Route = createFileRoute("/_app/rounds/$roundId")({
 	loader: async ({ context: { queryClient }, params }) => {
 		await queryClient.ensureQueryData({
 			queryKey: ["rounds", params.roundId],
 			queryFn: () => getRound({ data: { id: params.roundId } }),
-		})
+		});
 	},
+	pendingComponent: RoundLayoutSkeleton,
 	component: RoundLayout,
-})
+});
 
-const TAB_PATHS = ["overview", "products", "orders", "summary", "shipping", "purchase", "stats"] as const
-type TabValue = (typeof TAB_PATHS)[number]
+const TAB_PATHS = [
+	"overview",
+	"products",
+	"orders",
+	"summary",
+	"shipping",
+	"purchase",
+	"stats",
+] as const;
+type TabValue = (typeof TAB_PATHS)[number];
 
 function getActiveTab(roundId: string, pathname: string): TabValue {
-	if (pathname.endsWith(`/rounds/${roundId}`)) return "overview"
+	if (pathname.endsWith(`/rounds/${roundId}`)) return "overview";
 	for (const tab of TAB_PATHS) {
-		if (tab !== "overview" && pathname.includes(`/rounds/${roundId}/${tab}`)) return tab
+		if (tab !== "overview" && pathname.includes(`/rounds/${roundId}/${tab}`))
+			return tab;
 	}
-	return "overview"
+	return "overview";
 }
 
 function RoundLayout() {
-	const { t } = useTranslation("rounds")
-	const { roundId } = useParams({ from: "/_app/rounds/$roundId" })
-	const { pathname } = useLocation()
+	const { t } = useTranslation("rounds");
+	const { roundId } = useParams({ from: "/_app/rounds/$roundId" });
+	const { pathname } = useLocation();
 
 	const { data: round } = useSuspenseQuery({
 		queryKey: ["rounds", roundId],
 		queryFn: () => getRound({ data: { id: roundId } }),
-	})
+	});
 
-	const activeTab = getActiveTab(roundId, pathname)
-	const tabsListRef = useRef<HTMLDivElement>(null)
+	const activeTab = getActiveTab(roundId, pathname);
+	const tabsListRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		const activeEl = tabsListRef.current?.querySelector<HTMLElement>('[data-state="active"]')
-		activeEl?.scrollIntoView({ behavior: "smooth", inline: "nearest", block: "nearest" })
-	}, [activeTab])
+		const activeEl = tabsListRef.current?.querySelector<HTMLElement>(
+			'[data-state="active"]',
+		);
+		activeEl?.scrollIntoView({
+			behavior: "smooth",
+			inline: "nearest",
+			block: "nearest",
+		});
+	}, []);
 
 	return (
 		<div className="flex flex-col min-h-full">
@@ -79,25 +96,53 @@ function RoundLayout() {
 							variant="line"
 							className="h-auto w-full justify-start gap-0 rounded-none bg-transparent p-0 pb-[6px] overflow-x-auto overflow-y-hidden"
 						>
-							<NavTrigger value="overview" roundId={roundId} to="/rounds/$roundId">
+							<NavTrigger
+								value="overview"
+								roundId={roundId}
+								to="/rounds/$roundId"
+							>
 								{t("tab.overview")}
 							</NavTrigger>
-							<NavTrigger value="products" roundId={roundId} to="/rounds/$roundId/products">
+							<NavTrigger
+								value="products"
+								roundId={roundId}
+								to="/rounds/$roundId/products"
+							>
 								{t("tab.products")}
 							</NavTrigger>
-							<NavTrigger value="orders" roundId={roundId} to="/rounds/$roundId/orders">
+							<NavTrigger
+								value="orders"
+								roundId={roundId}
+								to="/rounds/$roundId/orders"
+							>
 								{t("tab.orders")}
 							</NavTrigger>
-							<NavTrigger value="summary" roundId={roundId} to="/rounds/$roundId/summary">
+							<NavTrigger
+								value="summary"
+								roundId={roundId}
+								to="/rounds/$roundId/summary"
+							>
 								{t("tab.summary")}
 							</NavTrigger>
-							<NavTrigger value="shipping" roundId={roundId} to="/rounds/$roundId/shipping">
+							<NavTrigger
+								value="shipping"
+								roundId={roundId}
+								to="/rounds/$roundId/shipping"
+							>
 								{t("tab.shipping")}
 							</NavTrigger>
-							<NavTrigger value="purchase" roundId={roundId} to="/rounds/$roundId/purchase">
+							<NavTrigger
+								value="purchase"
+								roundId={roundId}
+								to="/rounds/$roundId/purchase"
+							>
 								{t("tab.purchase")}
 							</NavTrigger>
-							<NavTrigger value="stats" roundId={roundId} to="/rounds/$roundId/stats">
+							<NavTrigger
+								value="stats"
+								roundId={roundId}
+								to="/rounds/$roundId/stats"
+							>
 								{t("tab.stats")}
 							</NavTrigger>
 						</TabsList>
@@ -109,7 +154,7 @@ function RoundLayout() {
 				<Outlet />
 			</div>
 		</div>
-	)
+	);
 }
 
 function NavTrigger({
@@ -118,10 +163,10 @@ function NavTrigger({
 	to,
 	children,
 }: {
-	value: TabValue
-	roundId: string
-	to: string
-	children: React.ReactNode
+	value: TabValue;
+	roundId: string;
+	to: string;
+	children: React.ReactNode;
 }) {
 	return (
 		<TabsTrigger
@@ -133,5 +178,5 @@ function NavTrigger({
 				{children}
 			</Link>
 		</TabsTrigger>
-	)
+	);
 }

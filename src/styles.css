@@ -196,3 +196,68 @@
 .safe-area-pb {
 	padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+
+/* Page navigation progress bar */
+.page-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 9999;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.35s ease;
+}
+
+.page-progress-bar:not([data-loading]) {
+  opacity: 0;
+}
+
+.page-progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 45%;
+  background: var(--primary);
+  border-radius: 0 2px 2px 0;
+  animation: progress-sweep 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes progress-sweep {
+  0%   { left: -50%; width: 45%; }
+  60%  { width: 65%; }
+  100% { left: 115%; width: 45%; }
+}
+
+@keyframes page-fade-in {
+  from { opacity: 0; }
+}
+
+@keyframes page-fade-out {
+  to { opacity: 0; }
+}
+
+::view-transition-old(root) {
+  animation: 200ms ease page-fade-out;
+}
+
+::view-transition-new(root) {
+  animation: 200ms ease page-fade-in;
+}
+
+::view-transition-old(app-header),
+::view-transition-new(app-header),
+::view-transition-old(app-bottom-nav),
+::view-transition-new(app-bottom-nav) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
