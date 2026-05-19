@@ -4,7 +4,7 @@ import {
 	useSuspenseQuery,
 } from "@tanstack/react-query";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { ChevronDown, ChevronRight, ShoppingCart } from "lucide-react";
+import { ChevronDown, ChevronRight, Minus, Plus, ShoppingCart } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { PurchaseTrackerItem } from "#/server/functions/round-products/list-for-purchase-tracker";
@@ -98,34 +98,38 @@ function getStatus(item: PurchaseTrackerItem): ItemStatus {
 	return "none";
 }
 
-function StatusChip({ status, t }: { status: ItemStatus; t: ReturnType<typeof useTranslation>["t"] }) {
-	if (status === "empty") {
-		return <span className="text-xs text-muted-foreground">—</span>;
-	}
+function StatusChip({
+	status,
+	t,
+}: {
+	status: ItemStatus;
+	t: ReturnType<typeof useTranslation>["t"];
+}) {
+	if (status === "empty") return null;
 	if (status === "complete") {
 		return (
-			<span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full whitespace-nowrap">
+			<span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full whitespace-nowrap shrink-0">
 				{t("purchase.status.complete")}
 			</span>
 		);
 	}
 	if (status === "partial") {
 		return (
-			<span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full whitespace-nowrap">
+			<span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full whitespace-nowrap shrink-0">
 				{t("purchase.status.partial")}
 			</span>
 		);
 	}
 	return (
-		<span className="inline-flex items-center text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full whitespace-nowrap">
+		<span className="inline-flex items-center text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full whitespace-nowrap shrink-0">
 			{t("purchase.status.none")}
 		</span>
 	);
 }
 
-// ── Bought qty inline editor ──────────────────────────────────────────────────
+// ── Product row ───────────────────────────────────────────────────────────────
 
-function BoughtQtyCell({
+function PurchaseRow({
 	item,
 	roundId,
 	t,
@@ -135,9 +139,12 @@ function BoughtQtyCell({
 	t: ReturnType<typeof useTranslation>["t"];
 }) {
 	const queryClient = useQueryClient();
-	const [open, setOpen] = useState(false);
+	const [popoverOpen, setPopoverOpen] = useState(false);
 	const [draft, setDraft] = useState(String(item.boughtQty));
 	const inputRef = useRef<HTMLInputElement>(null);
+
+	const status = getStatus(item);
+	const remaining = Math.max(0, item.orderedQty - item.boughtQty);
 
 	const mutation = useMutation({
 		mutationFn: (qty: number) =>
@@ -166,136 +173,169 @@ function BoughtQtyCell({
 		},
 		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: ["purchase-tracker", roundId] });
-			setOpen(false);
 		},
 	});
 
-	function save() {
+	function adjust(delta: number) {
+		const next = Math.max(0, item.boughtQty + delta);
+		mutation.mutate(next);
+	}
+
+	function saveFromPopover() {
 		const qty = parseInt(draft, 10);
 		if (!Number.isNaN(qty) && qty >= 0) {
 			mutation.mutate(qty);
+			setPopoverOpen(false);
 		}
 	}
 
 	return (
-		<Popover
-			open={open}
-			onOpenChange={(v) => {
-				setOpen(v);
-				if (v) setDraft(String(item.boughtQty));
-			}}
+		<div
+			className={cn(
+				"px-4 py-3 border-t border-border transition-colors",
+				status === "complete"
+					? "bg-emerald-50/30 dark:bg-emerald-950/10"
+					: "hover:bg-muted/10",
+			)}
 		>
-			<PopoverTrigger asChild>
-				<button
-					type="button"
-					className={cn(
-						"font-mono tabular-nums rounded px-2 py-0.5 min-w-[2.5rem] text-right",
-						"hover:bg-muted transition-colors cursor-pointer",
-						"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+			{/* Top: product name + status chip */}
+			<div className="flex items-start justify-between gap-2 mb-2.5">
+				<div className="min-w-0 flex-1">
+					<Link
+						to="/products/$productId"
+						params={{ productId: item.productId }}
+						className="font-medium text-sm leading-snug hover:underline underline-offset-2 block truncate"
+					>
+						{item.productName}
+					</Link>
+					{item.productBrand && (
+						<div className="text-xs text-muted-foreground truncate">
+							{item.productBrand}
+						</div>
 					)}
-				>
-					{item.boughtQty}
-				</button>
-			</PopoverTrigger>
-			<PopoverContent className="w-44 p-3" align="end">
-				<div className="space-y-2">
-					<p className="text-xs font-medium text-muted-foreground">
-						{t("purchase.editBoughtQty.label")}
-					</p>
-					<Input
-						ref={inputRef}
-						type="number"
-						inputMode="numeric"
-						min={0}
-						value={draft}
-						autoFocus
-						onChange={(e) => setDraft(e.target.value)}
-						onKeyDown={(e) => {
-							if (e.key === "Enter") save();
-							if (e.key === "Escape") setOpen(false);
-						}}
-						className="h-8 text-center font-mono"
-					/>
-					<div className="flex gap-1.5">
+				</div>
+				<StatusChip status={status} t={t} />
+			</div>
+
+			{/* Bottom: ordered / stepper / remaining */}
+			<div className="flex items-center gap-3">
+				{/* Ordered qty */}
+				<div className="flex flex-col items-center min-w-[2.5rem]">
+					<span className="text-[10px] text-muted-foreground leading-none mb-1">
+						{t("purchase.col.orderedQty")}
+					</span>
+					<span className="font-mono tabular-nums text-sm font-medium">
+						{item.orderedQty}
+					</span>
+				</div>
+
+				{/* Bought qty stepper */}
+				<div className="flex-1 flex flex-col items-center">
+					<span className="text-[10px] text-muted-foreground leading-none mb-1">
+						{t("purchase.col.boughtQty")}
+					</span>
+					<div className="flex items-center gap-1">
 						<Button
-							size="sm"
-							className="flex-1 h-7 text-xs"
-							disabled={mutation.isPending}
-							onClick={save}
+							type="button"
+							variant="outline"
+							size="icon-xs"
+							disabled={item.boughtQty <= 0 || mutation.isPending}
+							onClick={() => adjust(-1)}
+							className="h-7 w-7"
 						>
-							{t("purchase.editBoughtQty.save")}
+							<Minus size={12} />
 						</Button>
-						<Button
-							size="sm"
-							variant="ghost"
-							className="h-7 text-xs"
-							onClick={() => setOpen(false)}
+
+						<Popover
+							open={popoverOpen}
+							onOpenChange={(v) => {
+								setPopoverOpen(v);
+								if (v) setDraft(String(item.boughtQty));
+							}}
 						>
-							{t("purchase.editBoughtQty.cancel")}
+							<PopoverTrigger asChild>
+								<button
+									type="button"
+									className={cn(
+										"font-mono tabular-nums text-sm font-semibold",
+										"w-9 text-center rounded py-0.5",
+										"hover:bg-muted transition-colors cursor-pointer",
+										"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+									)}
+								>
+									{item.boughtQty}
+								</button>
+							</PopoverTrigger>
+							<PopoverContent className="w-40 p-3" align="center">
+								<div className="space-y-2">
+									<p className="text-xs font-medium text-muted-foreground">
+										{t("purchase.editBoughtQty.label")}
+									</p>
+									<Input
+										ref={inputRef}
+										type="number"
+										inputMode="numeric"
+										min={0}
+										value={draft}
+										autoFocus
+										onChange={(e) => setDraft(e.target.value)}
+										onKeyDown={(e) => {
+											if (e.key === "Enter") saveFromPopover();
+											if (e.key === "Escape") setPopoverOpen(false);
+										}}
+										className="h-8 text-center font-mono"
+									/>
+									<div className="flex gap-1.5">
+										<Button
+											size="sm"
+											className="flex-1 h-7 text-xs"
+											disabled={mutation.isPending}
+											onClick={saveFromPopover}
+										>
+											{t("purchase.editBoughtQty.save")}
+										</Button>
+										<Button
+											size="sm"
+											variant="ghost"
+											className="h-7 text-xs"
+											onClick={() => setPopoverOpen(false)}
+										>
+											{t("purchase.editBoughtQty.cancel")}
+										</Button>
+									</div>
+								</div>
+							</PopoverContent>
+						</Popover>
+
+						<Button
+							type="button"
+							variant="outline"
+							size="icon-xs"
+							disabled={mutation.isPending}
+							onClick={() => adjust(1)}
+							className="h-7 w-7"
+						>
+							<Plus size={12} />
 						</Button>
 					</div>
 				</div>
-			</PopoverContent>
-		</Popover>
-	);
-}
 
-// ── Product row ───────────────────────────────────────────────────────────────
-
-function PurchaseRow({
-	item,
-	roundId,
-	t,
-}: {
-	item: PurchaseTrackerItem;
-	roundId: string;
-	t: ReturnType<typeof useTranslation>["t"];
-}) {
-	const remaining = Math.max(0, item.orderedQty - item.boughtQty);
-	const status = getStatus(item);
-
-	return (
-		<tr
-			className={cn(
-				"border-t border-border transition-colors",
-				status === "complete"
-					? "bg-emerald-50/30 dark:bg-emerald-950/10"
-					: "hover:bg-muted/20",
-			)}
-		>
-			<td className="px-4 py-3">
-				<Link
-				to="/products/$productId"
-				params={{ productId: item.productId }}
-				className="font-medium text-sm leading-tight hover:underline underline-offset-2"
-			>
-				{item.productName}
-			</Link>
-				{item.productBrand && (
-					<div className="text-xs text-muted-foreground mt-0.5">
-						{item.productBrand}
-					</div>
-				)}
-			</td>
-			<td className="px-4 py-3 text-right font-mono tabular-nums text-sm">
-				{item.orderedQty}
-			</td>
-			<td className="px-4 py-3 text-right text-sm">
-				<BoughtQtyCell item={item} roundId={roundId} t={t} />
-			</td>
-			<td className="px-4 py-3 text-right font-mono tabular-nums text-sm">
-				<span
-					className={cn(
-						remaining > 0 ? "text-foreground" : "text-muted-foreground",
-					)}
-				>
-					{remaining}
-				</span>
-			</td>
-			<td className="px-4 py-3 text-center">
-				<StatusChip status={status} t={t} />
-			</td>
-		</tr>
+				{/* Remaining */}
+				<div className="flex flex-col items-center min-w-[2.5rem]">
+					<span className="text-[10px] text-muted-foreground leading-none mb-1">
+						{t("purchase.col.remaining")}
+					</span>
+					<span
+						className={cn(
+							"font-mono tabular-nums text-sm font-medium",
+							remaining > 0 ? "text-foreground" : "text-muted-foreground",
+						)}
+					>
+						{remaining}
+					</span>
+				</div>
+			</div>
+		</div>
 	);
 }
 
@@ -327,11 +367,7 @@ function ItemGroupCard({
 					className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors text-left"
 				>
 					<span className="text-muted-foreground shrink-0">
-						{open ? (
-							<ChevronDown size={16} />
-						) : (
-							<ChevronRight size={16} />
-						)}
+						{open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
 					</span>
 
 					<span className="font-semibold text-sm truncate flex-1">
@@ -355,38 +391,15 @@ function ItemGroupCard({
 			)}
 
 			{open && (
-				<div className="overflow-x-auto">
-					<table className="w-full">
-						<thead>
-							<tr className={cn(showHeader && "border-t border-border", "bg-muted/30")}>
-								<th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">
-									{t("purchase.col.product")}
-								</th>
-								<th className="text-right px-4 py-2 text-xs font-medium text-muted-foreground">
-									{t("purchase.col.orderedQty")}
-								</th>
-								<th className="text-right px-4 py-2 text-xs font-medium text-muted-foreground">
-									{t("purchase.col.boughtQty")}
-								</th>
-								<th className="text-right px-4 py-2 text-xs font-medium text-muted-foreground">
-									{t("purchase.col.remaining")}
-								</th>
-								<th className="text-center px-4 py-2 text-xs font-medium text-muted-foreground">
-									{t("purchase.col.status")}
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{group.items.map((item) => (
-								<PurchaseRow
-									key={item.id}
-									item={item}
-									roundId={roundId}
-									t={t}
-								/>
-							))}
-						</tbody>
-					</table>
+				<div>
+					{group.items.map((item) => (
+						<PurchaseRow
+							key={item.id}
+							item={item}
+							roundId={roundId}
+							t={t}
+						/>
+					))}
 				</div>
 			)}
 		</div>
@@ -443,7 +456,11 @@ function PurchasePage() {
 	if (items.length === 0) {
 		return (
 			<div className="flex flex-col items-center justify-center py-20 text-center gap-3">
-				<ShoppingCart className="text-muted-foreground" size={40} strokeWidth={1.5} />
+				<ShoppingCart
+					className="text-muted-foreground"
+					size={40}
+					strokeWidth={1.5}
+				/>
 				<p className="text-muted-foreground text-sm">{t("purchase.empty")}</p>
 			</div>
 		);
@@ -457,16 +474,23 @@ function PurchasePage() {
 					<span className="text-sm text-muted-foreground shrink-0">
 						{t("purchase.groupBy.label")}
 					</span>
-					<Select value={groupBy} onValueChange={(v) => setGroupBy(v as GroupBy)}>
+					<Select
+						value={groupBy}
+						onValueChange={(v) => setGroupBy(v as GroupBy)}
+					>
 						<SelectTrigger className="h-8 w-36 text-sm">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="store">{t("purchase.groupBy.store")}</SelectItem>
+							<SelectItem value="store">
+								{t("purchase.groupBy.store")}
+							</SelectItem>
 							<SelectItem value="category">
 								{t("purchase.groupBy.category")}
 							</SelectItem>
-							<SelectItem value="none">{t("purchase.groupBy.none")}</SelectItem>
+							<SelectItem value="none">
+								{t("purchase.groupBy.none")}
+							</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
