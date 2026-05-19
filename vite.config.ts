@@ -11,7 +11,10 @@ export default defineConfig({
 		devtools(),
 		tailwindcss(),
 		tanstackStart(),
-		nitro({ preset: "vercel" }),
+		nitro({
+			preset: "vercel",
+			serverAssets: [{ baseName: "templates", dir: "./docs/templates" }],
+		}),
 		viteReact(),
 	],
 });

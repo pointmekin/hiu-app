@@ -4,25 +4,34 @@ export const Route = createFileRoute("/api/exports/kerry/$roundId")({
 	server: {
 		handlers: {
 			GET: async ({ request, params }) => {
-				const [{ auth }, { buildKerryWorkbook }, { db }, { rounds }, { eq }] =
+				const [{ auth }, { buildKerryWorkbook }, { db }, { rounds }, { eq }, { useStorage }] =
 					await Promise.all([
 						import("#/lib/auth"),
 						import("#/server/functions/exports/kerry"),
 						import("#/db/index"),
 						import("#/db/schema"),
 						import("drizzle-orm"),
+						import("nitro/storage"),
 					]);
 				const session = await auth.api.getSession({ headers: request.headers });
 				if (!session) {
 					return new Response("Unauthorized", { status: 401 });
 				}
 
+				const templateStorage = useStorage("assets:templates");
+
 				try {
-					const [round] = await db
-						.select({ name: rounds.name, deliveryEta: rounds.deliveryEta })
-						.from(rounds)
-						.where(eq(rounds.id, params.roundId))
-						.limit(1);
+					const [round, templateRaw] = await Promise.all([
+						db
+							.select({ name: rounds.name, deliveryEta: rounds.deliveryEta })
+							.from(rounds)
+							.where(eq(rounds.id, params.roundId))
+							.limit(1)
+							.then((r) => r[0]),
+						templateStorage.getItemRaw(
+						"kerry - 21-05-2026.xlsx",
+					) as Promise<Uint8Array | null>,
+					]);
 					const deliveryDate = round?.deliveryEta
 						? round.deliveryEta.toISOString().slice(0, 10)
 						: "";
@@ -31,7 +40,10 @@ export const Route = createFileRoute("/api/exports/kerry/$roundId")({
 							? `${round.name} - ${deliveryDate}.xlsx`
 							: "kerry.xlsx";
 
-					const buffer = await buildKerryWorkbook(params.roundId);
+					const buffer = await buildKerryWorkbook(
+						params.roundId,
+						templateRaw,
+					);
 					return new Response(buffer, {
 						headers: {
 							"Content-Type":

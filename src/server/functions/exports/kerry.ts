@@ -98,6 +98,16 @@ export async function loadKerryTemplate(
 	return workbook;
 }
 
+export async function loadKerryTemplateFromBuffer(
+	buf: Uint8Array,
+): Promise<ExcelJS.Workbook> {
+	const workbook = new ExcelJS.Workbook();
+	// ExcelJS types pre-date Node's generic Buffer<T>; cast via any to satisfy both
+	// biome-ignore lint/suspicious/noExplicitAny: see above
+	await (workbook.xlsx as any).load(buf);
+	return workbook;
+}
+
 // Clears every cell from DATA_START_ROW onwards, then writes the current round's
 // orders in their place. The template ships with a real previous Kerry submission
 // embedded (74 customers in sheet 1, 63 in sheet 2, 23 in sheet 3) — those must
@@ -133,10 +143,15 @@ export function addDataToKerryWorkbook(
 	return workbook;
 }
 
-export async function buildKerryWorkbook(roundId: string): Promise<ArrayBuffer> {
+export async function buildKerryWorkbook(
+	roundId: string,
+	templateBuf?: Uint8Array | null,
+): Promise<ArrayBuffer> {
 	const [data, workbook] = await Promise.all([
 		fetchKerryData(roundId),
-		loadKerryTemplate(),
+		templateBuf
+			? loadKerryTemplateFromBuffer(templateBuf)
+			: loadKerryTemplate(),
 	]);
 	addDataToKerryWorkbook(workbook, data);
 	return workbook.xlsx.writeBuffer();
