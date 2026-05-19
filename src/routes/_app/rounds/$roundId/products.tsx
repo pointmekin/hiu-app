@@ -7,7 +7,7 @@ import { createFileRoute, Link, useParams } from "@tanstack/react-router"
 import { Package, Plus, RefreshCw, Save, X } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-import type { Product } from "#/db/schema"
+import type { ProductListItem } from "#/server/functions/products/list"
 import { listRoundProducts } from "#/server/functions/round-products/list"
 import { recomputeFromFx } from "#/server/functions/round-products/recompute-from-fx"
 import { upsertRoundProducts } from "#/server/functions/round-products/upsert-many"
@@ -135,7 +135,7 @@ function RoundProductsPage() {
 		setIsDirty(true)
 	}
 
-	function addFromCatalog(product: Product) {
+	function addFromCatalog(product: ProductListItem) {
 		const alreadyAdded = rows.some((r) => r.productId === product.id)
 		if (alreadyAdded) return
 		setRows((prev) => [

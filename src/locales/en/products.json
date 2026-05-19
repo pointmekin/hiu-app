@@ -4,7 +4,8 @@
 		"empty": "No products yet",
 		"emptyHint": "Add products to use in your rounds",
 		"addFirst": "Add product",
-		"search": "Search products..."
+		"search": "Search products...",
+		"loadMore": "Load more"
 	},
 	"field": {
 		"name": "Product name",
