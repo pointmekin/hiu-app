@@ -33,7 +33,7 @@ function RoundsPage() {
 				<h1 className="text-2xl font-semibold text-foreground">
 					{t("list.title")}
 				</h1>
-				<Button asChild variant="brand">
+				<Button asChild variant="default">
 					<Link to="/rounds/new">
 						<Plus size={16} />
 						{t("list.createFirst")}

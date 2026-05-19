@@ -7,9 +7,9 @@ import {
 import { BarChart3, Globe, LogOut, Moon, Package, Settings, ShoppingBag, Sun, Users } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { Button } from "#/components/ui/button"
-import { authClient } from "#/lib/auth-client"
-import { useKeyboardShortcuts, ShortcutHelpOverlay } from "#/hooks/use-keyboard-shortcuts.tsx"
 import { useDarkMode } from "#/hooks/use-dark-mode"
+import { ShortcutHelpOverlay, useKeyboardShortcuts } from "#/hooks/use-keyboard-shortcuts.tsx"
+import { authClient } from "#/lib/auth-client"
 import i18n, { type Locale } from "#/lib/i18n"
 
 export const Route = createFileRoute("/_app")({
@@ -41,12 +41,12 @@ function AppLayout() {
 		<div className="flex flex-col min-h-dvh bg-background">
 			<ShortcutHelpOverlay showHelp={showHelp} onClose={() => setShowHelp(false)} />
 			{/* Top bar — desktop only header */}
-			<header className="hidden md:flex items-center justify-between px-6 py-3 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
-				<span className="font-display font-semibold text-xl text-foreground">
+			<header className="hidden md:flex items-center justify-between gap-8 px-6 py-3 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
+				<span className="font-display font-semibold text-xl text-foreground text-nowrap">
 					{t("appName")}
 				</span>
 
-				<nav className="flex items-center gap-6">
+				<nav className="flex items-start gap-6 w-full">
 					<NavItem
 						to="/rounds"
 						icon={<ShoppingBag size={16} />}

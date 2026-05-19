@@ -2,11 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useForm, type Resolver } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { upsertCustomer } from "#/server/functions/customers/upsert"
-import {
-	upsertCustomerSchema,
-	type UpsertCustomerInput,
-} from "#/shared/schemas/customer"
 import { Alert, AlertDescription } from "#/components/ui/alert"
 import { Button } from "#/components/ui/button"
 import {
@@ -20,6 +15,11 @@ import {
 import { Input } from "#/components/ui/input"
 import { Separator } from "#/components/ui/separator"
 import { Textarea } from "#/components/ui/textarea"
+import { upsertCustomer } from "#/server/functions/customers/upsert"
+import {
+	type UpsertCustomerInput,
+	upsertCustomerSchema,
+} from "#/shared/schemas/customer"
 
 interface CustomerFormProps {
 	initialValues?: Partial<UpsertCustomerInput>
@@ -210,7 +210,7 @@ export function CustomerForm({
 
 				<Button
 					type="submit"
-					variant="brand"
+					variant="default"
 					disabled={mutation.isPending}
 					className="w-full"
 				>

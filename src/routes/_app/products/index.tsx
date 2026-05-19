@@ -16,9 +16,9 @@ import {
 } from "#/components/ui/select"
 import { formatRelativeDate } from "#/lib/format-relative"
 import { useDebounce } from "#/lib/use-debounce"
-import { listProductFilterOptions } from "#/server/functions/products/list-filter-options"
 import type { ProductListCursor, ProductListItem } from "#/server/functions/products/list"
 import { listProducts } from "#/server/functions/products/list"
+import { listProductFilterOptions } from "#/server/functions/products/list-filter-options"
 
 const PAGE_SIZE = 20
 
@@ -79,7 +79,7 @@ function ProductsPage() {
 				<h1 className="text-2xl font-semibold text-foreground">
 					{t("list.title")}
 				</h1>
-				<Button asChild variant="brand">
+				<Button asChild variant="default">
 					<Link to="/products/$productId" params={{ productId: "new" }}>
 						<Plus size={16} />
 						{t("list.addFirst")}

@@ -61,7 +61,7 @@ function CustomersPage() {
 		<div className="max-w-5xl mx-auto px-4 py-6">
 			<div className="flex items-center justify-between mb-4">
 				<h1 className="text-2xl font-semibold">{t("list.title")}</h1>
-				<Button variant="brand" size="sm" onClick={() => setCreateOpen(true)}>
+				<Button variant="default" size="sm" onClick={() => setCreateOpen(true)}>
 					<Plus size={16} />
 					{t("action.new")}
 				</Button>

@@ -1,12 +1,12 @@
 import { createFileRoute, redirect, useRouter } from "@tanstack/react-router"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { authClient } from "#/lib/auth-client"
 import { Alert, AlertDescription } from "#/components/ui/alert"
 import { Button } from "#/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card"
 import { Input } from "#/components/ui/input"
 import { Label } from "#/components/ui/label"
+import { authClient } from "#/lib/auth-client"
 
 export const Route = createFileRoute("/login")({
 	beforeLoad: ({ context }) => {
@@ -90,7 +90,7 @@ function LoginPage() {
 
 							<Button
 								type="submit"
-								variant="brand"
+								variant="default"
 								disabled={isPending}
 								className="w-full"
 							>

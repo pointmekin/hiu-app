@@ -2,13 +2,13 @@ import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-q
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { getSettings } from "#/server/functions/settings/get"
-import { updateSettings } from "#/server/functions/settings/update"
-import type { AppSettings } from "#/shared/schemas/settings"
 import { Alert, AlertDescription } from "#/components/ui/alert"
 import { Button } from "#/components/ui/button"
 import { Input } from "#/components/ui/input"
 import { Label } from "#/components/ui/label"
+import { getSettings } from "#/server/functions/settings/get"
+import { updateSettings } from "#/server/functions/settings/update"
+import type { AppSettings } from "#/shared/schemas/settings"
 
 export const Route = createFileRoute("/_app/settings")({
 	loader: async ({ context: { queryClient } }) => {
@@ -126,7 +126,7 @@ function SettingsPage() {
 
 				<Button
 					type="button"
-					variant="brand"
+					variant="default"
 					onClick={handleSave}
 					disabled={mutation.isPending}
 				>

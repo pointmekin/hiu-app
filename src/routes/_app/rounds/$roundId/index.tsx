@@ -3,14 +3,6 @@ import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-q
 import { createFileRoute, useParams } from "@tanstack/react-router"
 import { useForm, type Resolver } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { getRound } from "#/server/functions/rounds/get"
-import { updateRound } from "#/server/functions/rounds/update"
-import {
-	ROUND_STATUSES,
-	SOURCE_CURRENCIES,
-	type UpdateRoundInput,
-	updateRoundSchema,
-} from "#/shared/schemas/round"
 import { Alert, AlertDescription } from "#/components/ui/alert"
 import { Button } from "#/components/ui/button"
 import {
@@ -31,6 +23,14 @@ import {
 	SelectValue,
 } from "#/components/ui/select"
 import { Textarea } from "#/components/ui/textarea"
+import { getRound } from "#/server/functions/rounds/get"
+import { updateRound } from "#/server/functions/rounds/update"
+import {
+	ROUND_STATUSES,
+	SOURCE_CURRENCIES,
+	type UpdateRoundInput,
+	updateRoundSchema,
+} from "#/shared/schemas/round"
 
 export const Route = createFileRoute("/_app/rounds/$roundId/")({
 	component: RoundOverview,
@@ -339,7 +339,7 @@ function RoundOverview() {
 
 				<Button
 					type="submit"
-					variant="brand"
+					variant="default"
 					disabled={mutation.isPending || !form.formState.isDirty}
 				>
 					{mutation.isPending ? t("common:loading") : t("common:action.save")}

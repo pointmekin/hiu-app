@@ -1,8 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { getCustomersMissingAddress } from "#/server/functions/exports/get-customers-missing-address";
-import { getKerryRows } from "#/server/functions/exports/get-kerry-rows";
 import { Button } from "#/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "#/components/ui/card";
 import {
@@ -13,6 +11,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "#/components/ui/table";
+import { getCustomersMissingAddress } from "#/server/functions/exports/get-customers-missing-address";
+import { getKerryRows } from "#/server/functions/exports/get-kerry-rows";
 
 export const Route = createFileRoute("/_app/rounds/$roundId/shipping")({
 	loader: async ({ context: { queryClient }, params }) => {
@@ -86,7 +86,7 @@ function ShippingPage() {
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
-					<Button asChild variant="brand">
+					<Button asChild variant="default">
 						<a href={`/api/exports/kerry/${roundId}`} download>
 							{t("exports:kerry.download")}
 						</a>

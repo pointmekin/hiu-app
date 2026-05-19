@@ -3,12 +3,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { useForm, type Resolver } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { createRound } from "#/server/functions/rounds/create"
-import {
-	type CreateRoundInput,
-	createRoundSchema,
-	SOURCE_CURRENCIES,
-} from "#/shared/schemas/round"
 import { Alert, AlertDescription } from "#/components/ui/alert"
 import { Button } from "#/components/ui/button"
 import {
@@ -29,6 +23,12 @@ import {
 	SelectValue,
 } from "#/components/ui/select"
 import { Textarea } from "#/components/ui/textarea"
+import { createRound } from "#/server/functions/rounds/create"
+import {
+	type CreateRoundInput,
+	createRoundSchema,
+	SOURCE_CURRENCIES,
+} from "#/shared/schemas/round"
 
 export const Route = createFileRoute("/_app/rounds/new")({
 	component: NewRoundPage,
@@ -296,7 +296,7 @@ function NewRoundPage() {
 					<div className="flex gap-3 pt-2">
 						<Button
 							type="submit"
-							variant="brand"
+							variant="default"
 							disabled={mutation.isPending}
 							className="flex-1"
 						>

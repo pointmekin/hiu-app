@@ -694,7 +694,7 @@ function OrderDetailPage() {
 					{!isCancelled && (
 						<div className="flex flex-col gap-2">
 							<Button
-								variant="brand"
+								variant="default"
 								className="w-full"
 								disabled={!isDirty || saveMutation.isPending}
 								onClick={() => saveMutation.mutate()}
@@ -748,7 +748,7 @@ function OrderDetailPage() {
 			{!isCancelled && (
 				<div className="md:hidden fixed bottom-16 left-0 right-0 bg-background/95 backdrop-blur-sm border-t px-4 py-3 flex gap-3 z-20">
 					<Button
-						variant="brand"
+						variant="default"
 						size="lg"
 						className="flex-1"
 						disabled={!isDirty || saveMutation.isPending}
