@@ -4,10 +4,12 @@ import {
 	Outlet,
 	redirect,
 } from "@tanstack/react-router"
-import { Globe, LogOut, Package, Settings, ShoppingBag, Users } from "lucide-react"
+import { BarChart3, Globe, LogOut, Moon, Package, Settings, ShoppingBag, Sun, Users } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { Button } from "#/components/ui/button"
 import { authClient } from "#/lib/auth-client"
+import { useKeyboardShortcuts, ShortcutHelpOverlay } from "#/hooks/use-keyboard-shortcuts.tsx"
+import { useDarkMode } from "#/hooks/use-dark-mode"
 import i18n, { type Locale } from "#/lib/i18n"
 
 export const Route = createFileRoute("/_app")({
@@ -21,6 +23,8 @@ export const Route = createFileRoute("/_app")({
 
 function AppLayout() {
 	const { t } = useTranslation("common")
+	const { showHelp, setShowHelp } = useKeyboardShortcuts()
+	const { isDark, toggle: toggleDark } = useDarkMode()
 
 	async function handleLogout() {
 		await authClient.signOut()
@@ -35,6 +39,7 @@ function AppLayout() {
 
 	return (
 		<div className="flex flex-col min-h-dvh bg-background">
+			<ShortcutHelpOverlay showHelp={showHelp} onClose={() => setShowHelp(false)} />
 			{/* Top bar — desktop only header */}
 			<header className="hidden md:flex items-center justify-between px-6 py-3 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
 				<span className="font-display font-semibold text-xl text-foreground">
@@ -58,6 +63,11 @@ function AppLayout() {
 						label={t("nav.products")}
 					/>
 					<NavItem
+						to="/dashboard"
+						icon={<BarChart3 size={16} />}
+						label={t("nav.dashboard")}
+					/>
+					<NavItem
 						to="/settings"
 						icon={<Settings size={16} />}
 						label={t("nav.settings")}
@@ -65,6 +75,16 @@ function AppLayout() {
 				</nav>
 
 				<div className="flex items-center gap-3">
+					<Button
+						type="button"
+						variant="ghost"
+						size="sm"
+						onClick={toggleDark}
+						title={isDark ? t("theme.light") : t("theme.dark")}
+						className="text-muted-foreground hover:text-foreground w-8 h-8 p-0"
+					>
+						{isDark ? <Sun size={15} /> : <Moon size={15} />}
+					</Button>
 					<LocaleSwitcher onLocaleChange={handleLocaleChange} />
 					<Button
 						type="button"
@@ -86,7 +106,7 @@ function AppLayout() {
 
 			{/* Bottom tab bar — mobile only */}
 			<nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-sm border-t border-border safe-area-pb">
-				<div className="grid grid-cols-3 h-16">
+				<div className="grid grid-cols-4 h-16">
 					<BottomNavItem
 						to="/rounds"
 						icon={<ShoppingBag size={22} />}
@@ -101,6 +121,11 @@ function AppLayout() {
 						to="/products"
 						icon={<Package size={22} />}
 						label={t("nav.products")}
+					/>
+					<BottomNavItem
+						to="/dashboard"
+						icon={<BarChart3 size={22} />}
+						label={t("nav.dashboard")}
 					/>
 				</div>
 			</nav>

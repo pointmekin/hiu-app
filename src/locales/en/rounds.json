@@ -38,7 +38,8 @@
 		"products": "Products",
 		"orders": "Orders",
 		"summary": "Summary",
-		"shipping": "Shipping"
+		"shipping": "Shipping",
+		"stats": "Stats"
 	},
 	"products": {
 		"title": "Products in round",

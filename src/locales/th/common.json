@@ -3,7 +3,8 @@
 		"rounds": "รอบสั่ง",
 		"customers": "ลูกค้า",
 		"products": "สินค้า",
-		"settings": "ตั้งค่า"
+		"settings": "ตั้งค่า",
+		"dashboard": "แดชบอร์ด"
 	},
 	"action": {
 		"save": "บันทึก",
@@ -20,5 +21,9 @@
 	},
 	"appName": "ร้านหิ้ว",
 	"loading": "กำลังโหลด...",
-	"logout": "ออกจากระบบ"
+	"logout": "ออกจากระบบ",
+	"theme": {
+		"dark": "โหมดมืด",
+		"light": "โหมดสว่าง"
+	}
 }

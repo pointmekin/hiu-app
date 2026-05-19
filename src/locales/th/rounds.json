@@ -38,7 +38,8 @@
 		"products": "สินค้า",
 		"orders": "ออเดอร์",
 		"summary": "สรุปยอด",
-		"shipping": "เอกสารส่ง"
+		"shipping": "เอกสารส่ง",
+		"stats": "สถิติ"
 	},
 	"products": {
 		"title": "สินค้าในรอบ",

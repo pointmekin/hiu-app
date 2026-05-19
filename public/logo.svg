@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#c8302a" rx="96"/>
+  <!-- H mark in bone color -->
+  <rect x="130" y="130" width="60" height="252" rx="12" fill="#f6f1e9"/>
+  <rect x="322" y="130" width="60" height="252" rx="12" fill="#f6f1e9"/>
+  <rect x="130" y="226" width="252" height="60" rx="12" fill="#f6f1e9"/>
+</svg>

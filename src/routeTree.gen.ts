@@ -15,22 +15,27 @@ import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppRoundsRouteImport } from './routes/_app/rounds'
 import { Route as AppProductsRouteImport } from './routes/_app/products'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppCustomersRouteImport } from './routes/_app/customers'
 import { Route as AppRoundsIndexRouteImport } from './routes/_app/rounds/index'
 import { Route as AppProductsIndexRouteImport } from './routes/_app/products/index'
+import { Route as AppDashboardIndexRouteImport } from './routes/_app/dashboard/index'
 import { Route as AppCustomersIndexRouteImport } from './routes/_app/customers/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AppRoundsNewRouteImport } from './routes/_app/rounds/new'
 import { Route as AppRoundsRoundIdRouteImport } from './routes/_app/rounds/$roundId'
 import { Route as AppProductsProductIdRouteImport } from './routes/_app/products/$productId'
+import { Route as AppDashboardAuditRouteImport } from './routes/_app/dashboard/audit'
 import { Route as AppCustomersCustomerIdRouteImport } from './routes/_app/customers/$customerId'
 import { Route as AppRoundsRoundIdIndexRouteImport } from './routes/_app/rounds/$roundId/index'
 import { Route as ApiExportsKerryRoundIdRouteImport } from './routes/api/exports/kerry.$roundId'
 import { Route as ApiExportsJapan05RoundIdRouteImport } from './routes/api/exports/japan05.$roundId'
 import { Route as AppRoundsRoundIdSummaryRouteImport } from './routes/_app/rounds/$roundId/summary'
+import { Route as AppRoundsRoundIdStatsRouteImport } from './routes/_app/rounds/$roundId/stats'
 import { Route as AppRoundsRoundIdShippingRouteImport } from './routes/_app/rounds/$roundId/shipping'
 import { Route as AppRoundsRoundIdProductsRouteImport } from './routes/_app/rounds/$roundId/products'
 import { Route as AppRoundsRoundIdOrdersRouteImport } from './routes/_app/rounds/$roundId/orders'
+import { Route as AppDashboardRoundRoundIdRouteImport } from './routes/_app/dashboard/round/$roundId'
 import { Route as AppRoundsRoundIdOrdersIndexRouteImport } from './routes/_app/rounds/$roundId/orders/index'
 import { Route as AppRoundsRoundIdOrdersNewRouteImport } from './routes/_app/rounds/$roundId/orders/new'
 import { Route as AppRoundsRoundIdOrdersOrderIdRouteImport } from './routes/_app/rounds/$roundId/orders/$orderId'
@@ -64,6 +69,11 @@ const AppProductsRoute = AppProductsRouteImport.update({
   path: '/products',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCustomersRoute = AppCustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
@@ -78,6 +88,11 @@ const AppProductsIndexRoute = AppProductsIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppProductsRoute,
+} as any)
+const AppDashboardIndexRoute = AppDashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppDashboardRoute,
 } as any)
 const AppCustomersIndexRoute = AppCustomersIndexRouteImport.update({
   id: '/',
@@ -103,6 +118,11 @@ const AppProductsProductIdRoute = AppProductsProductIdRouteImport.update({
   id: '/$productId',
   path: '/$productId',
   getParentRoute: () => AppProductsRoute,
+} as any)
+const AppDashboardAuditRoute = AppDashboardAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AppDashboardRoute,
 } as any)
 const AppCustomersCustomerIdRoute = AppCustomersCustomerIdRouteImport.update({
   id: '/$customerId',
@@ -130,6 +150,11 @@ const AppRoundsRoundIdSummaryRoute = AppRoundsRoundIdSummaryRouteImport.update({
   path: '/summary',
   getParentRoute: () => AppRoundsRoundIdRoute,
 } as any)
+const AppRoundsRoundIdStatsRoute = AppRoundsRoundIdStatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
+  getParentRoute: () => AppRoundsRoundIdRoute,
+} as any)
 const AppRoundsRoundIdShippingRoute =
   AppRoundsRoundIdShippingRouteImport.update({
     id: '/shipping',
@@ -147,6 +172,12 @@ const AppRoundsRoundIdOrdersRoute = AppRoundsRoundIdOrdersRouteImport.update({
   path: '/orders',
   getParentRoute: () => AppRoundsRoundIdRoute,
 } as any)
+const AppDashboardRoundRoundIdRoute =
+  AppDashboardRoundRoundIdRouteImport.update({
+    id: '/round/$roundId',
+    path: '/round/$roundId',
+    getParentRoute: () => AppDashboardRoute,
+  } as any)
 const AppRoundsRoundIdOrdersIndexRoute =
   AppRoundsRoundIdOrdersIndexRouteImport.update({
     id: '/',
@@ -170,20 +201,25 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
   '/customers': typeof AppCustomersRouteWithChildren
+  '/dashboard': typeof AppDashboardRouteWithChildren
   '/products': typeof AppProductsRouteWithChildren
   '/rounds': typeof AppRoundsRouteWithChildren
   '/settings': typeof AppSettingsRoute
   '/customers/$customerId': typeof AppCustomersCustomerIdRoute
+  '/dashboard/audit': typeof AppDashboardAuditRoute
   '/products/$productId': typeof AppProductsProductIdRoute
   '/rounds/$roundId': typeof AppRoundsRoundIdRouteWithChildren
   '/rounds/new': typeof AppRoundsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/customers/': typeof AppCustomersIndexRoute
+  '/dashboard/': typeof AppDashboardIndexRoute
   '/products/': typeof AppProductsIndexRoute
   '/rounds/': typeof AppRoundsIndexRoute
+  '/dashboard/round/$roundId': typeof AppDashboardRoundRoundIdRoute
   '/rounds/$roundId/orders': typeof AppRoundsRoundIdOrdersRouteWithChildren
   '/rounds/$roundId/products': typeof AppRoundsRoundIdProductsRoute
   '/rounds/$roundId/shipping': typeof AppRoundsRoundIdShippingRoute
+  '/rounds/$roundId/stats': typeof AppRoundsRoundIdStatsRoute
   '/rounds/$roundId/summary': typeof AppRoundsRoundIdSummaryRoute
   '/api/exports/japan05/$roundId': typeof ApiExportsJapan05RoundIdRoute
   '/api/exports/kerry/$roundId': typeof ApiExportsKerryRoundIdRoute
@@ -197,14 +233,18 @@ export interface FileRoutesByTo {
   '/settings': typeof AppSettingsRoute
   '/': typeof AppIndexRoute
   '/customers/$customerId': typeof AppCustomersCustomerIdRoute
+  '/dashboard/audit': typeof AppDashboardAuditRoute
   '/products/$productId': typeof AppProductsProductIdRoute
   '/rounds/new': typeof AppRoundsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/customers': typeof AppCustomersIndexRoute
+  '/dashboard': typeof AppDashboardIndexRoute
   '/products': typeof AppProductsIndexRoute
   '/rounds': typeof AppRoundsIndexRoute
+  '/dashboard/round/$roundId': typeof AppDashboardRoundRoundIdRoute
   '/rounds/$roundId/products': typeof AppRoundsRoundIdProductsRoute
   '/rounds/$roundId/shipping': typeof AppRoundsRoundIdShippingRoute
+  '/rounds/$roundId/stats': typeof AppRoundsRoundIdStatsRoute
   '/rounds/$roundId/summary': typeof AppRoundsRoundIdSummaryRoute
   '/api/exports/japan05/$roundId': typeof ApiExportsJapan05RoundIdRoute
   '/api/exports/kerry/$roundId': typeof ApiExportsKerryRoundIdRoute
@@ -218,21 +258,26 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/customers': typeof AppCustomersRouteWithChildren
+  '/_app/dashboard': typeof AppDashboardRouteWithChildren
   '/_app/products': typeof AppProductsRouteWithChildren
   '/_app/rounds': typeof AppRoundsRouteWithChildren
   '/_app/settings': typeof AppSettingsRoute
   '/_app/': typeof AppIndexRoute
   '/_app/customers/$customerId': typeof AppCustomersCustomerIdRoute
+  '/_app/dashboard/audit': typeof AppDashboardAuditRoute
   '/_app/products/$productId': typeof AppProductsProductIdRoute
   '/_app/rounds/$roundId': typeof AppRoundsRoundIdRouteWithChildren
   '/_app/rounds/new': typeof AppRoundsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_app/customers/': typeof AppCustomersIndexRoute
+  '/_app/dashboard/': typeof AppDashboardIndexRoute
   '/_app/products/': typeof AppProductsIndexRoute
   '/_app/rounds/': typeof AppRoundsIndexRoute
+  '/_app/dashboard/round/$roundId': typeof AppDashboardRoundRoundIdRoute
   '/_app/rounds/$roundId/orders': typeof AppRoundsRoundIdOrdersRouteWithChildren
   '/_app/rounds/$roundId/products': typeof AppRoundsRoundIdProductsRoute
   '/_app/rounds/$roundId/shipping': typeof AppRoundsRoundIdShippingRoute
+  '/_app/rounds/$roundId/stats': typeof AppRoundsRoundIdStatsRoute
   '/_app/rounds/$roundId/summary': typeof AppRoundsRoundIdSummaryRoute
   '/api/exports/japan05/$roundId': typeof ApiExportsJapan05RoundIdRoute
   '/api/exports/kerry/$roundId': typeof ApiExportsKerryRoundIdRoute
@@ -247,20 +292,25 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/customers'
+    | '/dashboard'
     | '/products'
     | '/rounds'
     | '/settings'
     | '/customers/$customerId'
+    | '/dashboard/audit'
     | '/products/$productId'
     | '/rounds/$roundId'
     | '/rounds/new'
     | '/api/auth/$'
     | '/customers/'
+    | '/dashboard/'
     | '/products/'
     | '/rounds/'
+    | '/dashboard/round/$roundId'
     | '/rounds/$roundId/orders'
     | '/rounds/$roundId/products'
     | '/rounds/$roundId/shipping'
+    | '/rounds/$roundId/stats'
     | '/rounds/$roundId/summary'
     | '/api/exports/japan05/$roundId'
     | '/api/exports/kerry/$roundId'
@@ -274,14 +324,18 @@ export interface FileRouteTypes {
     | '/settings'
     | '/'
     | '/customers/$customerId'
+    | '/dashboard/audit'
     | '/products/$productId'
     | '/rounds/new'
     | '/api/auth/$'
     | '/customers'
+    | '/dashboard'
     | '/products'
     | '/rounds'
+    | '/dashboard/round/$roundId'
     | '/rounds/$roundId/products'
     | '/rounds/$roundId/shipping'
+    | '/rounds/$roundId/stats'
     | '/rounds/$roundId/summary'
     | '/api/exports/japan05/$roundId'
     | '/api/exports/kerry/$roundId'
@@ -294,21 +348,26 @@ export interface FileRouteTypes {
     | '/_app'
     | '/login'
     | '/_app/customers'
+    | '/_app/dashboard'
     | '/_app/products'
     | '/_app/rounds'
     | '/_app/settings'
     | '/_app/'
     | '/_app/customers/$customerId'
+    | '/_app/dashboard/audit'
     | '/_app/products/$productId'
     | '/_app/rounds/$roundId'
     | '/_app/rounds/new'
     | '/api/auth/$'
     | '/_app/customers/'
+    | '/_app/dashboard/'
     | '/_app/products/'
     | '/_app/rounds/'
+    | '/_app/dashboard/round/$roundId'
     | '/_app/rounds/$roundId/orders'
     | '/_app/rounds/$roundId/products'
     | '/_app/rounds/$roundId/shipping'
+    | '/_app/rounds/$roundId/stats'
     | '/_app/rounds/$roundId/summary'
     | '/api/exports/japan05/$roundId'
     | '/api/exports/kerry/$roundId'
@@ -370,6 +429,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProductsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/customers': {
       id: '/_app/customers'
       path: '/customers'
@@ -390,6 +456,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/products/'
       preLoaderRoute: typeof AppProductsIndexRouteImport
       parentRoute: typeof AppProductsRoute
+    }
+    '/_app/dashboard/': {
+      id: '/_app/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof AppDashboardIndexRouteImport
+      parentRoute: typeof AppDashboardRoute
     }
     '/_app/customers/': {
       id: '/_app/customers/'
@@ -426,6 +499,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProductsProductIdRouteImport
       parentRoute: typeof AppProductsRoute
     }
+    '/_app/dashboard/audit': {
+      id: '/_app/dashboard/audit'
+      path: '/audit'
+      fullPath: '/dashboard/audit'
+      preLoaderRoute: typeof AppDashboardAuditRouteImport
+      parentRoute: typeof AppDashboardRoute
+    }
     '/_app/customers/$customerId': {
       id: '/_app/customers/$customerId'
       path: '/$customerId'
@@ -461,6 +541,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRoundsRoundIdSummaryRouteImport
       parentRoute: typeof AppRoundsRoundIdRoute
     }
+    '/_app/rounds/$roundId/stats': {
+      id: '/_app/rounds/$roundId/stats'
+      path: '/stats'
+      fullPath: '/rounds/$roundId/stats'
+      preLoaderRoute: typeof AppRoundsRoundIdStatsRouteImport
+      parentRoute: typeof AppRoundsRoundIdRoute
+    }
     '/_app/rounds/$roundId/shipping': {
       id: '/_app/rounds/$roundId/shipping'
       path: '/shipping'
@@ -481,6 +568,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/rounds/$roundId/orders'
       preLoaderRoute: typeof AppRoundsRoundIdOrdersRouteImport
       parentRoute: typeof AppRoundsRoundIdRoute
+    }
+    '/_app/dashboard/round/$roundId': {
+      id: '/_app/dashboard/round/$roundId'
+      path: '/round/$roundId'
+      fullPath: '/dashboard/round/$roundId'
+      preLoaderRoute: typeof AppDashboardRoundRoundIdRouteImport
+      parentRoute: typeof AppDashboardRoute
     }
     '/_app/rounds/$roundId/orders/': {
       id: '/_app/rounds/$roundId/orders/'
@@ -520,6 +614,22 @@ const AppCustomersRouteWithChildren = AppCustomersRoute._addFileChildren(
   AppCustomersRouteChildren,
 )
 
+interface AppDashboardRouteChildren {
+  AppDashboardAuditRoute: typeof AppDashboardAuditRoute
+  AppDashboardIndexRoute: typeof AppDashboardIndexRoute
+  AppDashboardRoundRoundIdRoute: typeof AppDashboardRoundRoundIdRoute
+}
+
+const AppDashboardRouteChildren: AppDashboardRouteChildren = {
+  AppDashboardAuditRoute: AppDashboardAuditRoute,
+  AppDashboardIndexRoute: AppDashboardIndexRoute,
+  AppDashboardRoundRoundIdRoute: AppDashboardRoundRoundIdRoute,
+}
+
+const AppDashboardRouteWithChildren = AppDashboardRoute._addFileChildren(
+  AppDashboardRouteChildren,
+)
+
 interface AppProductsRouteChildren {
   AppProductsProductIdRoute: typeof AppProductsProductIdRoute
   AppProductsIndexRoute: typeof AppProductsIndexRoute
@@ -556,6 +666,7 @@ interface AppRoundsRoundIdRouteChildren {
   AppRoundsRoundIdOrdersRoute: typeof AppRoundsRoundIdOrdersRouteWithChildren
   AppRoundsRoundIdProductsRoute: typeof AppRoundsRoundIdProductsRoute
   AppRoundsRoundIdShippingRoute: typeof AppRoundsRoundIdShippingRoute
+  AppRoundsRoundIdStatsRoute: typeof AppRoundsRoundIdStatsRoute
   AppRoundsRoundIdSummaryRoute: typeof AppRoundsRoundIdSummaryRoute
   AppRoundsRoundIdIndexRoute: typeof AppRoundsRoundIdIndexRoute
 }
@@ -564,6 +675,7 @@ const AppRoundsRoundIdRouteChildren: AppRoundsRoundIdRouteChildren = {
   AppRoundsRoundIdOrdersRoute: AppRoundsRoundIdOrdersRouteWithChildren,
   AppRoundsRoundIdProductsRoute: AppRoundsRoundIdProductsRoute,
   AppRoundsRoundIdShippingRoute: AppRoundsRoundIdShippingRoute,
+  AppRoundsRoundIdStatsRoute: AppRoundsRoundIdStatsRoute,
   AppRoundsRoundIdSummaryRoute: AppRoundsRoundIdSummaryRoute,
   AppRoundsRoundIdIndexRoute: AppRoundsRoundIdIndexRoute,
 }
@@ -589,6 +701,7 @@ const AppRoundsRouteWithChildren = AppRoundsRoute._addFileChildren(
 
 interface AppRouteChildren {
   AppCustomersRoute: typeof AppCustomersRouteWithChildren
+  AppDashboardRoute: typeof AppDashboardRouteWithChildren
   AppProductsRoute: typeof AppProductsRouteWithChildren
   AppRoundsRoute: typeof AppRoundsRouteWithChildren
   AppSettingsRoute: typeof AppSettingsRoute
@@ -597,6 +710,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppCustomersRoute: AppCustomersRouteWithChildren,
+  AppDashboardRoute: AppDashboardRouteWithChildren,
   AppProductsRoute: AppProductsRouteWithChildren,
   AppRoundsRoute: AppRoundsRouteWithChildren,
   AppSettingsRoute: AppSettingsRoute,
