@@ -134,6 +134,7 @@ export const roundProducts = pgTable(
 		priceOverridden: boolean("price_overridden").notNull().default(false),
 		storeLocation: text("store_location"),
 		notes: text("notes"),
+		boughtQty: integer("bought_qty").notNull().default(0),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),

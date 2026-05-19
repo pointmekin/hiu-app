@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_app/rounds/$roundId")({
 	component: RoundLayout,
 })
 
-const TAB_PATHS = ["overview", "products", "orders", "summary", "shipping", "stats"] as const
+const TAB_PATHS = ["overview", "products", "orders", "summary", "shipping", "purchase", "stats"] as const
 type TabValue = (typeof TAB_PATHS)[number]
 
 function getActiveTab(roundId: string, pathname: string): TabValue {
@@ -85,6 +85,9 @@ function RoundLayout() {
 							</NavTrigger>
 							<NavTrigger value="shipping" roundId={roundId} to="/rounds/$roundId/shipping">
 								{t("tab.shipping")}
+							</NavTrigger>
+							<NavTrigger value="purchase" roundId={roundId} to="/rounds/$roundId/purchase">
+								{t("tab.purchase")}
 							</NavTrigger>
 							<NavTrigger value="stats" roundId={roundId} to="/rounds/$roundId/stats">
 								{t("tab.stats")}

@@ -23,3 +23,10 @@ export const recomputeFromFxSchema = z.object({
 });
 
 export type RecomputeFromFxInput = z.infer<typeof recomputeFromFxSchema>;
+
+export const updateBoughtQtySchema = z.object({
+	roundProductId: z.string().uuid(),
+	boughtQty: z.number().int().min(0),
+});
+
+export type UpdateBoughtQtyInput = z.infer<typeof updateBoughtQtySchema>;

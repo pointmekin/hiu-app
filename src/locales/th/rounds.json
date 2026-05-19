@@ -39,7 +39,44 @@
 		"orders": "ออเดอร์",
 		"summary": "สรุปยอด",
 		"shipping": "เอกสารส่ง",
+		"purchase": "ซื้อแล้ว",
 		"stats": "สถิติ"
+	},
+	"purchase": {
+		"title": "สรุปยอดที่ต้องซื้อ",
+		"groupBy": {
+			"label": "จัดกลุ่มตาม",
+			"store": "ร้านค้า",
+			"category": "หมวดหมู่",
+			"none": "ทั้งหมด (ไม่จัดกลุ่ม)"
+		},
+		"filterStore": {
+			"label": "กรองร้าน",
+			"all": "ทุกร้าน"
+		},
+		"hideCompleted": "ซ่อนรายการที่ครบแล้ว",
+		"col": {
+			"product": "สินค้า",
+			"orderedQty": "ต้องซื้อ",
+			"boughtQty": "ซื้อแล้ว",
+			"remaining": "คงเหลือ",
+			"status": "สถานะ"
+		},
+		"status": {
+			"complete": "✓ ครบ",
+			"partial": "⚠ บางส่วน",
+			"none": "— ยังไม่ซื้อ"
+		},
+		"progress": "{{completed}} / {{total}} รายการครบ",
+		"editBoughtQty": {
+			"label": "ซื้อแล้วกี่ชิ้น?",
+			"save": "บันทึก",
+			"cancel": "ยกเลิก"
+		},
+		"noStore": "ไม่ระบุร้าน",
+		"noCategory": "ไม่ระบุหมวดหมู่",
+		"empty": "ยังไม่มีสินค้าในรอบนี้",
+		"allDone": "ไม่มีรายการที่ค้างอยู่"
 	},
 	"products": {
 		"title": "สินค้าในรอบ",
