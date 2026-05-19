@@ -1,8 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, useParams } from "@tanstack/react-router"
+import { Suspense } from "react"
 import { useForm, type Resolver } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { RoundOverviewSkeleton } from "#/components/round-skeletons"
 import { Alert, AlertDescription } from "#/components/ui/alert"
 import { Button } from "#/components/ui/button"
 import {
@@ -33,7 +35,11 @@ import {
 } from "#/shared/schemas/round"
 
 export const Route = createFileRoute("/_app/rounds/$roundId/")({
-	component: RoundOverview,
+	component: () => (
+		<Suspense fallback={<RoundOverviewSkeleton />}>
+			<RoundOverview />
+		</Suspense>
+	),
 })
 
 function RoundOverview() {

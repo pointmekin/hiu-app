@@ -4,6 +4,7 @@ import {
 	useSuspenseQuery,
 } from "@tanstack/react-query";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { PurchaseTrackerSkeleton } from "#/components/round-skeletons";
 import { ChevronDown, ChevronRight, Minus, Plus, Search, ShoppingCart, X } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/_app/rounds/$roundId/purchase")({
 				listForPurchaseTracker({ data: { roundId: params.roundId } }),
 		});
 	},
+	pendingComponent: PurchaseTrackerSkeleton,
 	component: PurchasePage,
 });
 

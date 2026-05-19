@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-router"
 import { BarChart3, Globe, LogOut, Moon, Package, Settings, ShoppingBag, Sun, Users } from "lucide-react"
 import { useTranslation } from "react-i18next"
+import { PageProgressBar } from "#/components/page-progress-bar"
 import { Button } from "#/components/ui/button"
 import { useDarkMode } from "#/hooks/use-dark-mode"
 import { ShortcutHelpOverlay, useKeyboardShortcuts } from "#/hooks/use-keyboard-shortcuts.tsx"
@@ -39,9 +40,10 @@ function AppLayout() {
 
 	return (
 		<div className="flex flex-col min-h-dvh bg-background">
+			<PageProgressBar />
 			<ShortcutHelpOverlay showHelp={showHelp} onClose={() => setShowHelp(false)} />
 			{/* Top bar — desktop only header */}
-			<header className="hidden md:flex items-center justify-between gap-8 px-6 py-3 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
+			<header style={{ viewTransitionName: "app-header" }} className="hidden md:flex items-center justify-between gap-8 px-6 py-3 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
 				<span className="font-display font-semibold text-xl text-foreground text-nowrap">
 					{t("appName")}
 				</span>
@@ -105,7 +107,7 @@ function AppLayout() {
 			</main>
 
 			{/* Bottom tab bar — mobile only */}
-			<nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-sm border-t border-border safe-area-pb">
+			<nav style={{ viewTransitionName: "app-bottom-nav" }} className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-sm border-t border-border safe-area-pb">
 				<div className="grid grid-cols-4 h-16">
 					<BottomNavItem
 						to="/rounds"

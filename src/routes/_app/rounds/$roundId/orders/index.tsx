@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
+import { OrdersListSkeleton } from "#/components/round-skeletons";
 import { Plus, Search, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/_app/rounds/$roundId/orders/")({
 			queryFn: () => listOrders({ data: { roundId: params.roundId } }),
 		});
 	},
+	pendingComponent: OrdersListSkeleton,
 	component: OrdersPage,
 });
 
