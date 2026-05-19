@@ -58,7 +58,12 @@
 		"cancelConfirm": "Confirm cancel this order?",
 		"recordPayment": "Record payment",
 		"viewPayments": "Payment history",
-		"saveTracking": "Save tracking"
+		"saveTracking": "Save tracking",
+		"edit": "Edit order",
+		"editing": "Editing",
+		"discardEdit": "Discard changes",
+		"saveChanges": "Save changes",
+		"discardEditConfirm": "Discard all edits?"
 	},
 	"item": {
 		"qty": "Qty",

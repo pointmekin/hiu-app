@@ -27,10 +27,12 @@ export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 
 export const updateOrderSchema = z.object({
 	id: z.string().uuid(),
+	customerId: z.string().uuid().optional(),
 	addressId: z.string().uuid().optional().nullable(),
 	shippingFeeThb: z.number().min(0).optional(),
-	notes: z.string().optional(),
+	notes: z.string().optional().nullable(),
 	kerryTracking: z.string().optional().nullable(),
+	items: z.array(orderItemInputSchema).min(1).optional(),
 });
 
 export type UpdateOrderInput = z.infer<typeof updateOrderSchema>;

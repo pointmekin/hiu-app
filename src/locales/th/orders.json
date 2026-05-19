@@ -58,7 +58,12 @@
 		"cancelConfirm": "ยืนยันยกเลิกออเดอร์นี้?",
 		"recordPayment": "บันทึกการชำระ",
 		"viewPayments": "ประวัติชำระเงิน",
-		"saveTracking": "บันทึกเลขพัสดุ"
+		"saveTracking": "บันทึกเลขพัสดุ",
+		"edit": "แก้ไขออเดอร์",
+		"editing": "กำลังแก้ไข",
+		"discardEdit": "ยกเลิกการแก้ไข",
+		"saveChanges": "บันทึกการเปลี่ยนแปลง",
+		"discardEditConfirm": "ยกเลิกการแก้ไขทั้งหมด?"
 	},
 	"item": {
 		"qty": "จำนวน",
