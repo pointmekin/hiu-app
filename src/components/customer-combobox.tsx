@@ -41,6 +41,7 @@ interface CustomerComboboxProps {
 	customerName: string | null
 	onChange: (customer: CustomerOption) => void
 	className?: string
+	disabled?: boolean
 }
 
 export function CustomerCombobox({
@@ -48,6 +49,7 @@ export function CustomerCombobox({
 	customerName,
 	onChange,
 	className,
+	disabled,
 }: CustomerComboboxProps) {
 	const { t } = useTranslation("customers")
 	const [open, setOpen] = useState(false)
@@ -78,6 +80,7 @@ export function CustomerCombobox({
 						variant="outline"
 						role="combobox"
 						aria-expanded={open}
+						disabled={disabled}
 						className={cn("w-full justify-between font-normal", className)}
 					>
 						<span className={cn("truncate", !value && "text-muted-foreground")}>

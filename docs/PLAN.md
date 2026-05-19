@@ -755,6 +755,13 @@ All aggregation in SQL. Materialize `round_stats` view if any single dashboard q
   One-tap copy via `navigator.clipboard.writeText`. Brief toast confirmation on success.
 - **Exit criteria**: operator creates a brand-new product mid-order without leaving the screen; copy-pastes a formatted summary into LINE in under 3 seconds.
 
+### M6e — Always-editable order detail (0.5 week)
+- **Remove view/edit mode toggle** — the order detail page no longer has a separate "edit mode". All fields (customer, address, line items, shipping fee, notes) are directly editable as soon as the page loads. Cancelled orders show all fields as disabled.
+- **Single bottom action bar** — replaces the two separate bars (view-mode bar and edit-mode bar). Contains: `Save Changes` (primary, disabled when nothing has changed), a payment icon button (when not paid), and a cancel icon button.
+- **Live totals** — subtotal and total are computed from the current form state, not the last-saved order data, so the operator sees the impact of edits before saving.
+- **Copy summary uses current form state** — the copy button copies the items/totals as currently entered, not the last saved version.
+- **Exit criteria**: operator lands on an order detail page and can immediately change a quantity or shipping fee without tapping "Edit" first; save button activates only when there are unsaved changes.
+
 ### M7 — Purchase tracker: สรุปยอดที่ต้องซื้อ (1 week)
 
 A new tab on the round detail page (alongside orders, shipping, stats) that shows **what to buy, where, and how many** — the in-store buying checklist.

@@ -56,7 +56,7 @@ function OrdersPage() {
 
 	return (
 		<div>
-			<div className="sticky top-[119px] md:top-[176px] z-10 bg-background pb-3 pt-1">
+			<div className="sticky top-[115px] md:top-[171px] z-10 bg-background pb-3 pt-1">
 				<div className="flex items-center justify-between mb-3">
 					<h2 className="text-lg font-semibold">{t("list.title")}</h2>
 					<Button asChild variant="brand" size="sm">

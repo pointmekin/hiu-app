@@ -1,11 +1,10 @@
 import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
 import {
 	createFileRoute,
-	Link,
 	useNavigate,
 	useParams,
 } from "@tanstack/react-router"
-import { ArrowLeft, Ban, Banknote, Check, Copy, Minus, Package, Pencil, Plus, PlusCircle, Trash2 } from "lucide-react"
+import { ArrowLeft, Ban, Banknote, Check, Copy, Minus, Package, Plus, PlusCircle, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { InlineProductDialog } from "#/components/inline-product-dialog"
@@ -70,63 +69,62 @@ function OrderDetailPage() {
 	const navigate = useNavigate()
 	const queryClient = useQueryClient()
 
-	// ── View state ──────────────────────────────────────────────────────────────
-	const [paymentSheetOpen, setPaymentSheetOpen] = useState(false)
-
-	// ── Edit state ───────────────────────────────────────────────────────────────
-	const [isEditing, setIsEditing] = useState(false)
-	const [editCustomerId, setEditCustomerId] = useState("")
-	const [editCustomerName, setEditCustomerName] = useState("")
-	const [editAddressId, setEditAddressId] = useState<string | null>(null)
-	const [editItems, setEditItems] = useState<EditItem[]>([])
-	const [editShippingFee, setEditShippingFee] = useState(0)
-	const [editNotes, setEditNotes] = useState("")
-	const [productPickerOpen, setProductPickerOpen] = useState(false)
-	const [productQuery, setProductQuery] = useState("")
-	const [inlineDialogOpen, setInlineDialogOpen] = useState(false)
-	const [copied, setCopied] = useState(false)
-
 	// ── Server data ───────────────────────────────────────────────────────────────
 	const { data: order } = useSuspenseQuery({
 		queryKey: ["orders", orderId],
 		queryFn: () => getOrder({ data: { id: orderId } }),
 	})
 
+	// ── Form state (always on, initialised once from order) ───────────────────────
+	const [editCustomerId, setEditCustomerId] = useState(() => order.customerId)
+	const [editCustomerName, setEditCustomerName] = useState(() => order.customerName)
+	const [editAddressId, setEditAddressId] = useState<string | null>(() => order.addressId ?? null)
+	const [editItems, setEditItems] = useState<EditItem[]>(() =>
+		order.items.map((item) => ({
+			roundProductId: item.roundProductId,
+			productName: item.productName,
+			productBrand: item.productBrand ?? null,
+			unitPriceThb: Number(item.unitPriceThb),
+			quantity: item.quantity,
+		})),
+	)
+	const [editShippingFee, setEditShippingFee] = useState(() => Number(order.shippingFeeThb))
+	const [editNotes, setEditNotes] = useState(() => order.notes ?? "")
+	const [productPickerOpen, setProductPickerOpen] = useState(false)
+	const [productQuery, setProductQuery] = useState("")
+	const [inlineDialogOpen, setInlineDialogOpen] = useState(false)
+	const [paymentSheetOpen, setPaymentSheetOpen] = useState(false)
+	const [copied, setCopied] = useState(false)
+
+	// ── Supporting queries ────────────────────────────────────────────────────────
 	const { data: roundProductRows = [] } = useQuery({
 		queryKey: ["round-products", roundId],
 		queryFn: () => listRoundProducts({ data: { roundId } }),
-		enabled: isEditing,
 	})
 
 	const { data: editCustomerData } = useQuery({
 		queryKey: ["customers", editCustomerId],
 		queryFn: () => getCustomer({ data: { id: editCustomerId } }),
-		enabled: isEditing && !!editCustomerId,
+		enabled: !!editCustomerId,
 	})
 
 	const { data: settings } = useQuery({
 		queryKey: ["settings"],
 		queryFn: () => getSettings(),
-		enabled: isEditing,
 	})
 
 	const { data: round } = useQuery({
 		queryKey: ["rounds", roundId],
 		queryFn: () => getRound({ data: { id: roundId } }),
-		enabled: isEditing,
 	})
 
-	const shippingPresets: number[] = settings?.shippingFeePresets ?? [39, 50, 80]
-
 	// ── Derived ───────────────────────────────────────────────────────────────────
-	const totalThb = Number(order.totalThb)
+	const shippingPresets: number[] = settings?.shippingFeePresets ?? [39, 50, 80]
 	const paidAmountThb = Number(order.paidAmountThb)
-	const subtotalThb = Number(order.subtotalThb)
-	const shippingFeeThb = Number(order.shippingFeeThb)
-	const balance = totalThb - paidAmountThb
 
 	const editSubtotal = editItems.reduce((s, i) => s + i.unitPriceThb * i.quantity, 0)
 	const editTotal = editSubtotal + editShippingFee
+	const editBalance = editTotal - paidAmountThb
 
 	const filteredRoundProducts = roundProductRows.filter(
 		(rp) =>
@@ -138,6 +136,18 @@ function OrderDetailPage() {
 	const isCancelled = order.status === "cancelled"
 	const isPaid = order.paymentStatus === "paid"
 
+	// isDirty: compare form state to last-saved order. Goes false again after refetch.
+	const isDirty =
+		editCustomerId !== order.customerId ||
+		editAddressId !== (order.addressId ?? null) ||
+		editShippingFee !== Number(order.shippingFeeThb) ||
+		editNotes !== (order.notes ?? "") ||
+		editItems.length !== order.items.length ||
+		editItems.some((item, i) => {
+			const orig = order.items[i]
+			return !orig || item.roundProductId !== orig.roundProductId || item.quantity !== orig.quantity
+		})
+
 	const paymentStatusColors: Record<string, string> = {
 		pending: "text-muted-foreground",
 		partial: "text-amber-600 dark:text-amber-400",
@@ -145,31 +155,7 @@ function OrderDetailPage() {
 		refunded: "text-blue-600",
 	}
 
-	// ── Edit helpers ──────────────────────────────────────────────────────────────
-	function startEditing() {
-		setEditCustomerId(order.customerId)
-		setEditCustomerName(order.customerName)
-		setEditAddressId(order.addressId ?? null)
-		setEditItems(
-			order.items.map((item) => ({
-				roundProductId: item.roundProductId,
-				productName: item.productName,
-				productBrand: item.productBrand ?? null,
-				unitPriceThb: Number(item.unitPriceThb),
-				quantity: item.quantity,
-			})),
-		)
-		setEditShippingFee(Number(order.shippingFeeThb))
-		setEditNotes(order.notes ?? "")
-		setIsEditing(true)
-	}
-
-	function discardEditing() {
-		if (confirm(t("orders:action.discardEditConfirm"))) {
-			setIsEditing(false)
-		}
-	}
-
+	// ── Handlers ──────────────────────────────────────────────────────────────────
 	function handleEditCustomerSelect(customer: CustomerOption) {
 		setEditCustomerId(customer.id)
 		setEditCustomerName(customer.display_name)
@@ -214,17 +200,13 @@ function OrderDetailPage() {
 	async function copySummary() {
 		const fmt = (n: number) => n.toLocaleString("th-TH", { minimumFractionDigits: 0 })
 		const lines: string[] = ["ขออนุญาติรวมยอดค่ะ 🙏", "รายการ:"]
-		order.items.forEach((item, i) => {
-			lines.push(`${i + 1}. ${item.productName} ×${item.quantity}: ${fmt(Number(item.lineTotalThb))}`)
+		editItems.forEach((item, i) => {
+			lines.push(`${i + 1}. ${item.productName} ×${item.quantity}: ${fmt(item.unitPriceThb * item.quantity)}`)
 		})
-		lines.push(`ค่าส่ง: ${fmt(shippingFeeThb)}`)
-		lines.push(`รวมทั้งหมด: ${fmt(totalThb)}`)
-		if (paidAmountThb > 0) {
-			lines.push(`ชำระแล้ว: ${fmt(paidAmountThb)}`)
-		}
-		if (balance > 0) {
-			lines.push(`คงเหลือ: ${fmt(balance)}`)
-		}
+		lines.push(`ค่าส่ง: ${fmt(editShippingFee)}`)
+		lines.push(`รวมทั้งหมด: ${fmt(editTotal)}`)
+		if (paidAmountThb > 0) lines.push(`ชำระแล้ว: ${fmt(paidAmountThb)}`)
+		if (editBalance > 0) lines.push(`คงเหลือ: ${fmt(editBalance)}`)
 		await navigator.clipboard.writeText(lines.join("\n"))
 		setCopied(true)
 		setTimeout(() => setCopied(false), 2000)
@@ -244,8 +226,7 @@ function OrderDetailPage() {
 			updateOrder({
 				data: {
 					id: orderId,
-					customerId:
-						editCustomerId !== order.customerId ? editCustomerId : undefined,
+					customerId: editCustomerId !== order.customerId ? editCustomerId : undefined,
 					addressId: editAddressId,
 					shippingFeeThb: editShippingFee,
 					notes: editNotes || null,
@@ -257,130 +238,154 @@ function OrderDetailPage() {
 				},
 			}),
 		onSuccess: () => {
+			// Refetch causes order to update → isDirty becomes false naturally
 			queryClient.invalidateQueries({ queryKey: ["orders", orderId] })
 			queryClient.invalidateQueries({ queryKey: ["orders", roundId] })
-			setIsEditing(false)
 		},
 	})
 
-	// ── Edit mode UI ──────────────────────────────────────────────────────────────
-	if (isEditing) {
-		return (
-			<div className="space-y-5 pb-32">
-				{/* Edit header */}
-				<div className="flex items-center gap-3">
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={discardEditing}
+	// ── Render ────────────────────────────────────────────────────────────────────
+	return (
+		<div className="space-y-5 pb-32">
+			{/* Header */}
+			<div className="flex items-center gap-3">
+				<Button
+					variant="ghost"
+					size="icon"
+					onClick={() =>
+						navigate({ to: "/rounds/$roundId/orders", params: { roundId } })
+					}
+				>
+					<ArrowLeft size={18} />
+				</Button>
+				<div className="min-w-0 flex-1">
+					<p className="font-semibold text-lg truncate">{order.customerName}</p>
+					<p
+						className={`text-sm ${paymentStatusColors[order.paymentStatus] ?? "text-muted-foreground"}`}
 					>
-						<ArrowLeft size={18} />
-					</Button>
-					<span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 tracking-wide">
-						{t("orders:action.editing")}
-					</span>
+						{t(`orders:paymentStatus.${order.paymentStatus}`)}
+						{isCancelled && (
+							<span className="ml-2 text-muted-foreground">
+								· {t("orders:status.cancelled")}
+							</span>
+						)}
+					</p>
 				</div>
+				<Button
+					variant="ghost"
+					size="icon"
+					onClick={copySummary}
+					title={t("orders:action.copySummary")}
+				>
+					{copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+				</Button>
+			</div>
 
-				{/* Customer */}
+			{/* Customer */}
+			<div className="space-y-1.5">
+				<Label>{t("orders:field.customer")}</Label>
+				<CustomerCombobox
+					value={editCustomerId}
+					customerName={editCustomerName}
+					onChange={handleEditCustomerSelect}
+					disabled={isCancelled}
+				/>
+			</div>
+
+			{/* Address */}
+			{editCustomerData && editCustomerData.addresses.length > 0 && (
 				<div className="space-y-1.5">
-					<Label>{t("orders:field.customer")}</Label>
-					<CustomerCombobox
-						value={editCustomerId}
-						customerName={editCustomerName}
-						onChange={handleEditCustomerSelect}
-					/>
+					<Label>{t("orders:field.address")}</Label>
+					<Select
+						value={editAddressId ?? "none"}
+						onValueChange={(v) => setEditAddressId(v === "none" ? null : v)}
+						disabled={isCancelled}
+					>
+						<SelectTrigger>
+							<SelectValue placeholder={t("orders:form.selectAddress")} />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="none">{t("orders:form.selectAddress")}</SelectItem>
+							{editCustomerData.addresses.map((addr) => (
+								<SelectItem key={addr.id} value={addr.id}>
+									{addr.recipientName} · {addr.address.slice(0, 30)}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 				</div>
+			)}
 
-				{/* Address */}
-				{editCustomerData && editCustomerData.addresses.length > 0 && (
-					<div className="space-y-1.5">
-						<Label>{t("orders:field.address")}</Label>
-						<Select
-							value={editAddressId ?? "none"}
-							onValueChange={(v) => setEditAddressId(v === "none" ? null : v)}
-						>
-							<SelectTrigger>
-								<SelectValue placeholder={t("orders:form.selectAddress")} />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="none">{t("orders:form.selectAddress")}</SelectItem>
-								{editCustomerData.addresses.map((addr) => (
-									<SelectItem key={addr.id} value={addr.id}>
-										{addr.recipientName} · {addr.address.slice(0, 30)}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+			<Separator />
+
+			{/* Line items */}
+			<div className="space-y-1.5">
+				<Label>{t("orders:detail.items")}</Label>
+
+				{editItems.length > 0 ? (
+					<div className="space-y-2">
+						{editItems.map((item) => (
+							<Card key={item.roundProductId} className="px-4 py-3">
+								<div className="flex items-center gap-3">
+									<div className="flex-1 min-w-0">
+										<p className="font-medium text-sm truncate">{item.productName}</p>
+										<p className="text-xs text-muted-foreground font-mono tabular-nums">
+											{item.unitPriceThb.toLocaleString("th-TH", {
+												minimumFractionDigits: 0,
+											})}{" "}
+											฿ × {item.quantity} ={" "}
+											{(item.unitPriceThb * item.quantity).toLocaleString("th-TH", {
+												minimumFractionDigits: 0,
+											})}{" "}
+											฿
+										</p>
+									</div>
+									<div className="flex items-center gap-2 shrink-0">
+										<Button
+											type="button"
+											variant="outline"
+											size="icon-xs"
+											disabled={isCancelled}
+											onClick={() =>
+												updateEditItemQty(item.roundProductId, item.quantity - 1)
+											}
+										>
+											<Minus size={12} />
+										</Button>
+										<span className="w-7 text-center font-mono text-sm tabular-nums">
+											{item.quantity}
+										</span>
+										<Button
+											type="button"
+											variant="outline"
+											size="icon-xs"
+											disabled={isCancelled}
+											onClick={() =>
+												updateEditItemQty(item.roundProductId, item.quantity + 1)
+											}
+										>
+											<Plus size={12} />
+										</Button>
+										<Button
+											type="button"
+											variant="ghost"
+											size="icon-xs"
+											disabled={isCancelled}
+											onClick={() => removeEditItem(item.roundProductId)}
+											className="text-destructive hover:text-destructive"
+										>
+											<Trash2 size={12} />
+										</Button>
+									</div>
+								</div>
+							</Card>
+						))}
 					</div>
+				) : (
+					<p className="text-sm text-muted-foreground">{t("orders:form.noItems")}</p>
 				)}
 
-				<Separator />
-
-				{/* Line items */}
-				<div className="space-y-1.5">
-					<Label>{t("orders:detail.items")}</Label>
-
-					{editItems.length > 0 ? (
-						<div className="space-y-2">
-							{editItems.map((item) => (
-								<Card key={item.roundProductId} className="px-4 py-3">
-									<div className="flex items-center gap-3">
-										<div className="flex-1 min-w-0">
-											<p className="font-medium text-sm truncate">{item.productName}</p>
-											<p className="text-xs text-muted-foreground font-mono tabular-nums">
-												{item.unitPriceThb.toLocaleString("th-TH", {
-													minimumFractionDigits: 0,
-												})}{" "}
-												฿ × {item.quantity} ={" "}
-												{(item.unitPriceThb * item.quantity).toLocaleString("th-TH", {
-													minimumFractionDigits: 0,
-												})}{" "}
-												฿
-											</p>
-										</div>
-										<div className="flex items-center gap-2 shrink-0">
-											<Button
-												type="button"
-												variant="outline"
-												size="icon-xs"
-												onClick={() =>
-													updateEditItemQty(item.roundProductId, item.quantity - 1)
-												}
-											>
-												<Minus size={12} />
-											</Button>
-											<span className="w-7 text-center font-mono text-sm tabular-nums">
-												{item.quantity}
-											</span>
-											<Button
-												type="button"
-												variant="outline"
-												size="icon-xs"
-												onClick={() =>
-													updateEditItemQty(item.roundProductId, item.quantity + 1)
-												}
-											>
-												<Plus size={12} />
-											</Button>
-											<Button
-												type="button"
-												variant="ghost"
-												size="icon-xs"
-												onClick={() => removeEditItem(item.roundProductId)}
-												className="text-destructive hover:text-destructive"
-											>
-												<Trash2 size={12} />
-											</Button>
-										</div>
-									</div>
-								</Card>
-							))}
-						</div>
-					) : (
-						<p className="text-sm text-muted-foreground">{t("orders:form.noItems")}</p>
-					)}
-
-					{/* Product picker */}
+				{!isCancelled && (
 					<Popover open={productPickerOpen} onOpenChange={setProductPickerOpen}>
 						<PopoverTrigger asChild>
 							<Button
@@ -447,212 +452,72 @@ function OrderDetailPage() {
 							</Command>
 						</PopoverContent>
 					</Popover>
-				</div>
+				)}
+			</div>
 
-				<Separator />
+			<Separator />
 
-				{/* Shipping fee */}
-				<div className="space-y-2">
-					<Label>{t("orders:field.shippingFee")}</Label>
-					<div className="flex items-center gap-2">
-						<Input
-							type="number"
-							step="1"
-							min="0"
-							value={editShippingFee}
-							onChange={(e) => setEditShippingFee(Number(e.target.value))}
-							className="w-28 font-mono"
-						/>
-						<div className="flex gap-1">
-							{shippingPresets.map((preset) => (
-								<Button
-									key={preset}
-									type="button"
-									variant={editShippingFee === preset ? "brand" : "outline"}
-									size="sm"
-									onClick={() => setEditShippingFee(preset)}
-									className="font-mono"
-								>
-									{preset}
-								</Button>
-							))}
-						</div>
-					</div>
-				</div>
-
-				{/* Notes */}
-				<div className="space-y-1.5">
-					<Label>{t("orders:field.notes")}</Label>
+			{/* Shipping fee */}
+			<div className="space-y-2">
+				<Label>{t("orders:field.shippingFee")}</Label>
+				<div className="flex items-center gap-2">
 					<Input
-						value={editNotes}
-						onChange={(e) => setEditNotes(e.target.value)}
-						placeholder="..."
+						type="number"
+						step="1"
+						min="0"
+						value={editShippingFee}
+						onChange={(e) => setEditShippingFee(Number(e.target.value))}
+						className="w-28 font-mono"
+						disabled={isCancelled}
 					/>
-				</div>
-
-				{saveMutation.error && (
-					<Alert variant="destructive">
-						<AlertDescription>
-							{(saveMutation.error as Error).message}
-						</AlertDescription>
-					</Alert>
-				)}
-
-				{round && (
-					<InlineProductDialog
-						open={inlineDialogOpen}
-						onOpenChange={setInlineDialogOpen}
-						roundId={roundId}
-						sourceCurrency={round.sourceCurrency}
-						fxRate={Number(round.fxRate)}
-						perItemFeeThb={Number(round.perItemFeeTh)}
-						onCreated={(rp) => {
-							setEditItems((prev) => [
-								...prev,
-								{
-									roundProductId: rp.id,
-									productName: rp.productName,
-									productBrand: rp.productBrand,
-									unitPriceThb: Number(rp.sellPriceThb),
-									quantity: 1,
-								},
-							])
-						}}
-					/>
-				)}
-
-				{/* Edit bottom bar */}
-				<div className="fixed bottom-16 md:bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t px-4 py-3 flex items-center justify-between gap-3 z-20">
-					<div className="text-sm">
-						<p className="text-muted-foreground text-xs">{t("orders:detail.total")}</p>
-						<p className="font-mono font-semibold text-lg tabular-nums">
-							{editTotal.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
-						</p>
-					</div>
-					<div className="flex gap-2">
-						<Button
-							variant="outline"
-							size="lg"
-							onClick={discardEditing}
-							disabled={saveMutation.isPending}
-						>
-							{t("orders:action.discardEdit")}
-						</Button>
-						<Button
-							variant="brand"
-							size="lg"
-							disabled={editItems.length === 0 || saveMutation.isPending}
-							onClick={() => saveMutation.mutate()}
-						>
-							{saveMutation.isPending ? t("common:loading") : t("orders:action.saveChanges")}
-						</Button>
-					</div>
-				</div>
-			</div>
-		)
-	}
-
-	// ── View mode UI ──────────────────────────────────────────────────────────────
-	return (
-		<div className="space-y-5 pb-24">
-			{/* Header */}
-			<div className="flex items-center gap-3">
-				<Button
-					variant="ghost"
-					size="icon"
-					onClick={() =>
-						navigate({ to: "/rounds/$roundId/orders", params: { roundId } })
-					}
-				>
-					<ArrowLeft size={18} />
-				</Button>
-				<div className="min-w-0 flex-1">
-					<Link
-						to="/customers/$customerId"
-						params={{ customerId: order.customerId }}
-						className="font-semibold text-lg truncate underline-offset-2 hover:underline"
-					>
-						{order.customerName}
-					</Link>
-					<p
-						className={`text-sm ${paymentStatusColors[order.paymentStatus] ?? "text-muted-foreground"}`}
-					>
-						{t(`orders:paymentStatus.${order.paymentStatus}`)}
-						{isCancelled && (
-							<span className="ml-2 text-muted-foreground">
-								· {t("orders:status.cancelled")}
-							</span>
-						)}
-					</p>
-				</div>
-				<Button
-					variant="ghost"
-					size="icon"
-					onClick={copySummary}
-					title={t("orders:action.copySummary")}
-				>
-					{copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
-				</Button>
-				{!isCancelled && (
-					<Button variant="ghost" size="icon" onClick={startEditing} title={t("orders:action.edit")}>
-						<Pencil size={16} />
-					</Button>
-				)}
-			</div>
-
-			{/* Line items */}
-			<Card className="divide-y">
-				{order.items.map((item) => (
-					<div key={item.id} className="flex items-center justify-between px-4 py-3">
-						<div className="min-w-0">
-							<Link
-								to="/products/$productId"
-								params={{ productId: item.productId }}
-								className="text-sm font-medium truncate underline-offset-2 hover:underline"
+					<div className="flex gap-1">
+						{shippingPresets.map((preset) => (
+							<Button
+								key={preset}
+								type="button"
+								variant={editShippingFee === preset ? "brand" : "outline"}
+								size="sm"
+								onClick={() => setEditShippingFee(preset)}
+								className="font-mono"
+								disabled={isCancelled}
 							>
-								{item.productName}
-							</Link>
-							{item.productBrand && (
-								<p className="text-xs text-muted-foreground">{item.productBrand}</p>
-							)}
-						</div>
-						<div className="text-right shrink-0 ml-3">
-							<p className="font-mono text-sm tabular-nums">
-								{Number(item.lineTotalThb).toLocaleString("th-TH", {
-									minimumFractionDigits: 0,
-								})}{" "}
-								฿
-							</p>
-							<p className="text-xs text-muted-foreground font-mono tabular-nums">
-								{Number(item.unitPriceThb).toLocaleString("th-TH", {
-									minimumFractionDigits: 0,
-								})}{" "}
-								× {item.quantity}
-							</p>
-						</div>
+								{preset}
+							</Button>
+						))}
 					</div>
-				))}
-			</Card>
+				</div>
+			</div>
+
+			{/* Notes */}
+			<div className="space-y-1.5">
+				<Label>{t("orders:field.notes")}</Label>
+				<Input
+					value={editNotes}
+					onChange={(e) => setEditNotes(e.target.value)}
+					placeholder="..."
+					disabled={isCancelled}
+				/>
+			</div>
 
 			{/* Totals */}
 			<Card className="px-4 py-3 space-y-2">
 				<div className="flex justify-between text-sm">
 					<span className="text-muted-foreground">{t("orders:detail.subtotal")}</span>
 					<span className="font-mono tabular-nums">
-						{subtotalThb.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+						{editSubtotal.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
 					</span>
 				</div>
 				<div className="flex justify-between text-sm">
 					<span className="text-muted-foreground">{t("orders:detail.shipping")}</span>
 					<span className="font-mono tabular-nums">
-						{shippingFeeThb.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+						{editShippingFee.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
 					</span>
 				</div>
 				<Separator />
 				<div className="flex justify-between font-semibold">
 					<span>{t("orders:detail.total")}</span>
 					<span className="font-mono tabular-nums">
-						{totalThb.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+						{editTotal.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
 					</span>
 				</div>
 				<div className="flex justify-between text-sm text-green-600 dark:text-green-400">
@@ -661,26 +526,15 @@ function OrderDetailPage() {
 						{paidAmountThb.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
 					</span>
 				</div>
-				{balance > 0 && (
+				{editBalance > 0 && (
 					<div className="flex justify-between text-sm font-medium text-amber-600 dark:text-amber-400">
 						<span>{t("orders:detail.balance")}</span>
 						<span className="font-mono tabular-nums">
-							{balance.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+							{editBalance.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
 						</span>
 					</div>
 				)}
 			</Card>
-
-			{/* Address */}
-			{order.address && (
-				<Card className="px-4 py-3">
-					<p className="text-xs text-muted-foreground mb-1">{t("orders:field.address")}</p>
-					<p className="text-sm font-medium">{order.address.recipientName}</p>
-					<p className="text-sm text-muted-foreground">{order.address.mobile}</p>
-					<p className="text-sm text-muted-foreground">{order.address.address}</p>
-					<p className="text-sm text-muted-foreground">{order.address.postalCode}</p>
-				</Card>
-			)}
 
 			{/* Payment history */}
 			{order.payments.length > 0 && (
@@ -710,12 +564,13 @@ function OrderDetailPage() {
 				</div>
 			)}
 
-			{/* Notes */}
-			{order.notes && (
-				<Card className="px-4 py-3">
-					<p className="text-xs text-muted-foreground mb-1">{t("orders:detail.notes")}</p>
-					<p className="text-sm">{order.notes}</p>
-				</Card>
+			{/* Order notes (read-only display when no edit) */}
+			{saveMutation.error && (
+				<Alert variant="destructive">
+					<AlertDescription>
+						{(saveMutation.error as Error).message}
+					</AlertDescription>
+				</Alert>
 			)}
 
 			{cancelMutation.error && (
@@ -726,18 +581,49 @@ function OrderDetailPage() {
 				</Alert>
 			)}
 
-			{/* View-mode action bar */}
+			{round && (
+				<InlineProductDialog
+					open={inlineDialogOpen}
+					onOpenChange={setInlineDialogOpen}
+					roundId={roundId}
+					sourceCurrency={round.sourceCurrency}
+					fxRate={Number(round.fxRate)}
+					perItemFeeThb={Number(round.perItemFeeTh)}
+					onCreated={(rp) => {
+						setEditItems((prev) => [
+							...prev,
+							{
+								roundProductId: rp.id,
+								productName: rp.productName,
+								productBrand: rp.productBrand,
+								unitPriceThb: Number(rp.sellPriceThb),
+								quantity: 1,
+							},
+						])
+					}}
+				/>
+			)}
+
+			{/* Bottom action bar */}
 			{!isCancelled && (
 				<div className="fixed bottom-16 md:bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t px-4 py-3 flex gap-3 z-20">
+					<Button
+						variant="brand"
+						size="lg"
+						className="flex-1"
+						disabled={!isDirty || saveMutation.isPending}
+						onClick={() => saveMutation.mutate()}
+					>
+						{saveMutation.isPending ? t("common:loading") : t("orders:action.saveChanges")}
+					</Button>
 					{!isPaid && (
 						<Button
-							variant="brand"
+							variant="outline"
 							size="lg"
-							className="flex-1"
 							onClick={() => setPaymentSheetOpen(true)}
+							title={t("orders:action.recordPayment")}
 						>
 							<Banknote size={18} />
-							{t("orders:action.recordPayment")}
 						</Button>
 					)}
 					<Button
@@ -749,10 +635,9 @@ function OrderDetailPage() {
 							}
 						}}
 						disabled={cancelMutation.isPending}
-						className={isPaid ? "flex-1" : ""}
+						title={t("orders:action.cancel")}
 					>
 						<Ban size={18} />
-						{t("orders:action.cancel")}
 					</Button>
 				</div>
 			)}
@@ -762,7 +647,7 @@ function OrderDetailPage() {
 				onOpenChange={setPaymentSheetOpen}
 				orderId={orderId}
 				orderNumber={order.customerName}
-				totalThb={totalThb}
+				totalThb={editTotal}
 				paidAmountThb={paidAmountThb}
 			/>
 		</div>
