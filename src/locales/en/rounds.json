@@ -39,7 +39,44 @@
 		"orders": "Orders",
 		"summary": "Summary",
 		"shipping": "Shipping",
+		"purchase": "Buy tracker",
 		"stats": "Stats"
+	},
+	"purchase": {
+		"title": "Purchase tracker",
+		"groupBy": {
+			"label": "Group by",
+			"store": "Store",
+			"category": "Category",
+			"none": "Flat list"
+		},
+		"filterStore": {
+			"label": "Filter store",
+			"all": "All stores"
+		},
+		"hideCompleted": "Hide completed",
+		"col": {
+			"product": "Product",
+			"orderedQty": "Needed",
+			"boughtQty": "Bought",
+			"remaining": "Remaining",
+			"status": "Status"
+		},
+		"status": {
+			"complete": "✓ Done",
+			"partial": "⚠ Partial",
+			"none": "— Not bought"
+		},
+		"progress": "{{completed}} / {{total}} complete",
+		"editBoughtQty": {
+			"label": "How many bought?",
+			"save": "Save",
+			"cancel": "Cancel"
+		},
+		"noStore": "No store",
+		"noCategory": "No category",
+		"empty": "No products in this round",
+		"allDone": "Nothing pending"
 	},
 	"products": {
 		"title": "Products in round",
