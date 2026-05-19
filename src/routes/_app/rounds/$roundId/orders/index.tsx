@@ -103,23 +103,27 @@ function OrdersPage() {
 					hint={t("list.emptyHint")}
 				/>
 			) : (
-				<div className="space-y-2">
-					{activeOrders.map((order) => (
-						<OrderCard key={order.id} order={order} roundId={roundId} />
-					))}
+				<div className="space-y-4">
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+						{activeOrders.map((order) => (
+							<OrderCard key={order.id} order={order} roundId={roundId} />
+						))}
+					</div>
 					{cancelledOrders.length > 0 && (
-						<div className="mt-4">
+						<div>
 							<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
 								{t("status.cancelled")}
 							</p>
-							{cancelledOrders.map((order) => (
-								<OrderCard
-									key={order.id}
-									order={order}
-									roundId={roundId}
-									dimmed
-								/>
-							))}
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+								{cancelledOrders.map((order) => (
+									<OrderCard
+										key={order.id}
+										order={order}
+										roundId={roundId}
+										dimmed
+									/>
+								))}
+							</div>
 						</div>
 					)}
 				</div>

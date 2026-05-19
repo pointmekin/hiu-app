@@ -58,7 +58,7 @@ function CustomersPage() {
 	const customers = listQuery.data?.pages.flatMap((p) => p.items) ?? []
 
 	return (
-		<div className="max-w-2xl mx-auto px-4 py-6">
+		<div className="max-w-5xl mx-auto px-4 py-6">
 			<div className="flex items-center justify-between mb-4">
 				<h1 className="text-2xl font-semibold">{t("list.title")}</h1>
 				<Button variant="brand" size="sm" onClick={() => setCreateOpen(true)}>
@@ -82,7 +82,7 @@ function CustomersPage() {
 				/>
 			) : (
 				<>
-					<ul className="space-y-2">
+					<ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
 						{customers.map((c) => (
 							<li key={c.id}>
 								<Link

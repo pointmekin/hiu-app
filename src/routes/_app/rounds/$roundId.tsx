@@ -55,7 +55,7 @@ function RoundLayout() {
 	return (
 		<div className="flex flex-col min-h-full">
 			<div className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 md:top-[57px] z-30">
-				<div className="max-w-swv mx-auto px-4 pt-2 pb-0">
+				<div className="max-w-screen-xl mx-auto px-4 pt-2 pb-0">
 					<div className="flex items-start justify-between gap-3 mb-3">
 						<div className="min-w-0">
 							<h1 className="text-xl font-semibold text-foreground truncate">
@@ -105,7 +105,7 @@ function RoundLayout() {
 				</div>
 			</div>
 
-			<div className="flex-1 max-w-svw w-full mx-auto px-4 py-6">
+			<div className="flex-1 max-w-screen-xl w-full mx-auto px-4 py-6">
 				<Outlet />
 			</div>
 		</div>

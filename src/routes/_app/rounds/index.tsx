@@ -28,7 +28,7 @@ function RoundsPage() {
 	})
 
 	return (
-		<div className="max-w-2xl mx-auto px-4 py-6">
+		<div className="max-w-5xl mx-auto px-4 py-6">
 			<div className="flex items-center justify-between mb-6">
 				<h1 className="text-2xl font-semibold text-foreground">
 					{t("list.title")}
@@ -48,7 +48,7 @@ function RoundsPage() {
 					hint={t("list.emptyHint")}
 				/>
 			) : (
-				<ul className="space-y-3">
+				<ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
 					{rounds.map((round) => (
 						<RoundCard key={round.id} round={round} />
 					))}
