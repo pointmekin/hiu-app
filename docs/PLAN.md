@@ -709,18 +709,38 @@ All aggregation in SQL. Materialize `round_stats` view if any single dashboard q
 - OCR-from-screenshot of chat messages.
 - **Purchasing-companion mode** (in-store screen for the friend) — strong v1.1 candidate; schema already supports it.
 
-### M6 — Order editing + inline product creation + order summary message (1 week)
-- **Full order editing** — orders are editable after creation. On the order detail page (`orders/$orderId`), the operator can:
+### M6a — Quick wins & navigation (0.5 week)
+- **Export filenames use round name + delivery date** — `japan05.xlsx` and `kerry.xlsx` exports set `Content-Disposition` filenames to `{roundName} - {deliveryDate}.xlsx` (e.g. `Japan 05 - 2026-05-30.xlsx`). Round data is fetched in the export handler to populate the filename.
+- **Product name links to edit page everywhere** — wherever a product name is displayed (order line items, order detail, round-products editor, summary/export tables) it renders as a `Link` to `/products/$productId`. Consistent with the customer name linking pattern already in orders and shipping pages.
+- **Exit criteria**: downloads are self-documenting filenames; product names are clickable links throughout the app.
+
+### M6b — List improvements: pagination, metadata, mobile UX (1 week)
+
+#### Products list (`/products`)
+- **Server-side pagination** — `listProducts` accepts `limit` + `cursor` (last `last_used_at` + `id`); returns a `nextCursor`. Client renders a "Load more" button. Default page size 20.
+- **Richer card metadata** — each product card shows: thumbnail (existing), name, brand, category, `sourceCountry`, and a dimmed "last used" relative date (e.g. "3 days ago"). No extra DB query — these columns already exist on the `products` row.
+- **Mobile layout** — full-bleed cards with a leading 48×48 thumbnail, two-line text block, and trailing metadata chip. Touch target ≥ 44 px. No horizontal scroll.
+
+#### Customers list (`/customers`)
+- **Server-side pagination** — `searchCustomers` accepts `limit` + `cursor` (last `last_ordered_at` + `id`); returns a `nextCursor`. Client renders a "Load more" button. Default page size 20.
+- **Richer card metadata** — each customer card shows: display name, phone (if set), LINE ID or Instagram handle (if set), last-ordered relative date, and a small order-count badge fetched via an aggregate on `orders` joined at list query time (single SQL, no N+1).
+- **Mobile layout** — name in bold, secondary row with contact + date, order-count badge top-right. Touch target ≥ 44 px.
+
+- **Exit criteria**: both lists paginate at 20 items; useful metadata is visible without navigating to the detail page; layout is comfortable at 375 px viewport width.
+
+### M6c — Full order editing (1.5 weeks)
+- **Editable order detail** — on `orders/$orderId` the operator can:
   - Change the customer.
   - Change the shipping address.
   - Adjust quantities on existing line items, or remove items entirely.
-  - Add new line items via the product picker (same combobox as new-order page).
+  - Add new line items via the same product combobox as the new-order page.
   - Update the shipping fee and notes.
-  - All edits are persisted via an `updateOrder` server function that re-calculates subtotal and total. Payment history is never auto-adjusted (manual refund/adjustment only). Edits write to `audit_log`.
-- **Inline product creation from combobox** — in both the new-order page and order-detail product picker, add a "Create new product" option at the bottom of the product combobox dropdown when no exact match is found. Opens a small dialog/modal with product name, brand, and foreign price. On save, the product is created, added to the current round as a `round_product` (priced via the round's FX rate), and immediately inserted as a line item. Eliminates the round-trip to the catalog page mid-order.
-- **Export filenames use round name + delivery date** — the `japan05.xlsx` and `kerry.xlsx` exports set `Content-Disposition` filenames to `{roundName} - {deliveryDate}.xlsx` (e.g. `Japan 05 - 2026-05-30.xlsx`). The round data is fetched in the export route handler to populate the filename. Makes downloads self-documenting without the operator having to rename files manually.
-- **Product name links to edit page everywhere** — wherever a product name is displayed (order line items, order detail, round-products editor, summary/exports tables), it renders as a `Link` to `/products/$productId`. Lets the operator jump straight to fix a typo, update a price, or add a photo without navigating through the catalog. Consistent with the customer name linking pattern already in orders and shipping pages.
-- **Copyable order summary message** — on the order detail page, add a "Copy summary" button that generates a Thai-language message suitable for pasting into LINE/chat, formatted like:
+  - All edits go through an `updateOrder` server function that re-calculates `subtotal_thb` and `total_thb`. Payment history is never auto-adjusted (manual refund/adjustment only). Every edit writes to `audit_log`.
+- **Exit criteria**: operator can edit any field on an existing order; all edits are auditable in the audit log.
+
+### M6d — Inline product creation & order tools (1 week)
+- **Inline product creation from combobox** — in both the new-order page and the order-detail product picker, add a "Create new product" option at the bottom of the dropdown when no exact match is found. Opens a small dialog (name, brand, foreign price). On save: product is created, added to the current round as a `round_product` (priced via the round's FX rate), and immediately inserted as a line item. Eliminates the round-trip to the catalog page mid-order.
+- **Copyable order summary message** — on the order detail page, a "Copy summary" button generates a Thai-language message for pasting into LINE/chat:
   ```
   ขออนุญาติรวมยอดค่ะ 🙏
   รายการ:
@@ -732,8 +752,8 @@ All aggregation in SQL. Materialize `round_stats` view if any single dashboard q
   ชำระแล้ว — [paid] ฿
   คงเหลือ — [balance] ฿
   ```
-  One-tap copy via `navigator.clipboard.writeText`. Shows a brief toast confirmation. Useful for sending payment reminders or order confirmations to customers.
-- **Exit criteria**: operator can create a brand-new product mid-order without leaving the screen; operator can edit any field on an existing order; operator can copy-paste a formatted order summary into LINE in under 3 seconds.
+  One-tap copy via `navigator.clipboard.writeText`. Brief toast confirmation on success.
+- **Exit criteria**: operator creates a brand-new product mid-order without leaving the screen; copy-pastes a formatted summary into LINE in under 3 seconds.
 
 ---
 
