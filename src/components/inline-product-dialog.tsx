@@ -10,6 +10,7 @@ import { Label } from "#/components/ui/label";
 
 export interface InlineCreatedProduct {
 	id: string;
+	productId: string;
 	productName: string;
 	productBrand: string | null;
 	sellPriceThb: string;
@@ -59,7 +60,7 @@ export function InlineProductDialog({
 			}),
 		onSuccess: (rp) => {
 			queryClient.invalidateQueries({ queryKey: ["round-products", roundId] });
-			onCreated({ id: rp.id, productName: rp.productName, productBrand: rp.productBrand, sellPriceThb: rp.sellPriceThb });
+			onCreated({ id: rp.id, productId: rp.productId, productName: rp.productName, productBrand: rp.productBrand, sellPriceThb: rp.sellPriceThb });
 			setName("");
 			setBrand("");
 			setForeignPriceStr("");

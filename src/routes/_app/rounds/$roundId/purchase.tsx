@@ -3,7 +3,7 @@ import {
 	useQueryClient,
 	useSuspenseQuery,
 } from "@tanstack/react-query";
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { ChevronDown, ChevronRight, ShoppingCart } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -264,7 +264,13 @@ function PurchaseRow({
 			)}
 		>
 			<td className="px-4 py-3">
-				<div className="font-medium text-sm leading-tight">{item.productName}</div>
+				<Link
+				to="/products/$productId"
+				params={{ productId: item.productId }}
+				className="font-medium text-sm leading-tight hover:underline underline-offset-2"
+			>
+				{item.productName}
+			</Link>
 				{item.productBrand && (
 					<div className="text-xs text-muted-foreground mt-0.5">
 						{item.productBrand}
