@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query"
 import { Package } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import type { Product } from "#/db/schema"
 import { listProducts } from "#/server/functions/products/list"
+import type { ProductListItem } from "#/server/functions/products/list"
 import { useDebounce } from "#/lib/use-debounce"
 import {
   Command,
@@ -23,7 +23,7 @@ interface CatalogPickerDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   excludeIds: string[]
-  onSelect: (product: Product) => void
+  onSelect: (product: ProductListItem) => void
 }
 
 export function CatalogPickerDialog({
@@ -36,15 +36,15 @@ export function CatalogPickerDialog({
   const [q, setQ] = useState("")
   const debouncedQ = useDebounce(q, 250)
 
-  const { data: allProducts = [] } = useQuery({
+  const { data } = useQuery({
     queryKey: ["products", debouncedQ],
     queryFn: () => listProducts({ data: { q: debouncedQ, limit: 30 } }),
     enabled: open,
   })
 
-  const available = allProducts.filter((p) => !excludeIds.includes(p.id))
+  const available = (data?.items ?? []).filter((p) => !excludeIds.includes(p.id))
 
-  function handleSelect(product: Product) {
+  function handleSelect(product: ProductListItem) {
     onSelect(product)
     onOpenChange(false)
     setQ("")

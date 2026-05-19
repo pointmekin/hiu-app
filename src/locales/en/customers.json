@@ -3,7 +3,9 @@
 		"title": "Customers",
 		"empty": "No customers yet",
 		"emptyHint": "Customers are added when you create an order",
-		"search": "Search customers..."
+		"search": "Search customers...",
+		"loadMore": "Load more",
+		"orders": "{{count}} orders"
 	},
 	"field": {
 		"displayName": "Name",
