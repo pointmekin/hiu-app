@@ -20,6 +20,7 @@
 		"en": "English"
 	},
 	"appName": "Hiu App",
+	"optional": "optional",
 	"loading": "Loading...",
 	"logout": "Log out",
 	"theme": {

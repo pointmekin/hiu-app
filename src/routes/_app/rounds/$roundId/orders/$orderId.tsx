@@ -5,9 +5,10 @@ import {
 	useNavigate,
 	useParams,
 } from "@tanstack/react-router"
-import { ArrowLeft, Ban, Banknote, Minus, Package, Pencil, Plus, Trash2 } from "lucide-react"
+import { ArrowLeft, Ban, Banknote, Check, Copy, Minus, Package, Pencil, Plus, PlusCircle, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { InlineProductDialog } from "#/components/inline-product-dialog"
 import { CustomerCombobox, type CustomerOption } from "#/components/customer-combobox"
 import { PaymentSheet } from "#/components/payment-sheet"
 import { Alert, AlertDescription } from "#/components/ui/alert"
@@ -20,6 +21,7 @@ import {
 	CommandInput,
 	CommandItem,
 	CommandList,
+	CommandSeparator,
 } from "#/components/ui/command"
 import { Input } from "#/components/ui/input"
 import { Label } from "#/components/ui/label"
@@ -37,6 +39,7 @@ import { cancelOrder } from "#/server/functions/orders/cancel"
 import { getOrder } from "#/server/functions/orders/get"
 import { updateOrder } from "#/server/functions/orders/update"
 import { listRoundProducts } from "#/server/functions/round-products/list"
+import { getRound } from "#/server/functions/rounds/get"
 import { getSettings } from "#/server/functions/settings/get"
 
 type EditItem = {
@@ -80,6 +83,8 @@ function OrderDetailPage() {
 	const [editNotes, setEditNotes] = useState("")
 	const [productPickerOpen, setProductPickerOpen] = useState(false)
 	const [productQuery, setProductQuery] = useState("")
+	const [inlineDialogOpen, setInlineDialogOpen] = useState(false)
+	const [copied, setCopied] = useState(false)
 
 	// ── Server data ───────────────────────────────────────────────────────────────
 	const { data: order } = useSuspenseQuery({
@@ -102,6 +107,12 @@ function OrderDetailPage() {
 	const { data: settings } = useQuery({
 		queryKey: ["settings"],
 		queryFn: () => getSettings(),
+		enabled: isEditing,
+	})
+
+	const { data: round } = useQuery({
+		queryKey: ["rounds", roundId],
+		queryFn: () => getRound({ data: { id: roundId } }),
 		enabled: isEditing,
 	})
 
@@ -198,6 +209,25 @@ function OrderDetailPage() {
 
 	function removeEditItem(roundProductId: string) {
 		setEditItems((prev) => prev.filter((i) => i.roundProductId !== roundProductId))
+	}
+
+	async function copySummary() {
+		const fmt = (n: number) => n.toLocaleString("th-TH", { minimumFractionDigits: 0 })
+		const lines: string[] = ["ขออนุญาติรวมยอดค่ะ 🙏", "รายการ:"]
+		order.items.forEach((item, i) => {
+			lines.push(`${i + 1}. ${item.productName} ×${item.quantity}: ${fmt(Number(item.lineTotalThb))}`)
+		})
+		lines.push(`ค่าส่ง: ${fmt(shippingFeeThb)}`)
+		lines.push(`รวมทั้งหมด: ${fmt(totalThb)}`)
+		if (paidAmountThb > 0) {
+			lines.push(`ชำระแล้ว: ${fmt(paidAmountThb)}`)
+		}
+		if (balance > 0) {
+			lines.push(`คงเหลือ: ${fmt(balance)}`)
+		}
+		await navigator.clipboard.writeText(lines.join("\n"))
+		setCopied(true)
+		setTimeout(() => setCopied(false), 2000)
 	}
 
 	// ── Mutations ─────────────────────────────────────────────────────────────────
@@ -397,6 +427,22 @@ function OrderDetailPage() {
 											</CommandItem>
 										))}
 									</CommandGroup>
+									<CommandSeparator />
+									<CommandGroup>
+										<CommandItem
+											value="__create_new__"
+											onSelect={() => {
+												setProductPickerOpen(false)
+												setInlineDialogOpen(true)
+											}}
+											className="text-brand font-medium"
+										>
+											<PlusCircle size={14} className="shrink-0" />
+											{productQuery.trim()
+												? t("orders:action.createProductQuery", { name: productQuery.trim() })
+												: t("orders:action.createProduct")}
+										</CommandItem>
+									</CommandGroup>
 								</CommandList>
 							</Command>
 						</PopoverContent>
@@ -450,6 +496,29 @@ function OrderDetailPage() {
 							{(saveMutation.error as Error).message}
 						</AlertDescription>
 					</Alert>
+				)}
+
+				{round && (
+					<InlineProductDialog
+						open={inlineDialogOpen}
+						onOpenChange={setInlineDialogOpen}
+						roundId={roundId}
+						sourceCurrency={round.sourceCurrency}
+						fxRate={Number(round.fxRate)}
+						perItemFeeThb={Number(round.perItemFeeTh)}
+						onCreated={(rp) => {
+							setEditItems((prev) => [
+								...prev,
+								{
+									roundProductId: rp.id,
+									productName: rp.productName,
+									productBrand: rp.productBrand,
+									unitPriceThb: Number(rp.sellPriceThb),
+									quantity: 1,
+								},
+							])
+						}}
+					/>
 				)}
 
 				{/* Edit bottom bar */}
@@ -516,6 +585,14 @@ function OrderDetailPage() {
 						)}
 					</p>
 				</div>
+				<Button
+					variant="ghost"
+					size="icon"
+					onClick={copySummary}
+					title={t("orders:action.copySummary")}
+				>
+					{copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+				</Button>
 				{!isCancelled && (
 					<Button variant="ghost" size="icon" onClick={startEditing} title={t("orders:action.edit")}>
 						<Pencil size={16} />

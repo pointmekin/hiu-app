@@ -63,7 +63,10 @@
 		"editing": "Editing",
 		"discardEdit": "Discard changes",
 		"saveChanges": "Save changes",
-		"discardEditConfirm": "Discard all edits?"
+		"discardEditConfirm": "Discard all edits?",
+		"copySummary": "Copy order summary",
+		"createProduct": "Create new product",
+		"createProductQuery": "Create \"{{name}}\""
 	},
 	"item": {
 		"qty": "Qty",
