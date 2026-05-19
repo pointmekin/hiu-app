@@ -214,7 +214,7 @@ function RoundProductsPage() {
 					title={t("rounds:products.empty")}
 					hint={t("rounds:products.emptyHint")}
 					action={
-						<Button variant="brand" onClick={() => setShowCatalog(true)}>
+						<Button variant="default" onClick={() => setShowCatalog(true)}>
 							<Plus size={16} />
 							{t("rounds:products.addProduct")}
 						</Button>
@@ -260,7 +260,7 @@ function RoundProductsPage() {
 					</Button>
 					<Button
 						type="button"
-						variant="brand"
+						variant="default"
 						size="sm"
 						onClick={() => saveMutation.mutate()}
 						disabled={!isDirty || saveMutation.isPending}

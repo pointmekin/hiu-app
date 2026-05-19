@@ -23,7 +23,7 @@ function SummaryPage() {
 						{t("exports:japan05.sheets.orders")} · {t("exports:japan05.sheets.summary")} ·{" "}
 						{t("exports:japan05.sheets.customers")}
 					</p>
-					<Button asChild variant="brand">
+					<Button asChild variant="default">
 						<a href={`/api/exports/japan05/${roundId}`} download>
 							{t("exports:japan05.download")}
 						</a>

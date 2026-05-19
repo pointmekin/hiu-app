@@ -2,13 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useForm, type Resolver } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { recordPayment } from "#/server/functions/payments/record"
-import {
-	PAYMENT_METHODS,
-	PAYMENT_TYPES,
-	recordPaymentSchema,
-	type RecordPaymentInput,
-} from "#/shared/schemas/payment"
 import { Alert, AlertDescription } from "#/components/ui/alert"
 import { Button } from "#/components/ui/button"
 import {
@@ -36,6 +29,13 @@ import {
 	SheetTitle,
 } from "#/components/ui/sheet"
 import { Textarea } from "#/components/ui/textarea"
+import { recordPayment } from "#/server/functions/payments/record"
+import {
+	PAYMENT_METHODS,
+	PAYMENT_TYPES,
+	type RecordPaymentInput,
+	recordPaymentSchema,
+} from "#/shared/schemas/payment"
 
 interface PaymentSheetProps {
 	open: boolean
@@ -225,7 +225,7 @@ export function PaymentSheet({
 							</Button>
 							<Button
 								type="submit"
-								variant="brand"
+								variant="default"
 								disabled={mutation.isPending}
 							>
 								{mutation.isPending ? tc("loading") : tc("action.save")}

@@ -14,14 +14,6 @@ import { ImagePlus } from "lucide-react"
 import { useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { cn } from "#/lib/utils"
-import { getProduct } from "#/server/functions/products/get"
-import { upsertProduct } from "#/server/functions/products/upsert"
-import { uploadProductImage } from "#/server/functions/products/upload-image"
-import {
-	type UpsertProductInput,
-	upsertProductSchema,
-} from "#/shared/schemas/product"
 import { Alert, AlertDescription } from "#/components/ui/alert"
 import { Button } from "#/components/ui/button"
 import {
@@ -33,6 +25,14 @@ import {
 	FormMessage,
 } from "#/components/ui/form"
 import { Input } from "#/components/ui/input"
+import { cn } from "#/lib/utils"
+import { getProduct } from "#/server/functions/products/get"
+import { uploadProductImage } from "#/server/functions/products/upload-image"
+import { upsertProduct } from "#/server/functions/products/upsert"
+import {
+	type UpsertProductInput,
+	upsertProductSchema,
+} from "#/shared/schemas/product"
 
 type ProductWithUrls = Awaited<ReturnType<typeof getProduct>>
 
@@ -225,7 +225,7 @@ function ProductForm({ product }: { product: ProductWithUrls | null }) {
 						</Button>
 						<Button
 							type="submit"
-							variant="brand"
+							variant="default"
 							disabled={upsertMutation.isPending}
 							className="flex-1"
 						>

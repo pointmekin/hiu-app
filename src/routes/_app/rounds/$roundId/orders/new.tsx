@@ -8,8 +8,8 @@ import {
 import { Minus, Package, Plus, PlusCircle, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { InlineProductDialog } from "#/components/inline-product-dialog"
 import { CustomerCombobox, type CustomerOption } from "#/components/customer-combobox"
+import { InlineProductDialog } from "#/components/inline-product-dialog"
 import { Alert, AlertDescription } from "#/components/ui/alert"
 import { Button } from "#/components/ui/button"
 import { Card } from "#/components/ui/card"
@@ -408,7 +408,7 @@ function NewOrderPage() {
 					</p>
 				</div>
 				<Button
-					variant="brand"
+					variant="default"
 					size="lg"
 					disabled={!canSubmit}
 					onClick={() => mutation.mutate()}

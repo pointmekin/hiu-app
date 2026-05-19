@@ -2,11 +2,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { createProductAndAddToRound } from "#/server/functions/products/create-and-add-to-round";
 import { Button } from "#/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "#/components/ui/dialog";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
+import { createProductAndAddToRound } from "#/server/functions/products/create-and-add-to-round";
 
 export interface InlineCreatedProduct {
 	id: string;
@@ -149,7 +149,7 @@ export function InlineProductDialog({
 						{t("common:action.cancel")}
 					</Button>
 					<Button
-						variant="brand"
+						variant="default"
 						disabled={!canSave}
 						onClick={() => mutation.mutate()}
 					>
