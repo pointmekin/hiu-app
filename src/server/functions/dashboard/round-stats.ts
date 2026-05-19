@@ -74,9 +74,9 @@ export const getRoundStats = createServerFn({ method: "GET" })
 			await db.execute(sql`
 				select
 					coalesce(count(*), 0)::text as total_orders,
-					coalesce(sum(o.total_thb), 0)::text as total_revenue,
+					coalesce(sum(NULLIF(o.total_thb, 'NaN'::numeric)), 0)::text as total_revenue,
 					coalesce(sum(oi.foreign_cost), 0)::text as total_cost,
-					coalesce(sum(o.total_thb - o.paid_amount_thb), 0)::text as outstanding_balance,
+					coalesce(sum(NULLIF(o.total_thb, 'NaN'::numeric) - NULLIF(o.paid_amount_thb, 'NaN'::numeric)), 0)::text as outstanding_balance,
 					coalesce(count(*) filter (where o.payment_status = 'paid'), 0)::text as paid_count,
 					coalesce(count(*), 0)::text as total_active
 				from orders o
@@ -96,7 +96,7 @@ export const getRoundStats = createServerFn({ method: "GET" })
 				select
 					o.payment_status,
 					count(*)::text as cnt,
-					coalesce(sum(o.total_thb - o.paid_amount_thb), 0)::text as total_remaining
+					coalesce(sum(NULLIF(o.total_thb, 'NaN'::numeric) - NULLIF(o.paid_amount_thb, 'NaN'::numeric)), 0)::text as total_remaining
 				from orders o
 				where o.round_id = ${data.roundId} and o.status = 'active'
 				group by o.payment_status
@@ -124,7 +124,7 @@ export const getRoundStats = createServerFn({ method: "GET" })
 					p.name,
 					p.brand,
 					sum(oi.quantity)::text as total_qty,
-					sum(oi.line_total_thb)::text as total_revenue
+					coalesce(sum(NULLIF(oi.line_total_thb, 'NaN'::numeric)), 0)::text as total_revenue
 				from order_items oi
 				inner join round_products rp on rp.id = oi.round_product_id
 				inner join products p on p.id = rp.product_id
@@ -140,13 +140,13 @@ export const getRoundStats = createServerFn({ method: "GET" })
 			await db.execute(sql`
 				select
 					c.display_name,
-					sum(o.total_thb)::text as total_spend,
+					coalesce(sum(NULLIF(o.total_thb, 'NaN'::numeric)), 0)::text as total_spend,
 					count(*)::text as order_count
 				from orders o
 				inner join customers c on c.id = o.customer_id
 				where o.round_id = ${data.roundId} and o.status = 'active'
 				group by c.display_name
-				order by sum(o.total_thb) desc
+				order by sum(NULLIF(o.total_thb, 'NaN'::numeric)) desc nulls last
 				limit 10
 			`)
 		).rows as unknown as CustomerRow[];
@@ -156,7 +156,7 @@ export const getRoundStats = createServerFn({ method: "GET" })
 				select
 					to_char(date(o.created_at at time zone 'Asia/Bangkok'), 'YYYY-MM-DD') as day,
 					count(*)::text as cnt,
-					coalesce(sum(o.total_thb), 0)::text as revenue
+					coalesce(sum(NULLIF(o.total_thb, 'NaN'::numeric)), 0)::text as revenue
 				from orders o
 				where o.round_id = ${data.roundId} and o.status = 'active'
 				group by day

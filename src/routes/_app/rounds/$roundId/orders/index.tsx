@@ -168,8 +168,8 @@ function OrderCard({
 	const { t } = useTranslation("orders");
 	const navigate = useNavigate();
 
-	const total = Number(order.totalThb);
-	const paid = Number(order.paidAmountThb);
+	const total = Number(order.totalThb) || 0;
+	const paid = Number(order.paidAmountThb) || 0;
 	const balance = total - paid;
 
 	const paymentStatusColors: Record<string, string> = {

@@ -89,7 +89,7 @@ function OrderDetailPage() {
 			productName: item.productName,
 			productBrand: item.productBrand ?? null,
 			productThumbUrl: item.productThumbUrl ?? null,
-			unitPriceThb: Number(item.unitPriceThb),
+			unitPriceThb: Number(item.unitPriceThb) || 0,
 			quantity: item.quantity,
 		})),
 	)
@@ -196,7 +196,7 @@ function OrderDetailPage() {
 					productName: rp.productName,
 					productBrand: rp.productBrand ?? null,
 					productThumbUrl: rp.productThumbUrl ?? null,
-					unitPriceThb: Number(rp.sellPriceThb),
+					unitPriceThb: Number(rp.sellPriceThb) || 0,
 					quantity: 1,
 				},
 			]
@@ -444,10 +444,9 @@ function OrderDetailPage() {
 															)}
 														</div>
 														<span className="font-mono text-sm ml-2 shrink-0 tabular-nums">
-															{Number(rp.sellPriceThb).toLocaleString("th-TH", {
-																minimumFractionDigits: 0,
-															})}{" "}
-															฿
+															{Number.isFinite(Number(rp.sellPriceThb))
+																? `${Number(rp.sellPriceThb).toLocaleString("th-TH", { minimumFractionDigits: 0 })} ฿`
+																: "—"}
 														</span>
 													</CommandItem>
 												))}
@@ -799,7 +798,7 @@ function OrderDetailPage() {
 								productName: rp.productName,
 								productBrand: rp.productBrand,
 								productThumbUrl: null,
-								unitPriceThb: Number(rp.sellPriceThb),
+								unitPriceThb: Number(rp.sellPriceThb) || 0,
 								quantity: 1,
 							},
 						])
