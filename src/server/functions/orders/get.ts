@@ -12,6 +12,7 @@ import {
 	roundProducts,
 } from "#/db/schema";
 import { requireSession } from "#/server/middleware";
+import { s3PublicUrl } from "#/server/s3";
 
 export const getOrder = createServerFn({ method: "GET" })
 	.inputValidator(z.object({ id: z.string().uuid() }))
@@ -54,11 +55,17 @@ export const getOrder = createServerFn({ method: "GET" })
 				productId: products.id,
 				productName: products.name,
 				productBrand: products.brand,
+				productThumbKey: products.thumbKey,
 			})
 			.from(orderItems)
 			.innerJoin(roundProducts, eq(orderItems.roundProductId, roundProducts.id))
 			.innerJoin(products, eq(roundProducts.productId, products.id))
 			.where(eq(orderItems.orderId, data.id));
+
+		const itemsWithThumb = items.map((item) => ({
+			...item,
+			productThumbUrl: s3PublicUrl(item.productThumbKey),
+		}));
 
 		const payments = await db
 			.select()
@@ -76,5 +83,5 @@ export const getOrder = createServerFn({ method: "GET" })
 			address = addr ?? null;
 		}
 
-		return { ...order, items, payments, address };
+		return { ...order, items: itemsWithThumb, payments, address };
 	});

@@ -48,7 +48,11 @@ function OrdersPage() {
 
 	const needle = textFilter.trim().toLowerCase();
 	const visibleOrders = needle
-		? orders.filter((o) => o.customerName.toLowerCase().includes(needle))
+		? orders.filter(
+				(o) =>
+					o.customerName.toLowerCase().includes(needle) ||
+					o.items.some((item) => item.productName.toLowerCase().includes(needle)),
+			)
 		: orders;
 
 	const activeOrders = visibleOrders.filter((o) => o.status === "active");
@@ -132,6 +136,12 @@ function OrdersPage() {
 	);
 }
 
+interface OrderItemPreview {
+	productName: string;
+	productBrand: string | null;
+	quantity: number;
+}
+
 interface OrderCardOrder {
 	id: string;
 	customerId: string;
@@ -141,6 +151,7 @@ interface OrderCardOrder {
 	paymentStatus: string;
 	status: string;
 	createdAt: Date | null;
+	items: OrderItemPreview[];
 }
 
 function OrderCard({
@@ -200,6 +211,11 @@ function OrderCard({
 						</span>
 					)}
 				</p>
+				{order.items.length > 0 && (
+					<p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+						{order.items.map((item) => `${item.productName} x${item.quantity}`).join(", ")}
+					</p>
+				)}
 			</div>
 			<p className="font-mono font-medium text-sm tabular-nums shrink-0">
 				{total.toLocaleString("th-TH", {

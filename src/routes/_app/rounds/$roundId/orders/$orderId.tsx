@@ -8,8 +8,8 @@ import {
 import { ArrowLeft, Ban, Banknote, Check, Copy, Minus, Package, Plus, PlusCircle, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { InlineProductDialog } from "#/components/inline-product-dialog"
 import { CustomerCombobox, type CustomerOption } from "#/components/customer-combobox"
+import { InlineProductDialog } from "#/components/inline-product-dialog"
 import { PaymentSheet } from "#/components/payment-sheet"
 import { Alert, AlertDescription } from "#/components/ui/alert"
 import { Button } from "#/components/ui/button"
@@ -47,6 +47,7 @@ type EditItem = {
 	productId: string
 	productName: string
 	productBrand: string | null
+	productThumbUrl: string | null
 	unitPriceThb: number
 	quantity: number
 }
@@ -87,6 +88,7 @@ function OrderDetailPage() {
 			productId: item.productId,
 			productName: item.productName,
 			productBrand: item.productBrand ?? null,
+			productThumbUrl: item.productThumbUrl ?? null,
 			unitPriceThb: Number(item.unitPriceThb),
 			quantity: item.quantity,
 		})),
@@ -128,6 +130,19 @@ function OrderDetailPage() {
 	const editSubtotal = editItems.reduce((s, i) => s + i.unitPriceThb * i.quantity, 0)
 	const editTotal = editSubtotal + editShippingFee
 	const editBalance = editTotal - paidAmountThb
+
+	const summaryText = (() => {
+		const fmt = (n: number) => n.toLocaleString("th-TH", { minimumFractionDigits: 0 })
+		const lines: string[] = ["ขออนุญาติรวมยอดค่ะ 🙏", "รายการ:"]
+		editItems.forEach((item, i) => {
+			lines.push(`${i + 1}. ${item.productName} ×${item.quantity}: ${fmt(item.unitPriceThb * item.quantity)}`)
+		})
+		lines.push(`ค่าส่ง: ${fmt(editShippingFee)}`)
+		lines.push(`รวมทั้งหมด: ${fmt(editTotal)}`)
+		if (paidAmountThb > 0) lines.push(`ชำระแล้ว: ${fmt(paidAmountThb)}`)
+		// if (editBalance > 0) lines.push(`คงเหลือ: ${fmt(editBalance)}`)
+		return lines.join("\n")
+	})()
 
 	const filteredRoundProducts = roundProductRows.filter(
 		(rp) =>
@@ -180,6 +195,7 @@ function OrderDetailPage() {
 					productId: rp.productId,
 					productName: rp.productName,
 					productBrand: rp.productBrand ?? null,
+					productThumbUrl: rp.productThumbUrl ?? null,
 					unitPriceThb: Number(rp.sellPriceThb),
 					quantity: 1,
 				},
@@ -202,16 +218,7 @@ function OrderDetailPage() {
 	}
 
 	async function copySummary() {
-		const fmt = (n: number) => n.toLocaleString("th-TH", { minimumFractionDigits: 0 })
-		const lines: string[] = ["ขออนุญาติรวมยอดค่ะ 🙏", "รายการ:"]
-		editItems.forEach((item, i) => {
-			lines.push(`${i + 1}. ${item.productName} ×${item.quantity}: ${fmt(item.unitPriceThb * item.quantity)}`)
-		})
-		lines.push(`ค่าส่ง: ${fmt(editShippingFee)}`)
-		lines.push(`รวมทั้งหมด: ${fmt(editTotal)}`)
-		if (paidAmountThb > 0) lines.push(`ชำระแล้ว: ${fmt(paidAmountThb)}`)
-		if (editBalance > 0) lines.push(`คงเหลือ: ${fmt(editBalance)}`)
-		await navigator.clipboard.writeText(lines.join("\n"))
+		await navigator.clipboard.writeText(summaryText)
 		setCopied(true)
 		setTimeout(() => setCopied(false), 2000)
 	}
@@ -278,14 +285,6 @@ function OrderDetailPage() {
 								)}
 							</p>
 						</div>
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={copySummary}
-							title={t("orders:action.copySummary")}
-						>
-							{copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
-						</Button>
 					</div>
 
 					{/* Customer */}
@@ -334,6 +333,13 @@ function OrderDetailPage() {
 								{editItems.map((item) => (
 									<Card key={item.roundProductId} className="px-4 py-3">
 										<div className="flex items-center gap-3">
+											<div className="size-10 rounded-lg bg-muted flex items-center justify-center shrink-0 overflow-hidden">
+												{item.productThumbUrl ? (
+													<img src={item.productThumbUrl} alt="" className="h-full w-full object-cover" />
+												) : (
+													<Package size={18} className="text-muted-foreground" />
+												)}
+											</div>
 											<div className="flex-1 min-w-0">
 												<Link
 													to="/products/$productId"
@@ -551,6 +557,18 @@ function OrderDetailPage() {
 							)}
 						</Card>
 
+						<Card className="px-4 py-3">
+							<div className="flex items-center justify-between mb-2">
+								<p className="text-sm font-medium">{t("orders:action.copySummary")}</p>
+								<Button variant="ghost" size="icon-xs" onClick={copySummary}>
+									{copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+								</Button>
+							</div>
+							<div className="text-xs whitespace-pre-wrap text-foreground bg-muted/50 rounded-md p-3 leading-relaxed">
+								{summaryText}
+							</div>
+						</Card>
+
 						{order.payments.length > 0 && (
 							<div>
 								<p className="text-sm font-medium mb-2">{t("payments:history.title")}</p>
@@ -632,6 +650,18 @@ function OrderDetailPage() {
 								</span>
 							</div>
 						)}
+					</Card>
+
+					<Card className="px-4 py-3">
+						<div className="flex items-center justify-between mb-2">
+							<p className="text-sm font-medium">{t("orders:action.copySummary")}</p>
+							<Button variant="ghost" size="icon-xs" onClick={copySummary}>
+								{copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+							</Button>
+						</div>
+						<div className="text-xs whitespace-pre-wrap text-foreground bg-muted/50 rounded-md p-3 leading-relaxed">
+							{summaryText}
+						</div>
 					</Card>
 
 					{order.payments.length > 0 && (
@@ -768,6 +798,7 @@ function OrderDetailPage() {
 								productId: rp.productId,
 								productName: rp.productName,
 								productBrand: rp.productBrand,
+								productThumbUrl: null,
 								unitPriceThb: Number(rp.sellPriceThb),
 								quantity: 1,
 							},

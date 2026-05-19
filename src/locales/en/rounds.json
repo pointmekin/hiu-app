@@ -98,6 +98,7 @@
 		"recompute": "Recompute prices",
 		"recomputeHint": "Recompute from current FX rate (leaves overrides alone)",
 		"saveAll": "Save all",
-		"searchCatalog": "Search catalog..."
+		"searchCatalog": "Search catalog...",
+		"searchPlaceholder": "Search products…"
 	}
 }

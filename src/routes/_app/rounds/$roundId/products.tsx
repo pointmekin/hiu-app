@@ -4,7 +4,7 @@ import {
 	useSuspenseQuery,
 } from "@tanstack/react-query"
 import { createFileRoute, Link, useParams } from "@tanstack/react-router"
-import { Package, Plus, RefreshCw, Save, X } from "lucide-react"
+import { Package, Plus, RefreshCw, Save, Search, X } from "lucide-react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { CatalogPickerDialog } from "#/components/catalog-picker-dialog"
@@ -112,6 +112,7 @@ function RoundProductsPage() {
 
 	const [showCatalog, setShowCatalog] = useState(false)
 	const [isDirty, setIsDirty] = useState(false)
+	const [textFilter, setTextFilter] = useState("")
 
 	const storeListId = `store-locs-${roundId}`
 	const storeLocationSuggestions = useMemo(
@@ -119,10 +120,23 @@ function RoundProductsPage() {
 		[rows],
 	)
 
-	function updateRow(index: number, patch: Partial<DraftRow>) {
+	const needle = textFilter.trim().toLowerCase()
+	const visibleRows = useMemo(
+		() =>
+			needle
+				? rows.filter(
+						(r) =>
+							r.productName.toLowerCase().includes(needle) ||
+							(r.productBrand && r.productBrand.toLowerCase().includes(needle)),
+					)
+				: rows,
+		[rows, needle],
+	)
+
+	function updateRow(productId: string, patch: Partial<DraftRow>) {
 		setRows((prev) => {
-			const next = prev.map((row, i) => {
-				if (i !== index) return row
+			const next = prev.map((row) => {
+				if (row.productId !== productId) return row
 				const updated = { ...row, ...patch }
 				if ("foreignPrice" in patch && !updated.priceOverridden) {
 					const fp = Number(patch.foreignPrice)
@@ -137,8 +151,8 @@ function RoundProductsPage() {
 		setIsDirty(true)
 	}
 
-	function removeRow(index: number) {
-		setRows((prev) => prev.filter((_, i) => i !== index))
+	function removeRow(productId: string) {
+		setRows((prev) => prev.filter((r) => r.productId !== productId))
 		setIsDirty(true)
 	}
 
@@ -267,9 +281,20 @@ function RoundProductsPage() {
 				</Alert>
 			)}
 
+			{/* Search */}
+			<div className="relative">
+				<Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+				<Input
+					className="pl-8 h-8 text-sm"
+					placeholder={t("rounds:products.searchPlaceholder")}
+					value={textFilter}
+					onChange={(e) => setTextFilter(e.target.value)}
+				/>
+			</div>
+
 			{/* Mobile cards */}
 			<div className="md:hidden space-y-3">
-				{rows.map((row, index) => {
+				{visibleRows.map((row) => {
 					const fp = Number(row.foreignPrice)
 					const computed = computeSellPrice(
 						Number.isNaN(fp) ? 0 : fp,
@@ -283,8 +308,8 @@ function RoundProductsPage() {
 							computed={computed}
 							currency={round.sourceCurrency}
 							listId={storeListId}
-							onUpdate={(patch) => updateRow(index, patch)}
-							onRemove={() => removeRow(index)}
+							onUpdate={(patch) => updateRow(row.productId, patch)}
+							onRemove={() => removeRow(row.productId)}
 						/>
 					)
 				})}
@@ -315,7 +340,7 @@ function RoundProductsPage() {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{rows.map((row, index) => {
+						{visibleRows.map((row) => {
 							const fp = Number(row.foreignPrice)
 							const computed = computeSellPrice(
 								Number.isNaN(fp) ? 0 : fp,
@@ -329,8 +354,8 @@ function RoundProductsPage() {
 									computed={computed}
 									currency={round.sourceCurrency}
 									listId={storeListId}
-									onUpdate={(patch) => updateRow(index, patch)}
-									onRemove={() => removeRow(index)}
+									onUpdate={(patch) => updateRow(row.productId, patch)}
+									onRemove={() => removeRow(row.productId)}
 								/>
 							)
 						})}
