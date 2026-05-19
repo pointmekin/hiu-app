@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
 import {
 	createFileRoute,
+	Link,
 	useNavigate,
 	useParams,
 } from "@tanstack/react-router"
@@ -265,7 +266,20 @@ function NewOrderPage() {
 						<Card key={item.roundProductId} className="px-4 py-3">
 							<div className="flex items-center gap-3">
 								<div className="flex-1 min-w-0">
-									<p className="font-medium text-sm truncate">{item.productName}</p>
+									{(() => {
+										const productId = roundProductRows.find((rp) => rp.id === item.roundProductId)?.productId
+										return productId ? (
+											<Link
+												to="/products/$productId"
+												params={{ productId }}
+												className="font-medium text-sm truncate hover:underline underline-offset-2 block"
+											>
+												{item.productName}
+											</Link>
+										) : (
+											<p className="font-medium text-sm truncate">{item.productName}</p>
+										)
+									})()}
 									<p className="text-xs text-muted-foreground font-mono">
 										{item.unitPriceThb.toLocaleString("th-TH", {
 											minimumFractionDigits: 0,

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
 import {
 	createFileRoute,
+	Link,
 	useNavigate,
 	useParams,
 } from "@tanstack/react-router"
@@ -43,6 +44,7 @@ import { getSettings } from "#/server/functions/settings/get"
 
 type EditItem = {
 	roundProductId: string
+	productId: string
 	productName: string
 	productBrand: string | null
 	unitPriceThb: number
@@ -82,6 +84,7 @@ function OrderDetailPage() {
 	const [editItems, setEditItems] = useState<EditItem[]>(() =>
 		order.items.map((item) => ({
 			roundProductId: item.roundProductId,
+			productId: item.productId,
 			productName: item.productName,
 			productBrand: item.productBrand ?? null,
 			unitPriceThb: Number(item.unitPriceThb),
@@ -174,6 +177,7 @@ function OrderDetailPage() {
 				...prev,
 				{
 					roundProductId: rp.id,
+					productId: rp.productId,
 					productName: rp.productName,
 					productBrand: rp.productBrand ?? null,
 					unitPriceThb: Number(rp.sellPriceThb),
@@ -328,7 +332,14 @@ function OrderDetailPage() {
 							<Card key={item.roundProductId} className="px-4 py-3">
 								<div className="flex items-center gap-3">
 									<div className="flex-1 min-w-0">
-										<p className="font-medium text-sm truncate">{item.productName}</p>
+										<Link
+											to="/products/$productId"
+											params={{ productId: item.productId }}
+											className="font-medium text-sm truncate hover:underline underline-offset-2 block"
+											onClick={(e) => e.stopPropagation()}
+										>
+											{item.productName}
+										</Link>
 										<p className="text-xs text-muted-foreground font-mono tabular-nums">
 											{item.unitPriceThb.toLocaleString("th-TH", {
 												minimumFractionDigits: 0,
@@ -594,6 +605,7 @@ function OrderDetailPage() {
 							...prev,
 							{
 								roundProductId: rp.id,
+								productId: rp.productId,
 								productName: rp.productName,
 								productBrand: rp.productBrand,
 								unitPriceThb: Number(rp.sellPriceThb),
