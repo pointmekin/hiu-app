@@ -4,7 +4,7 @@ import {
 	useSuspenseQuery,
 } from "@tanstack/react-query";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { ChevronDown, ChevronRight, Minus, Plus, ShoppingCart } from "lucide-react";
+import { ChevronDown, ChevronRight, Minus, Plus, Search, ShoppingCart, X } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { PurchaseTrackerItem } from "#/server/functions/round-products/list-for-purchase-tracker";
@@ -418,6 +418,7 @@ function PurchasePage() {
 		refetchOnMount: "always",
 	});
 
+	const [searchQuery, setSearchQuery] = useState("");
 	const [groupBy, setGroupBy] = useState<GroupBy>("store");
 	const [filterStore, setFilterStore] = useState<string>("__all__");
 	const [hideCompleted, setHideCompleted] = useState(false);
@@ -435,6 +436,14 @@ function PurchasePage() {
 
 	const filtered = useMemo(() => {
 		let result = items;
+		if (searchQuery.trim()) {
+			const q = searchQuery.toLowerCase().trim();
+			result = result.filter(
+				(i) =>
+					i.productName.toLowerCase().includes(q) ||
+					i.productBrand?.toLowerCase().includes(q),
+			);
+		}
 		if (filterStore !== "__all__") {
 			result = result.filter(
 				(i) => (i.storeLocation ?? noStoreLabel) === filterStore,
@@ -446,7 +455,7 @@ function PurchasePage() {
 			);
 		}
 		return result;
-	}, [items, filterStore, hideCompleted, noStoreLabel]);
+	}, [items, searchQuery, filterStore, hideCompleted, noStoreLabel]);
 
 	const groups = useMemo(
 		() => computeGroups(filtered, groupBy, noStoreLabel, noCategoryLabel),
@@ -468,6 +477,31 @@ function PurchasePage() {
 
 	return (
 		<div className="space-y-4">
+			{/* Sticky search */}
+			<div className="sticky top-0 z-10 -mx-4 px-4 pt-1 pb-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+				<div className="relative">
+					<Search
+						size={15}
+						className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+					/>
+					<Input
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+						placeholder={t("purchase.search.placeholder")}
+						className="pl-8 pr-8 h-9 text-sm"
+					/>
+					{searchQuery && (
+						<button
+							type="button"
+							onClick={() => setSearchQuery("")}
+							className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+						>
+							<X size={14} />
+						</button>
+					)}
+				</div>
+			</div>
+
 			{/* Controls */}
 			<div className="flex flex-wrap items-center gap-3">
 				<div className="flex items-center gap-2">
@@ -534,7 +568,7 @@ function PurchasePage() {
 			{/* Groups */}
 			{groups.length === 0 ? (
 				<div className="text-center py-10 text-sm text-muted-foreground">
-					{t("purchase.allDone")}
+					{searchQuery.trim() ? t("purchase.noResults") : t("purchase.allDone")}
 				</div>
 			) : (
 				<div className="space-y-3">
