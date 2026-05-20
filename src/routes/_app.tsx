@@ -8,6 +8,7 @@ import {
 	BarChart3,
 	Globe,
 	LogOut,
+	Menu,
 	Moon,
 	Package,
 	Settings,
@@ -15,9 +16,18 @@ import {
 	Sun,
 	Users,
 } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PageProgressBar } from "#/components/page-progress-bar";
 import { Button } from "#/components/ui/button";
+import { Separator } from "#/components/ui/separator";
+import {
+	Sheet,
+	SheetBody,
+	SheetContent,
+	SheetHeader,
+	SheetTitle,
+} from "#/components/ui/sheet";
 import { useDarkMode } from "#/hooks/use-dark-mode";
 import {
 	ShortcutHelpOverlay,
@@ -39,6 +49,7 @@ function AppLayout() {
 	const { t } = useTranslation("common");
 	const { showHelp, setShowHelp } = useKeyboardShortcuts();
 	const { isDark, toggle: toggleDark } = useDarkMode();
+	const [moreOpen, setMoreOpen] = useState(false);
 
 	async function handleLogout() {
 		await authClient.signOut();
@@ -130,7 +141,7 @@ function AppLayout() {
 				style={{ viewTransitionName: "app-bottom-nav" }}
 				className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-sm border-t border-border safe-area-pb"
 			>
-				<div className="grid grid-cols-4 h-16">
+				<div className="grid grid-cols-5 h-16">
 					<BottomNavItem
 						to="/rounds"
 						icon={<ShoppingBag size={22} />}
@@ -151,8 +162,54 @@ function AppLayout() {
 						icon={<BarChart3 size={22} />}
 						label={t("nav.dashboard")}
 					/>
+					<button
+						type="button"
+						onClick={() => setMoreOpen(true)}
+						className="flex flex-col items-center justify-center gap-1 text-muted-foreground min-h-[44px]"
+					>
+						<Menu size={22} />
+						<span className="text-[11px] font-medium">{t("nav.more")}</span>
+					</button>
 				</div>
 			</nav>
+
+			{/* More sheet — mobile settings, theme, language, logout */}
+			<Sheet open={moreOpen} onOpenChange={setMoreOpen}>
+				<SheetContent className="md:hidden">
+					<SheetHeader>
+						<SheetTitle className="text-left">{t("nav.more")}</SheetTitle>
+					</SheetHeader>
+					<SheetBody className="flex flex-col gap-1">
+						<Link
+							to="/settings"
+							onClick={() => setMoreOpen(false)}
+							className="flex items-center gap-3 px-3 py-3 rounded-md text-sm text-foreground hover:bg-accent transition-colors"
+						>
+							<Settings size={18} />
+							{t("nav.settings")}
+						</Link>
+						<Separator className="my-2" />
+						<button
+							type="button"
+							onClick={toggleDark}
+							className="flex items-center gap-3 px-3 py-3 rounded-md text-sm text-foreground hover:bg-accent transition-colors w-full text-left"
+						>
+							{isDark ? <Sun size={18} /> : <Moon size={18} />}
+							{isDark ? t("theme.light") : t("theme.dark")}
+						</button>
+						<LocaleSwitcherRow onLocaleChange={handleLocaleChange} />
+						<Separator className="my-2" />
+						<button
+							type="button"
+							onClick={handleLogout}
+							className="flex items-center gap-3 px-3 py-3 rounded-md text-sm text-destructive hover:bg-destructive/10 transition-colors w-full text-left"
+						>
+							<LogOut size={18} />
+							{t("logout")}
+						</button>
+					</SheetBody>
+				</SheetContent>
+			</Sheet>
 		</div>
 	);
 }
@@ -220,5 +277,26 @@ function LocaleSwitcher({
 			<Globe size={15} />
 			<span>{t(`language.${next}`)}</span>
 		</Button>
+	);
+}
+
+function LocaleSwitcherRow({
+	onLocaleChange,
+}: {
+	onLocaleChange: (locale: Locale) => void;
+}) {
+	const { t, i18n: i18nInstance } = useTranslation("common");
+	const current = i18nInstance.language as Locale;
+	const next: Locale = current === "th" ? "en" : "th";
+
+	return (
+		<button
+			type="button"
+			onClick={() => onLocaleChange(next)}
+			className="flex items-center gap-3 px-3 py-3 rounded-md text-sm text-foreground hover:bg-accent transition-colors w-full text-left"
+		>
+			<Globe size={18} />
+			{t(`language.${next}`)}
+		</button>
 	);
 }

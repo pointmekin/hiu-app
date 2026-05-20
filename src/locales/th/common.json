@@ -4,7 +4,8 @@
 		"customers": "ลูกค้า",
 		"products": "สินค้า",
 		"settings": "ตั้งค่า",
-		"dashboard": "แดชบอร์ด"
+		"dashboard": "แดชบอร์ด",
+		"more": "เพิ่มเติม"
 	},
 	"action": {
 		"save": "บันทึก",
