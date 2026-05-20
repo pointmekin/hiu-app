@@ -16,6 +16,7 @@ import {
 	DialogTitle,
 } from "#/components/ui/dialog";
 import { useDebounce } from "#/lib/use-debounce";
+import { useKeyboardInset } from "#/lib/use-keyboard-inset";
 import type { ProductListItem } from "#/server/functions/products/list";
 import { listProducts } from "#/server/functions/products/list";
 
@@ -35,6 +36,7 @@ export function CatalogPickerDialog({
 	const { t } = useTranslation(["rounds", "products"]);
 	const [q, setQ] = useState("");
 	const debouncedQ = useDebounce(q, 250);
+	const keyboardInset = useKeyboardInset();
 
 	const { data } = useQuery({
 		queryKey: ["products", debouncedQ],
@@ -56,6 +58,7 @@ export function CatalogPickerDialog({
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent
 				className="top-auto bottom-0 left-0 right-0 translate-x-0 translate-y-0 max-w-none rounded-t-2xl rounded-b-none data-[state=open]:slide-in-from-bottom-4 sm:bottom-auto sm:left-[50%] sm:top-[50%] sm:right-auto sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-w-md sm:rounded-2xl sm:data-[state=open]:slide-in-from-bottom-0 p-0"
+				style={keyboardInset > 0 ? { bottom: keyboardInset } : undefined}
 				showCloseButton={false}
 			>
 				<DialogHeader className="sr-only">
@@ -67,7 +70,7 @@ export function CatalogPickerDialog({
 						value={q}
 						onValueChange={setQ}
 					/>
-					<CommandList className="max-h-[60vh]">
+					<CommandList className="max-h-[60dvh]">
 						<CommandEmpty>{t("products:list.empty")}</CommandEmpty>
 						{available.map((product) => (
 							<CommandItem
