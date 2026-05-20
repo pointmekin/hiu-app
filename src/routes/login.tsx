@@ -41,6 +41,12 @@ function LoginPage() {
 			return;
 		}
 
+		const { queryClient } = router.options.context as unknown as {
+			queryClient?: {
+				invalidateQueries: (options: { queryKey: string[] }) => Promise<void>;
+			};
+		};
+		await queryClient?.invalidateQueries({ queryKey: ["session"] });
 		await router.invalidate();
 		router.navigate({ to: "/rounds" });
 	}

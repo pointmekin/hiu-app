@@ -64,8 +64,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 			{ rel: "apple-touch-icon", href: "/logo.svg" },
 		],
 	}),
-	beforeLoad: async () => {
-		const session = await getSession();
+	beforeLoad: async ({ context: { queryClient } }) => {
+		const session = await queryClient.ensureQueryData({
+			queryKey: ["session"],
+			queryFn: () => getSession(),
+			staleTime: 5 * 60 * 1000,
+		});
 		return { session };
 	},
 	shellComponent: RootDocument,
