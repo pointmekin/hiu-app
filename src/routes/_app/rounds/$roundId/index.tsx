@@ -118,7 +118,7 @@ function RoundOverview() {
 						)}
 					/>
 
-					<div className="grid grid-cols-2 gap-4">
+					<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 						<FormField
 							control={form.control}
 							name="country"
@@ -172,7 +172,7 @@ function RoundOverview() {
 						)}
 					/>
 
-					<div className="grid grid-cols-2 gap-4">
+					<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 						<FormField
 							control={form.control}
 							name="sourceCurrency"
@@ -236,7 +236,7 @@ function RoundOverview() {
 						</AlertDescription>
 					</Alert>
 
-					<div className="grid grid-cols-2 gap-4">
+					<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 						<FormField
 							control={form.control}
 							name="perItemFeeTh"
