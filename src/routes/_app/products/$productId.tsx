@@ -270,10 +270,6 @@ function PhotoDropZone({
 		onFile(file);
 	}
 
-	function handleDownload() {
-		if (!displaySrc) return;
-		window.open(displaySrc, "_blank");
-	}
 
 	function handleDragOver(e: React.DragEvent) {
 		e.preventDefault();
@@ -386,14 +382,15 @@ function PhotoDropZone({
 			</div>
 
 			{displaySrc && (
-				<button
-					type="button"
-					onClick={handleDownload}
+				<a
+					href={displaySrc}
+					target="_blank"
+					rel="noopener noreferrer"
 					className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors min-h-[44px] px-1"
 				>
 					<Download size={14} />
 					Download image
-				</button>
+				</a>
 			)}
 			{hint && <p className="text-xs text-muted-foreground">{hint}</p>}
 		</div>
