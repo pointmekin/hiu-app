@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, AlertDescription } from "#/components/ui/alert";
@@ -19,7 +19,6 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
 	const { t } = useTranslation("auth");
-	const router = useRouter();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState<string | null>(null);
@@ -41,14 +40,7 @@ function LoginPage() {
 			return;
 		}
 
-		const { queryClient } = router.options.context as unknown as {
-			queryClient?: {
-				invalidateQueries: (options: { queryKey: string[] }) => Promise<void>;
-			};
-		};
-		await queryClient?.invalidateQueries({ queryKey: ["session"] });
-		await router.invalidate();
-		router.navigate({ to: "/rounds" });
+		window.location.href = "/rounds";
 	}
 
 	return (
