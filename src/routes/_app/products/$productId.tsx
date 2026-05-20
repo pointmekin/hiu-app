@@ -10,7 +10,7 @@ import {
 	useParams,
 } from "@tanstack/react-router";
 import imageCompression from "browser-image-compression";
-import { ImagePlus } from "lucide-react";
+import { Download, ImagePlus } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -270,6 +270,11 @@ function PhotoDropZone({
 		onFile(file);
 	}
 
+	function handleDownload() {
+		if (!displaySrc) return;
+		window.open(displaySrc, "_blank");
+	}
+
 	function handleDragOver(e: React.DragEvent) {
 		e.preventDefault();
 		setIsDragging(true);
@@ -380,6 +385,16 @@ function PhotoDropZone({
 				/>
 			</div>
 
+			{displaySrc && (
+				<button
+					type="button"
+					onClick={handleDownload}
+					className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors min-h-[44px] px-1"
+				>
+					<Download size={14} />
+					Download image
+				</button>
+			)}
 			{hint && <p className="text-xs text-muted-foreground">{hint}</p>}
 		</div>
 	);

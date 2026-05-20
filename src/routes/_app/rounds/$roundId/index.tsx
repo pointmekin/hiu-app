@@ -279,12 +279,12 @@ function RoundOverview() {
 						/>
 					</div>
 
-					<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+					<div className="grid grid-cols-1 gap-3 sm:grid-cols-1">
 						<FormField
 							control={form.control}
 							name="purchaseStart"
 							render={({ field }) => (
-								<FormItem>
+								<FormItem >
 									<FormLabel>{t("rounds:field.purchaseStart")}</FormLabel>
 									<FormControl>
 										<Input {...field} type="date" />
