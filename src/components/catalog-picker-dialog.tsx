@@ -73,7 +73,7 @@ export function CatalogPickerDialog({
 						value={q}
 						onValueChange={setQ}
 					/>
-					<CommandList className="max-h-[60dvh]">
+					<CommandList className="max-h-[60dvh] min-h-[250px]">
 						{onCreateNew && (
 							<CommandItem
 								value="__create_new__"
