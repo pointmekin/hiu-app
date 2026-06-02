@@ -31,5 +31,20 @@ describe("upsertProductSchema", () => {
 		expect(result.brand).toBeUndefined();
 		expect(result.category).toBeUndefined();
 		expect(result.sourceCountry).toBeUndefined();
+		expect(result.defaultPriceThb).toBeUndefined();
+	});
+
+	it("accepts a non-negative default THB price", () => {
+		const result = upsertProductSchema.parse({
+			name: "Test",
+			defaultPriceThb: 1500,
+		});
+		expect(result.defaultPriceThb).toBe(1500);
+	});
+
+	it("rejects a negative default THB price", () => {
+		expect(() =>
+			upsertProductSchema.parse({ name: "Test", defaultPriceThb: -1 }),
+		).toThrow();
 	});
 });

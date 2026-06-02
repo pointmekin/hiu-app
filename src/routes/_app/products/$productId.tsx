@@ -86,6 +86,10 @@ function ProductForm({ product }: { product: ProductWithUrls | null }) {
 					brand: product.brand ?? undefined,
 					sourceCountry: product.sourceCountry ?? undefined,
 					category: product.category ?? undefined,
+					defaultPriceThb:
+						product.defaultPriceThb != null
+							? Number(product.defaultPriceThb)
+							: undefined,
 				}
 			: {},
 	});
@@ -208,6 +212,46 @@ function ProductForm({ product }: { product: ProductWithUrls | null }) {
 										placeholder={t("products:form.categoryPlaceholder")}
 									/>
 								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
+					<FormField
+						control={form.control}
+						name="defaultPriceThb"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>{t("products:field.defaultPriceThb")}</FormLabel>
+								<FormControl>
+									<div className="relative">
+										<span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-mono">
+											฿
+										</span>
+										<Input
+											type="number"
+											inputMode="decimal"
+											step="any"
+											min="0"
+											placeholder="0.00"
+											className="pl-8 font-mono"
+											name={field.name}
+											ref={field.ref}
+											onBlur={field.onBlur}
+											value={field.value ?? ""}
+											onChange={(e) =>
+												field.onChange(
+													e.target.value === ""
+														? undefined
+														: Number(e.target.value),
+												)
+											}
+										/>
+									</div>
+								</FormControl>
+								<p className="text-xs text-muted-foreground">
+									{t("products:form.defaultPriceThbHint")}
+								</p>
 								<FormMessage />
 							</FormItem>
 						)}

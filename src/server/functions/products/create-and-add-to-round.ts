@@ -5,12 +5,14 @@ import { db } from "#/db/index";
 import { products, roundProducts, rounds } from "#/db/schema";
 import { writeAudit } from "#/server/audit";
 import { requireSession } from "#/server/middleware";
+import { computeSellPriceThb } from "#/shared/pricing";
 
 const createProductAndAddToRoundSchema = z.object({
 	roundId: z.string().uuid(),
 	name: z.string().min(1),
 	brand: z.string().optional(),
-	foreignPrice: z.number().min(0),
+	priceMode: z.enum(["foreign", "thb"]),
+	price: z.number().min(0),
 });
 
 export const createProductAndAddToRound = createServerFn({ method: "POST" })
@@ -27,13 +29,22 @@ export const createProductAndAddToRound = createServerFn({ method: "POST" })
 
 		const fxRate = Number(round.fxRate);
 		const perItemFee = Number(round.perItemFeeTh);
-		const sellPriceThb = data.foreignPrice * fxRate + perItemFee;
+		const isThb = data.priceMode === "thb";
+		const sellPriceThb = computeSellPriceThb(
+			data.price,
+			data.priceMode,
+			fxRate,
+			perItemFee,
+		);
+		const foreignPrice = isThb ? 0 : data.price;
+		const priceOverridden = isThb;
 
 		const [product] = await db
 			.insert(products)
 			.values({
 				name: data.name,
 				brand: data.brand ?? null,
+				defaultPriceThb: isThb ? String(data.price) : null,
 			})
 			.returning();
 
@@ -42,7 +53,12 @@ export const createProductAndAddToRound = createServerFn({ method: "POST" })
 			entity: "product",
 			entityId: product.id,
 			action: "create",
-			diff: { name: data.name, brand: data.brand, source: "inline_order" },
+			diff: {
+				name: data.name,
+				brand: data.brand,
+				priceMode: data.priceMode,
+				source: "inline_order",
+			},
 		});
 
 		const [roundProduct] = await db
@@ -50,9 +66,9 @@ export const createProductAndAddToRound = createServerFn({ method: "POST" })
 			.values({
 				roundId: data.roundId,
 				productId: product.id,
-				foreignPrice: String(data.foreignPrice),
+				foreignPrice: String(foreignPrice),
 				sellPriceThb: String(sellPriceThb),
-				priceOverridden: false,
+				priceOverridden,
 			})
 			.returning();
 
@@ -64,7 +80,8 @@ export const createProductAndAddToRound = createServerFn({ method: "POST" })
 			diff: {
 				roundId: data.roundId,
 				productId: product.id,
-				foreignPrice: data.foreignPrice,
+				priceMode: data.priceMode,
+				foreignPrice,
 				sellPriceThb,
 			},
 		});

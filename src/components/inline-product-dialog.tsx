@@ -11,7 +11,9 @@ import {
 } from "#/components/ui/dialog";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
+import { cn } from "#/lib/utils";
 import { createProductAndAddToRound } from "#/server/functions/products/create-and-add-to-round";
+import { computeSellPriceThb } from "#/shared/pricing";
 
 export interface InlineCreatedProduct {
 	id: string;
@@ -45,12 +47,14 @@ export function InlineProductDialog({
 
 	const [name, setName] = useState("");
 	const [brand, setBrand] = useState("");
-	const [foreignPriceStr, setForeignPriceStr] = useState("");
+	const [priceStr, setPriceStr] = useState("");
+	const [priceMode, setPriceMode] = useState<"foreign" | "thb">("thb");
 
-	const foreignPrice = foreignPriceStr ? Number(foreignPriceStr) : null;
+	const price = priceStr ? Number(priceStr) : null;
+	const isThb = priceMode === "thb";
 	const previewThb =
-		foreignPrice !== null && !Number.isNaN(foreignPrice)
-			? foreignPrice * fxRate + perItemFeeThb
+		!isThb && price !== null && !Number.isNaN(price)
+			? computeSellPriceThb(price, priceMode, fxRate, perItemFeeThb)
 			: null;
 
 	const mutation = useMutation({
@@ -60,7 +64,8 @@ export function InlineProductDialog({
 					roundId,
 					name,
 					brand: brand.trim() || undefined,
-					foreignPrice: foreignPrice ?? 0,
+					priceMode,
+					price: price ?? 0,
 				},
 			}),
 		onSuccess: (rp) => {
@@ -74,15 +79,16 @@ export function InlineProductDialog({
 			});
 			setName("");
 			setBrand("");
-			setForeignPriceStr("");
+			setPriceStr("");
+			setPriceMode("thb");
 			onOpenChange(false);
 		},
 	});
 
 	const canSave =
 		name.trim().length > 0 &&
-		foreignPrice !== null &&
-		foreignPrice >= 0 &&
+		price !== null &&
+		price >= 0 &&
 		!mutation.isPending;
 
 	function handleOpenChange(next: boolean) {
@@ -127,19 +133,51 @@ export function InlineProductDialog({
 					</div>
 
 					<div className="space-y-1.5">
-						<Label>
-							{t("products:field.foreignPrice", { currency: sourceCurrency })}
-						</Label>
+						<div className="flex items-center justify-between gap-2">
+							<Label>
+								{isThb
+									? t("products:field.thbPrice")
+									: t("products:field.foreignPrice", {
+											currency: sourceCurrency,
+										})}
+							</Label>
+							<div className="inline-flex rounded-md border border-border p-0.5">
+								<button
+									type="button"
+									onClick={() => setPriceMode("foreign")}
+									className={cn(
+										"px-2.5 py-1 text-xs rounded font-mono transition-colors",
+										!isThb
+											? "bg-accent text-foreground"
+											: "text-muted-foreground hover:text-foreground",
+									)}
+								>
+									{t("products:form.priceMode.foreign")}
+								</button>
+								<button
+									type="button"
+									onClick={() => setPriceMode("thb")}
+									className={cn(
+										"px-2.5 py-1 text-xs rounded font-mono transition-colors",
+										isThb
+											? "bg-accent text-foreground"
+											: "text-muted-foreground hover:text-foreground",
+									)}
+								>
+									{t("products:form.priceMode.thb")}
+								</button>
+							</div>
+						</div>
 						<div className="relative">
 							<span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-mono">
-								{sourceCurrency}
+								{isThb ? "฿" : sourceCurrency}
 							</span>
 							<Input
 								type="number"
 								min="0"
 								step="any"
-								value={foreignPriceStr}
-								onChange={(e) => setForeignPriceStr(e.target.value)}
+								value={priceStr}
+								onChange={(e) => setPriceStr(e.target.value)}
 								className="pl-12 font-mono"
 								inputMode="decimal"
 							/>

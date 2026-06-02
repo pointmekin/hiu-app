@@ -16,7 +16,9 @@
 		"sourceCountry": "ประเทศที่ซื้อ",
 		"category": "หมวดหมู่",
 		"photo": "รูปสินค้า",
-		"foreignPrice": "ราคา ({{currency}})"
+		"foreignPrice": "ราคา ({{currency}})",
+		"thbPrice": "ราคา (฿)",
+		"defaultPriceThb": "ราคาตั้งต้น (฿)"
 	},
 	"form": {
 		"createTitle": "เพิ่มสินค้าใหม่",
@@ -26,7 +28,12 @@
 		"categoryPlaceholder": "เช่น น้ำหอม, ครีม, ของกิน",
 		"photoHint": "รูปจะถูกย่อให้เป็น WebP อัตโนมัติ",
 		"uploadPhoto": "อัพโหลดรูป",
-		"changePhoto": "เปลี่ยนรูป"
+		"changePhoto": "เปลี่ยนรูป",
+		"defaultPriceThbHint": "ใช้เป็นราคาตั้งต้นเมื่อเพิ่มสินค้าเข้ารอบสั่งซื้อ",
+		"priceMode": {
+			"foreign": "สกุลเงินต้นทาง",
+			"thb": "บาท"
+		}
 	},
 	"action": {
 		"create": "เพิ่มสินค้า",

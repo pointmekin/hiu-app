@@ -78,6 +78,7 @@ export const products = pgTable("products", {
 	brand: text("brand"),
 	sourceCountry: text("source_country"),
 	category: text("category"),
+	defaultPriceThb: numeric("default_price_thb", { precision: 12, scale: 2 }),
 	imageKey: text("image_key"),
 	thumbKey: text("thumb_key"),
 	lastUsedAt: timestamp("last_used_at", { withTimezone: true }),

@@ -6,6 +6,7 @@ export const upsertProductSchema = z.object({
 	brand: z.string().optional(),
 	sourceCountry: z.string().optional(),
 	category: z.string().optional(),
+	defaultPriceThb: z.number().min(0).optional(),
 });
 
 export type UpsertProductInput = z.infer<typeof upsertProductSchema>;

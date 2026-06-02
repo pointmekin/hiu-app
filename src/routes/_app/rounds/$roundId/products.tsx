@@ -150,6 +150,7 @@ function RoundProductsPage() {
 	function addFromCatalog(product: ProductListItem) {
 		const alreadyAdded = rows.some((r) => r.productId === product.id);
 		if (alreadyAdded) return;
+		const hasDefaultPrice = product.defaultPriceThb != null;
 		setRows((prev) => [
 			...prev,
 			{
@@ -158,8 +159,8 @@ function RoundProductsPage() {
 				productBrand: product.brand,
 				productThumbUrl: null,
 				foreignPrice: "0",
-				sellPriceThb: "0",
-				priceOverridden: false,
+				sellPriceThb: hasDefaultPrice ? String(product.defaultPriceThb) : "0",
+				priceOverridden: hasDefaultPrice,
 				storeLocation: "",
 			},
 		]);

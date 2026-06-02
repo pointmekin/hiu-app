@@ -16,7 +16,9 @@
 		"sourceCountry": "Country",
 		"category": "Category",
 		"photo": "Product photo",
-		"foreignPrice": "Price ({{currency}})"
+		"foreignPrice": "Price ({{currency}})",
+		"thbPrice": "Price (฿)",
+		"defaultPriceThb": "Default price (฿)"
 	},
 	"form": {
 		"createTitle": "Add new product",
@@ -26,7 +28,12 @@
 		"categoryPlaceholder": "e.g. Perfume, Skincare, Food",
 		"photoHint": "Photo will be converted to WebP automatically",
 		"uploadPhoto": "Upload photo",
-		"changePhoto": "Change photo"
+		"changePhoto": "Change photo",
+		"defaultPriceThbHint": "Used to pre-fill the sell price when added to a round",
+		"priceMode": {
+			"foreign": "Source currency",
+			"thb": "THB"
+		}
 	},
 	"action": {
 		"create": "Add product",

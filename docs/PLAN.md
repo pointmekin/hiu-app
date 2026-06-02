@@ -46,6 +46,10 @@ sell_price_thb = foreign_price × effective_fx_rate + per_item_fee_thb
 
 Per product, the operator can override `sell_price_thb` directly — that's the "manual adjustment" path.
 
+**Direct THB entry.** When the operator doesn't know the foreign price, they can enter the THB sell price directly (inline product dialog supports a foreign/THB toggle). A direct THB price is stored as `sell_price_thb` as-is (no per-item fee added), with `foreign_price = 0` and `price_overridden = true` so FX recompute leaves it alone.
+
+**Catalog default price.** `products.default_price_thb` (nullable) is an optional reference price set on the catalog product. It does not change the per-round model — it only pre-fills `sell_price_thb` (with `price_overridden = true`) when the product is added to a round.
+
 Round configuration UI:
 ```
 Source currency           [ JPY ▼ ]
@@ -94,7 +98,7 @@ erDiagram
 
     USER { text id PK; text email; text name; text role; timestamptz created_at }
     ROUND { uuid id PK; text name; text country; text store_hint; date purchase_start; date purchase_end; date delivery_eta; text status; text source_currency; numeric fx_rate; numeric per_item_fee_thb; numeric default_shipping_fee; timestamptz created_at }
-    PRODUCT { uuid id PK; text name; text brand; text source_country; text category; text image_key; text thumb_key; timestamptz last_used_at }
+    PRODUCT { uuid id PK; text name; text brand; text source_country; text category; numeric default_price_thb; text image_key; text thumb_key; timestamptz last_used_at }
     ROUND_PRODUCT { uuid id PK; uuid round_id FK; uuid product_id FK; numeric foreign_price; numeric sell_price_thb; bool price_overridden; text store_location; text notes }
     CUSTOMER { uuid id PK; text display_name; text line_id; text instagram_handle; text phone; text notes; timestamptz last_ordered_at }
     CUSTOMER_ADDRESS { uuid id PK; uuid customer_id FK; text recipient_name; text mobile; text address; text postal_code; bool is_default; timestamptz created_at }
@@ -129,6 +133,7 @@ create table products (
   brand text,
   source_country text,
   category text,
+  default_price_thb numeric(12,2),                     -- optional catalog reference price; pre-fills sell_price_thb when added to a round
   image_key text,
   thumb_key text,
   search_doc tsvector

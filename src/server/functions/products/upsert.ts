@@ -19,6 +19,8 @@ export const upsertProduct = createServerFn({ method: "POST" })
 					brand: data.brand ?? null,
 					sourceCountry: data.sourceCountry ?? null,
 					category: data.category ?? null,
+					defaultPriceThb:
+						data.defaultPriceThb != null ? String(data.defaultPriceThb) : null,
 				})
 				.where(eq(products.id, data.id))
 				.returning();
@@ -43,6 +45,8 @@ export const upsertProduct = createServerFn({ method: "POST" })
 				brand: data.brand ?? null,
 				sourceCountry: data.sourceCountry ?? null,
 				category: data.category ?? null,
+				defaultPriceThb:
+					data.defaultPriceThb != null ? String(data.defaultPriceThb) : null,
 			})
 			.returning();
 

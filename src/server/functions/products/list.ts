@@ -13,6 +13,7 @@ interface ProductRow {
 	brand: string | null;
 	source_country: string | null;
 	category: string | null;
+	default_price_thb: string | null;
 	image_key: string | null;
 	thumb_key: string | null;
 	last_used_at: string | null;
@@ -26,6 +27,7 @@ function mapRow(p: ProductRow) {
 		brand: p.brand,
 		sourceCountry: p.source_country,
 		category: p.category,
+		defaultPriceThb: p.default_price_thb,
 		imageKey: p.image_key,
 		thumbKey: p.thumb_key,
 		lastUsedAt: p.last_used_at,
@@ -91,7 +93,7 @@ export const listProducts = createServerFn({ method: "GET" })
 			const queryWrap = `%${q}%`;
 			const filterAnd = buildFilterAnd(brand, category, sourceCountry);
 			const rows = await db.execute(sql`
-				select id, name, brand, source_country, category, image_key, thumb_key, last_used_at, created_at
+				select id, name, brand, source_country, category, default_price_thb, image_key, thumb_key, last_used_at, created_at
 				from products
 				where (name ilike ${queryWrap}
 				   or brand ilike ${queryWrap}
@@ -121,7 +123,7 @@ export const listProducts = createServerFn({ method: "GET" })
 		if (!data.cursor) {
 			const filterWhere = buildFilterWhere(brand, category, sourceCountry);
 			rows = await db.execute(sql`
-				select id, name, brand, source_country, category, image_key, thumb_key, last_used_at, created_at
+				select id, name, brand, source_country, category, default_price_thb, image_key, thumb_key, last_used_at, created_at
 				from products
 				${filterWhere}
 				order by last_used_at desc nulls last, id
@@ -132,7 +134,7 @@ export const listProducts = createServerFn({ method: "GET" })
 			const cursorId = data.cursor.id;
 			const filterAnd = buildFilterAnd(brand, category, sourceCountry);
 			rows = await db.execute(sql`
-				select id, name, brand, source_country, category, image_key, thumb_key, last_used_at, created_at
+				select id, name, brand, source_country, category, default_price_thb, image_key, thumb_key, last_used_at, created_at
 				from products
 				where (last_used_at < ${cursorTs}::timestamptz
 				   or (last_used_at = ${cursorTs}::timestamptz and id > ${cursorId})
@@ -145,7 +147,7 @@ export const listProducts = createServerFn({ method: "GET" })
 			const cursorId = data.cursor.id;
 			const filterAnd = buildFilterAnd(brand, category, sourceCountry);
 			rows = await db.execute(sql`
-				select id, name, brand, source_country, category, image_key, thumb_key, last_used_at, created_at
+				select id, name, brand, source_country, category, default_price_thb, image_key, thumb_key, last_used_at, created_at
 				from products
 				where (last_used_at is null and id > ${cursorId})
 				${filterAnd}

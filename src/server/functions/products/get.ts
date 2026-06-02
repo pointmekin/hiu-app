@@ -24,6 +24,7 @@ export const getProduct = createServerFn({ method: "GET" })
 			brand: p.brand,
 			sourceCountry: p.sourceCountry,
 			category: p.category,
+			defaultPriceThb: p.defaultPriceThb,
 			imageKey: p.imageKey,
 			thumbKey: p.thumbKey,
 			lastUsedAt: p.lastUsedAt,
