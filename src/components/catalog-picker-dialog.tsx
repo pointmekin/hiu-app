@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Package } from "lucide-react";
+import { Package, PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -25,6 +25,7 @@ interface CatalogPickerDialogProps {
 	onOpenChange: (open: boolean) => void;
 	excludeIds: string[];
 	onSelect: (product: ProductListItem) => void;
+	onCreateNew?: (query: string) => void;
 }
 
 export function CatalogPickerDialog({
@@ -32,6 +33,7 @@ export function CatalogPickerDialog({
 	onOpenChange,
 	excludeIds,
 	onSelect,
+	onCreateNew,
 }: CatalogPickerDialogProps) {
 	const { t } = useTranslation(["rounds", "products"]);
 	const [q, setQ] = useState("");
@@ -71,6 +73,24 @@ export function CatalogPickerDialog({
 						onValueChange={setQ}
 					/>
 					<CommandList className="max-h-[60dvh]">
+						{onCreateNew && (
+							<CommandItem
+								value="__create_new__"
+								onSelect={() => {
+									onCreateNew(q.trim());
+									onOpenChange(false);
+									setQ("");
+								}}
+								className="flex items-center gap-2 px-4 py-3 cursor-pointer text-brand font-medium data-[selected=true]:bg-muted"
+							>
+								<PlusCircle size={18} className="shrink-0" />
+								{q.trim()
+									? t("rounds:products.createProductQuery", {
+											name: q.trim(),
+										})
+									: t("rounds:products.createProduct")}
+							</CommandItem>
+						)}
 						<CommandEmpty>{t("products:list.empty")}</CommandEmpty>
 						{available.map((product) => (
 							<CommandItem

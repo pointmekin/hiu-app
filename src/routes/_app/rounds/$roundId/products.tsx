@@ -10,6 +10,10 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CatalogPickerDialog } from "#/components/catalog-picker-dialog";
 import { EmptyState } from "#/components/empty-state";
+import {
+	type InlineCreatedProduct,
+	InlineProductDialog,
+} from "#/components/inline-product-dialog";
 import { RoundProductsSkeleton } from "#/components/round-skeletons";
 import { Alert, AlertDescription } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
@@ -100,6 +104,8 @@ function RoundProductsPage() {
 	}, [roundProductRows]);
 
 	const [showCatalog, setShowCatalog] = useState(false);
+	const [showInlineCreate, setShowInlineCreate] = useState(false);
+	const [inlineCreateQuery, setInlineCreateQuery] = useState("");
 	const [isDirty, setIsDirty] = useState(false);
 	const [textFilter, setTextFilter] = useState("");
 
@@ -167,6 +173,34 @@ function RoundProductsPage() {
 		setIsDirty(true);
 	}
 
+	function openInlineCreate(query: string) {
+		setInlineCreateQuery(query);
+		setShowCatalog(false);
+		setShowInlineCreate(true);
+	}
+
+	// The inline dialog already persists the product and invalidates the
+	// round-products query, so the refetch will reconcile exact values. This
+	// optimistic append is just for instant feedback — no setIsDirty needed.
+	function handleInlineCreated(rp: InlineCreatedProduct) {
+		setRows((prev) => {
+			if (prev.some((r) => r.productId === rp.productId)) return prev;
+			return [
+				...prev,
+				{
+					productId: rp.productId,
+					productName: rp.productName,
+					productBrand: rp.productBrand,
+					productThumbUrl: null,
+					foreignPrice: "0",
+					sellPriceThb: rp.sellPriceThb,
+					priceOverridden: true,
+					storeLocation: "",
+				},
+			];
+		});
+	}
+
 	const saveMutation = useMutation({
 		mutationFn: () =>
 			upsertRoundProducts({
@@ -221,6 +255,17 @@ function RoundProductsPage() {
 					onOpenChange={setShowCatalog}
 					excludeIds={rows.map((r) => r.productId)}
 					onSelect={addFromCatalog}
+					onCreateNew={openInlineCreate}
+				/>
+				<InlineProductDialog
+					open={showInlineCreate}
+					onOpenChange={setShowInlineCreate}
+					roundId={roundId}
+					sourceCurrency={round.sourceCurrency}
+					fxRate={fxRate}
+					perItemFeeThb={perItemFee}
+					initialName={inlineCreateQuery}
+					onCreated={handleInlineCreated}
 				/>
 			</>
 		);
@@ -377,6 +422,18 @@ function RoundProductsPage() {
 				onOpenChange={setShowCatalog}
 				excludeIds={rows.map((r) => r.productId)}
 				onSelect={addFromCatalog}
+				onCreateNew={openInlineCreate}
+			/>
+
+			<InlineProductDialog
+				open={showInlineCreate}
+				onOpenChange={setShowInlineCreate}
+				roundId={roundId}
+				sourceCurrency={round.sourceCurrency}
+				fxRate={fxRate}
+				perItemFeeThb={perItemFee}
+				initialName={inlineCreateQuery}
+				onCreated={handleInlineCreated}
 			/>
 		</div>
 	);

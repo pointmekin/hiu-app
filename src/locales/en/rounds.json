@@ -99,6 +99,8 @@
 		"recomputeHint": "Recompute from current FX rate (leaves overrides alone)",
 		"saveAll": "Save",
 		"searchCatalog": "Search catalog...",
-		"searchPlaceholder": "Search products…"
+		"searchPlaceholder": "Search products…",
+		"createProduct": "Create new product",
+		"createProductQuery": "Create \"{{name}}\""
 	}
 }

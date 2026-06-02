@@ -99,6 +99,8 @@
 		"recomputeHint": "คำนวณราคาใหม่ตามอัตราปัจจุบัน (ไม่แตะราคาที่กำหนดเอง)",
 		"saveAll": "บันทึก",
 		"searchCatalog": "ค้นหาสินค้าในคลัง...",
-		"searchPlaceholder": "ค้นหาสินค้า…"
+		"searchPlaceholder": "ค้นหาสินค้า…",
+		"createProduct": "สร้างสินค้าใหม่",
+		"createProductQuery": "สร้าง \"{{name}}\""
 	}
 }

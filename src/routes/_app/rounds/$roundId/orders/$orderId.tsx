@@ -40,7 +40,6 @@ import {
 	CommandInput,
 	CommandItem,
 	CommandList,
-	CommandSeparator,
 } from "#/components/ui/command";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
@@ -131,6 +130,7 @@ function OrderDetailPage() {
 	const [productPickerOpen, setProductPickerOpen] = useState(false);
 	const [productQuery, setProductQuery] = useState("");
 	const [inlineDialogOpen, setInlineDialogOpen] = useState(false);
+	const [inlineCreateQuery, setInlineCreateQuery] = useState("");
 	const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
 	const [copied, setCopied] = useState(false);
 
@@ -504,6 +504,22 @@ function OrderDetailPage() {
 											onValueChange={setProductQuery}
 										/>
 										<CommandList>
+											<CommandItem
+												value="__create_new__"
+												onSelect={() => {
+													setInlineCreateQuery(productQuery.trim());
+													setProductPickerOpen(false);
+													setInlineDialogOpen(true);
+												}}
+												className="text-brand font-medium"
+											>
+												<PlusCircle size={14} className="shrink-0" />
+												{productQuery.trim()
+													? t("orders:action.createProductQuery", {
+															name: productQuery.trim(),
+														})
+													: t("orders:action.createProduct")}
+											</CommandItem>
 											<CommandEmpty>ไม่พบสินค้า</CommandEmpty>
 											<CommandGroup>
 												{filteredRoundProducts.map((rp) => (
@@ -533,24 +549,6 @@ function OrderDetailPage() {
 														</span>
 													</CommandItem>
 												))}
-											</CommandGroup>
-											<CommandSeparator />
-											<CommandGroup>
-												<CommandItem
-													value="__create_new__"
-													onSelect={() => {
-														setProductPickerOpen(false);
-														setInlineDialogOpen(true);
-													}}
-													className="text-brand font-medium"
-												>
-													<PlusCircle size={14} className="shrink-0" />
-													{productQuery.trim()
-														? t("orders:action.createProductQuery", {
-																name: productQuery.trim(),
-															})
-														: t("orders:action.createProduct")}
-												</CommandItem>
 											</CommandGroup>
 										</CommandList>
 									</Command>
@@ -942,6 +940,7 @@ function OrderDetailPage() {
 					sourceCurrency={round.sourceCurrency}
 					fxRate={Number(round.fxRate)}
 					perItemFeeThb={Number(round.perItemFeeTh)}
+					initialName={inlineCreateQuery}
 					onCreated={(rp) => {
 						setEditItems((prev) => [
 							...prev,

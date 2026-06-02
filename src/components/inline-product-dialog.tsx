@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PlusCircle } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "#/components/ui/button";
 import {
@@ -30,6 +30,7 @@ interface Props {
 	sourceCurrency: string;
 	fxRate: number;
 	perItemFeeThb: number;
+	initialName?: string;
 	onCreated: (rp: InlineCreatedProduct) => void;
 }
 
@@ -40,6 +41,7 @@ export function InlineProductDialog({
 	sourceCurrency,
 	fxRate,
 	perItemFeeThb,
+	initialName,
 	onCreated,
 }: Props) {
 	const { t } = useTranslation(["products", "common"]);
@@ -49,6 +51,15 @@ export function InlineProductDialog({
 	const [brand, setBrand] = useState("");
 	const [priceStr, setPriceStr] = useState("");
 	const [priceMode, setPriceMode] = useState<"foreign" | "thb">("thb");
+
+	// Pre-fill name when the dialog opens with an initial value (e.g. from
+	// the catalog picker's search query). Runs on every open transition so
+	// repeated opens with different queries each get their own pre-fill.
+	useEffect(() => {
+		if (open && initialName) {
+			setName(initialName);
+		}
+	}, [open, initialName]);
 
 	const price = priceStr ? Number(priceStr) : null;
 	const isThb = priceMode === "thb";
