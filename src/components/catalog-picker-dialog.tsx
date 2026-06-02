@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Package, PlusCircle } from "lucide-react";
+import { Loader2, Package, PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -15,6 +15,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "#/components/ui/dialog";
+import { Skeleton } from "#/components/ui/skeleton";
 import { useDebounce } from "#/lib/use-debounce";
 import { useKeyboardInset } from "#/lib/use-keyboard-inset";
 import type { ProductListItem } from "#/server/functions/products/list";
@@ -40,7 +41,7 @@ export function CatalogPickerDialog({
 	const debouncedQ = useDebounce(q, 250);
 	const keyboardInset = useKeyboardInset();
 
-	const { data } = useQuery({
+	const { data, isFetching } = useQuery({
 		queryKey: ["products", debouncedQ],
 		queryFn: () => listProducts({ data: { q: debouncedQ, limit: 30 } }),
 		enabled: open,
@@ -91,37 +92,58 @@ export function CatalogPickerDialog({
 									: t("rounds:products.createProduct")}
 							</CommandItem>
 						)}
-						<CommandEmpty>{t("products:list.empty")}</CommandEmpty>
-						{available.map((product) => (
-							<CommandItem
-								key={product.id}
-								value={product.id}
-								onSelect={() => handleSelect(product)}
-								className="flex items-center gap-3 px-4 py-3 cursor-pointer data-[selected=true]:bg-muted data-[selected=true]:text-foreground"
-							>
-								<div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center shrink-0 overflow-hidden">
-									{product.thumbUrl ? (
-										<img
-											src={product.thumbUrl}
-											alt=""
-											className="h-full w-full object-cover"
-										/>
-									) : (
-										<Package size={18} className="text-muted-foreground" />
-									)}
-								</div>
-								<div className="min-w-0">
-									<p className="font-medium text-foreground truncate">
-										{product.name}
-									</p>
-									{product.brand && (
-										<p className="text-xs text-muted-foreground">
-											{product.brand}
-										</p>
-									)}
-								</div>
-							</CommandItem>
-						))}
+						{isFetching && (
+							<div className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground">
+								<Loader2 size={14} className="animate-spin shrink-0" />
+								{t("rounds:products.searching")}
+							</div>
+						)}
+						{!isFetching && (
+							<CommandEmpty>{t("products:list.empty")}</CommandEmpty>
+						)}
+						{isFetching
+							? Array.from({ length: 3 }).map((_, i) => (
+									<div
+										key={`skeleton-${i}`}
+										className="flex items-center gap-3 px-4 py-3"
+									>
+										<Skeleton className="h-10 w-10 rounded-md shrink-0" />
+										<div className="flex-1 space-y-1.5">
+											<Skeleton className="h-4 w-3/4" />
+											<Skeleton className="h-3 w-1/2" />
+										</div>
+									</div>
+								))
+							: available.map((product) => (
+									<CommandItem
+										key={product.id}
+										value={product.id}
+										onSelect={() => handleSelect(product)}
+										className="flex items-center gap-3 px-4 py-3 cursor-pointer data-[selected=true]:bg-muted data-[selected=true]:text-foreground"
+									>
+										<div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center shrink-0 overflow-hidden">
+											{product.thumbUrl ? (
+												<img
+													src={product.thumbUrl}
+													alt=""
+													className="h-full w-full object-cover"
+												/>
+											) : (
+												<Package size={18} className="text-muted-foreground" />
+											)}
+										</div>
+										<div className="min-w-0">
+											<p className="font-medium text-foreground truncate">
+												{product.name}
+											</p>
+											{product.brand && (
+												<p className="text-xs text-muted-foreground">
+													{product.brand}
+												</p>
+											)}
+										</div>
+									</CommandItem>
+								))}
 					</CommandList>
 				</Command>
 			</DialogContent>

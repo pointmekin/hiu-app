@@ -101,6 +101,7 @@
 		"searchCatalog": "ค้นหาสินค้าในคลัง...",
 		"searchPlaceholder": "ค้นหาสินค้า…",
 		"createProduct": "สร้างสินค้าใหม่",
-		"createProductQuery": "สร้าง \"{{name}}\""
+		"createProductQuery": "สร้าง \"{{name}}\"",
+		"searching": "กำลังค้นหา..."
 	}
 }
