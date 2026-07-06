@@ -5,7 +5,7 @@ import {
 	useSuspenseQuery,
 } from "@tanstack/react-query";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { Package, Plus, RefreshCw, Save, Search, X } from "lucide-react";
+import { AlertCircle, Check, Loader2, Package, Plus, RefreshCw, Save, Search, X } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CatalogPickerDialog } from "#/components/catalog-picker-dialog";
@@ -59,6 +59,8 @@ interface DraftRow {
 	storeLocation: string;
 }
 
+type SaveStatus = "idle" | "pending" | "saving" | "saved" | "error";
+
 function computeSellPrice(
 	foreignPrice: number,
 	fxRate: number,
@@ -86,6 +88,8 @@ function RoundProductsPage() {
 	const perItemFee = Number(round.perItemFeeTh);
 
 	const [rows, setRows] = useState<DraftRow[]>([]);
+	const rowsRef = useRef<DraftRow[]>(rows);
+	rowsRef.current = rows;
 
 	useEffect(() => {
 		if (!roundProductRows) return;
@@ -108,6 +112,16 @@ function RoundProductsPage() {
 	const [inlineCreateQuery, setInlineCreateQuery] = useState("");
 	const [isDirty, setIsDirty] = useState(false);
 	const [textFilter, setTextFilter] = useState("");
+	const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+
+	const savedSnapshotRef = useRef<DraftRow[] | null>(null);
+	const savedStatusTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+	const autosaveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+	const markDirty = useCallback(() => {
+		setIsDirty(true);
+		setSaveStatus("pending");
+	}, []);
 
 	const storeListId = `store-locs-${roundId}`;
 	const storeLocationSuggestions = useMemo(
@@ -143,15 +157,18 @@ function RoundProductsPage() {
 					return updated;
 				}),
 			);
-			setIsDirty(true);
+			markDirty();
 		},
-		[fxRate, perItemFee],
+		[fxRate, perItemFee, markDirty],
 	);
 
-	const removeRow = useCallback((productId: string) => {
-		setRows((prev) => prev.filter((r) => r.productId !== productId));
-		setIsDirty(true);
-	}, []);
+	const removeRow = useCallback(
+		(productId: string) => {
+			setRows((prev) => prev.filter((r) => r.productId !== productId));
+			markDirty();
+		},
+		[markDirty],
+	);
 
 	function addFromCatalog(product: ProductListItem) {
 		const alreadyAdded = rows.some((r) => r.productId === product.id);
@@ -170,7 +187,7 @@ function RoundProductsPage() {
 				storeLocation: "",
 			},
 		]);
-		setIsDirty(true);
+		markDirty();
 	}
 
 	function openInlineCreate(query: string) {
@@ -202,11 +219,13 @@ function RoundProductsPage() {
 	}
 
 	const saveMutation = useMutation({
-		mutationFn: () =>
-			upsertRoundProducts({
+		mutationFn: () => {
+			const currentRows = rowsRef.current;
+			savedSnapshotRef.current = currentRows;
+			return upsertRoundProducts({
 				data: {
 					roundId,
-					rows: rows.map((r) => ({
+					rows: currentRows.map((r) => ({
 						productId: r.productId,
 						foreignPrice: Number(r.foreignPrice) || 0,
 						sellPriceThb: Number(r.sellPriceThb) || 0,
@@ -214,14 +233,49 @@ function RoundProductsPage() {
 						storeLocation: r.storeLocation || undefined,
 					})),
 				},
-			}),
+			});
+		},
+		onMutate: () => setSaveStatus("saving"),
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: ["round-products", roundId],
 			});
-			setIsDirty(false);
+			if (savedSnapshotRef.current !== rowsRef.current) {
+				// Rows changed during save — stay pending so autosave re-fires.
+				setSaveStatus("pending");
+			} else {
+				setIsDirty(false);
+				setSaveStatus("saved");
+				clearTimeout(savedStatusTimerRef.current);
+				savedStatusTimerRef.current = setTimeout(
+					() => setSaveStatus("idle"),
+					2500,
+				);
+			}
+			savedSnapshotRef.current = null;
 		},
+		onError: () => setSaveStatus("error"),
 	});
+
+	const mutateSaveRef = useRef(saveMutation.mutate);
+	mutateSaveRef.current = saveMutation.mutate;
+
+	// Auto-save 2s after the last edit, but never while a save is in flight.
+	useEffect(() => {
+		if (!isDirty || saveMutation.isPending) return;
+		autosaveTimerRef.current = setTimeout(() => {
+			mutateSaveRef.current();
+		}, 2000);
+		return () => clearTimeout(autosaveTimerRef.current);
+	}, [isDirty, saveMutation.isPending]);
+
+	useEffect(
+		() => () => {
+			clearTimeout(autosaveTimerRef.current);
+			clearTimeout(savedStatusTimerRef.current);
+		},
+		[],
+	);
 
 	const recomputeMutation = useMutation({
 		mutationFn: () => recomputeFromFx({ data: { roundId } }),
@@ -309,10 +363,15 @@ function RoundProductsPage() {
 								disabled={!isDirty || saveMutation.isPending}
 							>
 								<Save size={14} />
-								{saveMutation.isPending
-									? t("common:loading")
-									: t("rounds:products.saveAll")}
+								{t("rounds:products.saveAll")}
 							</Button>
+							<AutoSaveStatus
+								status={saveStatus}
+								onRetry={() => saveMutation.mutate()}
+								savingLabel={t("rounds:products.autosave.saving")}
+								savedLabel={t("rounds:products.autosave.saved")}
+								errorLabel={t("rounds:products.autosave.error")}
+							/>
 						</div>
 					</div>
 
@@ -776,3 +835,47 @@ const ProductRow = memo(function ProductRow({
 		</TableRow>
 	);
 });
+
+function AutoSaveStatus({
+	status,
+	onRetry,
+	savingLabel,
+	savedLabel,
+	errorLabel,
+}: {
+	status: SaveStatus;
+	onRetry: () => void;
+	savingLabel: string;
+	savedLabel: string;
+	errorLabel: string;
+}) {
+	if (status === "idle") return null;
+	return (
+		<div className="flex items-center gap-1.5 text-xs ml-1 min-w-0">
+			{(status === "pending" || status === "saving") && (
+				<>
+					<Loader2 className="size-3.5 animate-spin text-muted-foreground shrink-0" />
+					<span className="text-muted-foreground">{savingLabel}</span>
+				</>
+			)}
+			{status === "saved" && (
+				<>
+					<Check className="size-3.5 text-emerald-600 dark:text-emerald-500 shrink-0" />
+					<span className="text-emerald-600 dark:text-emerald-500">
+						{savedLabel}
+					</span>
+				</>
+			)}
+			{status === "error" && (
+				<button
+					type="button"
+					onClick={onRetry}
+					className="flex items-center gap-1.5 text-destructive hover:underline shrink-0"
+				>
+					<AlertCircle className="size-3.5" />
+					{errorLabel}
+				</button>
+			)}
+		</div>
+	);
+}

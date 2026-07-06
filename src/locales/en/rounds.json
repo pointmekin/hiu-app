@@ -104,6 +104,11 @@
 		"searchPlaceholder": "Search products…",
 		"createProduct": "Create new product",
 		"createProductQuery": "Create \"{{name}}\"",
-		"searching": "Searching..."
+		"searching": "Searching...",
+		"autosave": {
+			"saving": "Saving…",
+			"saved": "Saved",
+			"error": "Save failed — retry"
+		}
 	}
 }

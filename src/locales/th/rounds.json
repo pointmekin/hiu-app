@@ -104,6 +104,11 @@
 		"searchPlaceholder": "ค้นหาสินค้า…",
 		"createProduct": "สร้างสินค้าใหม่",
 		"createProductQuery": "สร้าง \"{{name}}\"",
-		"searching": "กำลังค้นหา..."
+		"searching": "กำลังค้นหา...",
+		"autosave": {
+			"saving": "กำลังบันทึก…",
+			"saved": "บันทึกแล้ว",
+			"error": "บันทึกไม่สำเร็จ — ลองอีกครั้ง"
+		}
 	}
 }
