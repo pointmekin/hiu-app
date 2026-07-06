@@ -392,13 +392,15 @@ function OrderDetailPage() {
 									<Card key={item.roundProductId} className="px-4 py-3">
 										<div className="flex items-center gap-3">
 											<div className="size-10 rounded-lg bg-muted flex items-center justify-center shrink-0 overflow-hidden">
-												{item.productThumbUrl ? (
-													<img
-														src={item.productThumbUrl}
-														alt=""
-														className="h-full w-full object-cover"
-													/>
-												) : (
+											{item.productThumbUrl ? (
+												<img
+													src={item.productThumbUrl}
+													alt=""
+													loading="lazy"
+													decoding="async"
+													className="h-full w-full object-cover"
+												/>
+											) : (
 													<Package
 														size={18}
 														className="text-muted-foreground"

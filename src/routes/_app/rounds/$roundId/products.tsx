@@ -467,14 +467,16 @@ const MobileProductCard = memo(function MobileProductCard({
 		<div className="border border-border rounded-lg p-3 space-y-3 bg-card">
 			<div className="flex items-start justify-between gap-2">
 				<div className="flex items-center gap-2 min-w-0">
-					{row.productThumbUrl ? (
-						<img
-							src={row.productThumbUrl}
-							alt=""
-							className="w-16 h-16 rounded object-cover shrink-0 bg-muted"
-						/>
-					) : (
-						<div className="w-16 h-16 rounded bg-muted shrink-0" />
+				{row.productThumbUrl ? (
+					<img
+						src={row.productThumbUrl}
+						alt=""
+						loading="lazy"
+						decoding="async"
+						className="w-16 h-16 rounded object-cover shrink-0 bg-muted"
+					/>
+				) : (
+					<div className="w-16 h-16 rounded bg-muted shrink-0" />
 					)}
 					<div className="min-w-0">
 						<Link
@@ -667,14 +669,16 @@ const ProductRow = memo(function ProductRow({
 		<TableRow>
 			<TableCell>
 				<div className="flex items-center gap-2">
-					{row.productThumbUrl ? (
-						<img
-							src={row.productThumbUrl}
-							alt=""
-							className="w-12 h-12 rounded object-cover shrink-0 bg-muted"
-						/>
-					) : (
-						<div className="w-12 h-12 rounded bg-muted shrink-0" />
+				{row.productThumbUrl ? (
+					<img
+						src={row.productThumbUrl}
+						alt=""
+						loading="lazy"
+						decoding="async"
+						className="w-12 h-12 rounded object-cover shrink-0 bg-muted"
+					/>
+				) : (
+					<div className="w-12 h-12 rounded bg-muted shrink-0" />
 					)}
 					<div className="min-w-0">
 						<Link
