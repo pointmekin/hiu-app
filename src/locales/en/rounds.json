@@ -80,7 +80,9 @@
 		"noCategory": "No category",
 		"empty": "No products in this round",
 		"allDone": "Nothing pending",
-		"noResults": "No items match your search"
+		"noResults": "No items match your search",
+		"viewImage": "View image",
+		"close": "Close"
 	},
 	"products": {
 		"title": "Products in round",
