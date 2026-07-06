@@ -166,6 +166,7 @@ function ProductImageLightbox({
 			<DialogPrimitive.Portal>
 				<DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0" />
 				<DialogPrimitive.Content
+					aria-label={alt}
 					onPointerDown={(e) => {
 						if (e.target === e.currentTarget) onOpenChange(false);
 					}}
@@ -434,7 +435,7 @@ function PurchaseRow({
 				</div>
 			</div>
 
-			{item.productImageUrl && (
+			{(item.productThumbUrl || item.productImageUrl) && (
 				<ProductImageLightbox
 					src={item.productImageUrl ?? item.productThumbUrl ?? ""}
 					alt={item.productName}
