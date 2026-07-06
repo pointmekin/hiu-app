@@ -122,13 +122,15 @@ export function CatalogPickerDialog({
 										className="flex items-center gap-3 px-4 py-3 cursor-pointer data-[selected=true]:bg-muted data-[selected=true]:text-foreground"
 									>
 										<div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center shrink-0 overflow-hidden">
-											{product.thumbUrl ? (
-												<img
-													src={product.thumbUrl}
-													alt=""
-													className="h-full w-full object-cover"
-												/>
-											) : (
+										{product.thumbUrl ? (
+											<img
+												src={product.thumbUrl}
+												alt=""
+												loading="lazy"
+												decoding="async"
+												className="h-full w-full object-cover"
+											/>
+										) : (
 												<Package size={18} className="text-muted-foreground" />
 											)}
 										</div>
