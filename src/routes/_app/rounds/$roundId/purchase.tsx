@@ -7,12 +7,14 @@ import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import {
 	ChevronDown,
 	ChevronRight,
+	Maximize2,
 	Minus,
 	Plus,
 	Search,
 	ShoppingCart,
 	X,
 } from "lucide-react";
+import { Dialog as DialogPrimitive } from "radix-ui";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PurchaseTrackerSkeleton } from "#/components/round-skeletons";
@@ -146,6 +148,46 @@ function StatusChip({
 
 // ── Product row ───────────────────────────────────────────────────────────────
 
+function ProductImageLightbox({
+	src,
+	alt,
+	closeLabel,
+	open,
+	onOpenChange,
+}: {
+	src: string;
+	alt: string;
+	closeLabel: string;
+	open: boolean;
+	onOpenChange: (v: boolean) => void;
+}) {
+	return (
+		<DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+			<DialogPrimitive.Portal>
+				<DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0" />
+				<DialogPrimitive.Content
+					onPointerDown={(e) => {
+						if (e.target === e.currentTarget) onOpenChange(false);
+					}}
+					className="fixed inset-0 z-50 flex items-center justify-center p-6 outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
+				>
+					<img
+						src={src}
+						alt={alt}
+						className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+					/>
+					<DialogPrimitive.Close
+						aria-label={closeLabel}
+						className="absolute top-4 right-4 grid place-items-center w-10 h-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+					>
+						<X size={20} />
+					</DialogPrimitive.Close>
+				</DialogPrimitive.Content>
+			</DialogPrimitive.Portal>
+		</DialogPrimitive.Root>
+	);
+}
+
 function PurchaseRow({
 	item,
 	roundId,
@@ -157,6 +199,7 @@ function PurchaseRow({
 }) {
 	const queryClient = useQueryClient();
 	const [popoverOpen, setPopoverOpen] = useState(false);
+	const [lightboxOpen, setLightboxOpen] = useState(false);
 	const [draft, setDraft] = useState(String(item.boughtQty));
 	const inputRef = useRef<HTMLInputElement>(null);
 
@@ -216,143 +259,190 @@ function PurchaseRow({
 					: "hover:bg-muted/10",
 			)}
 		>
-			{/* Top: product name + status chip */}
-			<div className="flex items-start justify-between gap-2 mb-2.5">
-				<div className="min-w-0 flex-1">
-					<Link
-						to="/products/$productId"
-						params={{ productId: item.productId }}
-						className="font-medium text-sm leading-snug hover:underline underline-offset-2 block truncate"
-					>
-						{item.productName}
-					</Link>
-					{item.productBrand && (
-						<div className="text-xs text-muted-foreground truncate">
-							{item.productBrand}
-						</div>
+			<div className="flex gap-3">
+				{/* Left: product thumbnail */}
+				<div className="shrink-0">
+					{item.productThumbUrl ? (
+						<button
+							type="button"
+							onClick={() => setLightboxOpen(true)}
+							aria-label={t("purchase.viewImage")}
+							className="group relative block rounded-md overflow-hidden bg-muted ring-1 ring-border hover:ring-2 hover:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition"
+						>
+						<img
+							src={item.productThumbUrl}
+							alt=""
+								loading="lazy"
+								decoding="async"
+								className="w-16 h-16 object-cover"
+							/>
+							<span className="absolute inset-0 grid place-items-center bg-black/0 group-hover:bg-black/40 transition-colors">
+								<Maximize2
+									size={16}
+									className="text-white opacity-0 group-hover:opacity-100 transition-opacity"
+								/>
+							</span>
+						</button>
+					) : (
+						<div className="w-16 h-16 rounded-md bg-muted ring-1 ring-border" />
 					)}
 				</div>
-				<StatusChip status={status} t={t} />
-			</div>
 
-			{/* Bottom: ordered / stepper / remaining */}
-			<div className="flex items-center gap-3">
-				{/* Ordered qty */}
-				<div className="flex flex-col items-center min-w-[2.5rem]">
-					<span className="text-[10px] text-muted-foreground leading-none mb-1">
-						{t("purchase.col.orderedQty")}
-					</span>
-					<span className="font-mono tabular-nums text-sm font-medium">
-						{item.orderedQty}
-					</span>
-				</div>
-
-				{/* Bought qty stepper */}
-				<div className="flex-1 flex flex-col items-center">
-					<span className="text-[10px] text-muted-foreground leading-none mb-1">
-						{t("purchase.col.boughtQty")}
-					</span>
-					<div className="flex items-center gap-1">
-						<Button
-							type="button"
-							variant="outline"
-							size="icon-xs"
-							disabled={item.boughtQty <= 0 || mutation.isPending}
-							onClick={() => adjust(-1)}
-							className="h-7 w-7"
+				{/* Right: name + stepper */}
+				<div className="flex-1 min-w-0">
+					{/* Product name + brand (full width, wraps) */}
+					<div className="mb-1.5">
+						<Link
+							to="/products/$productId"
+							params={{ productId: item.productId }}
+							className="font-medium text-sm leading-snug hover:underline underline-offset-2 break-words"
 						>
-							<Minus size={12} />
-						</Button>
+							{item.productName}
+						</Link>
+						{item.productBrand && (
+							<div className="text-xs text-muted-foreground break-words">
+								{item.productBrand}
+							</div>
+						)}
+					</div>
 
-						<Popover
-							open={popoverOpen}
-							onOpenChange={(v) => {
-								setPopoverOpen(v);
-								if (v) setDraft(String(item.boughtQty));
-							}}
-						>
-							<PopoverTrigger asChild>
-								<button
+					{/* Status chip (below name) */}
+					{status !== "empty" && (
+						<div className="mb-2.5">
+							<StatusChip status={status} t={t} />
+						</div>
+					)}
+
+					{/* Bottom: ordered / stepper / remaining */}
+					<div className="flex items-center gap-3">
+						{/* Ordered qty */}
+						<div className="flex flex-col items-center min-w-[2.5rem]">
+							<span className="text-[10px] text-muted-foreground leading-none mb-1">
+								{t("purchase.col.orderedQty")}
+							</span>
+							<span className="font-mono tabular-nums text-sm font-medium">
+								{item.orderedQty}
+							</span>
+						</div>
+
+						{/* Bought qty stepper */}
+						<div className="flex-1 flex flex-col items-center">
+							<span className="text-[10px] text-muted-foreground leading-none mb-1">
+								{t("purchase.col.boughtQty")}
+							</span>
+							<div className="flex items-center gap-1">
+								<Button
 									type="button"
-									className={cn(
-										"font-mono tabular-nums text-sm font-semibold",
-										"w-9 text-center rounded py-0.5",
-										"hover:bg-muted transition-colors cursor-pointer",
-										"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-									)}
+									variant="outline"
+									size="icon-xs"
+									disabled={item.boughtQty <= 0 || mutation.isPending}
+									onClick={() => adjust(-1)}
+									className="h-7 w-7"
 								>
-									{item.boughtQty}
-								</button>
-							</PopoverTrigger>
-							<PopoverContent className="w-40 p-3" align="center">
-								<div className="space-y-2">
-									<p className="text-xs font-medium text-muted-foreground">
-										{t("purchase.editBoughtQty.label")}
-									</p>
-									<Input
-										ref={inputRef}
-										type="number"
-										inputMode="numeric"
-										min={0}
-										value={draft}
-										autoFocus
-										onChange={(e) => setDraft(e.target.value)}
-										onKeyDown={(e) => {
-											if (e.key === "Enter") saveFromPopover();
-											if (e.key === "Escape") setPopoverOpen(false);
-										}}
-										className="h-8 text-center font-mono"
-									/>
-									<div className="flex gap-1.5">
-										<Button
-											size="sm"
-											className="flex-1 h-7 text-xs"
-											disabled={mutation.isPending}
-											onClick={saveFromPopover}
-										>
-											{t("purchase.editBoughtQty.save")}
-										</Button>
-										<Button
-											size="sm"
-											variant="ghost"
-											className="h-7 text-xs"
-											onClick={() => setPopoverOpen(false)}
-										>
-											{t("purchase.editBoughtQty.cancel")}
-										</Button>
-									</div>
-								</div>
-							</PopoverContent>
-						</Popover>
+									<Minus size={12} />
+								</Button>
 
-						<Button
-							type="button"
-							variant="outline"
-							size="icon-xs"
-							disabled={mutation.isPending}
-							onClick={() => adjust(1)}
-							className="h-7 w-7"
-						>
-							<Plus size={12} />
-						</Button>
+								<Popover
+									open={popoverOpen}
+									onOpenChange={(v) => {
+										setPopoverOpen(v);
+										if (v) setDraft(String(item.boughtQty));
+									}}
+								>
+									<PopoverTrigger asChild>
+										<button
+											type="button"
+											className={cn(
+												"font-mono tabular-nums text-sm font-semibold",
+												"w-9 text-center rounded py-0.5",
+												"hover:bg-muted transition-colors cursor-pointer",
+												"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+											)}
+										>
+											{item.boughtQty}
+										</button>
+									</PopoverTrigger>
+									<PopoverContent className="w-40 p-3" align="center">
+										<div className="space-y-2">
+											<p className="text-xs font-medium text-muted-foreground">
+												{t("purchase.editBoughtQty.label")}
+											</p>
+											<Input
+												ref={inputRef}
+												type="number"
+												inputMode="numeric"
+												min={0}
+												value={draft}
+												autoFocus
+												onChange={(e) => setDraft(e.target.value)}
+												onKeyDown={(e) => {
+													if (e.key === "Enter") saveFromPopover();
+													if (e.key === "Escape") setPopoverOpen(false);
+												}}
+												className="h-8 text-center font-mono"
+											/>
+											<div className="flex gap-1.5">
+												<Button
+													size="sm"
+													className="flex-1 h-7 text-xs"
+													disabled={mutation.isPending}
+													onClick={saveFromPopover}
+												>
+													{t("purchase.editBoughtQty.save")}
+												</Button>
+												<Button
+													size="sm"
+													variant="ghost"
+													className="h-7 text-xs"
+													onClick={() => setPopoverOpen(false)}
+												>
+													{t("purchase.editBoughtQty.cancel")}
+												</Button>
+											</div>
+										</div>
+									</PopoverContent>
+								</Popover>
+
+								<Button
+									type="button"
+									variant="outline"
+									size="icon-xs"
+									disabled={mutation.isPending}
+									onClick={() => adjust(1)}
+									className="h-7 w-7"
+								>
+									<Plus size={12} />
+								</Button>
+							</div>
+						</div>
+
+						{/* Remaining */}
+						<div className="flex flex-col items-center min-w-[2.5rem]">
+							<span className="text-[10px] text-muted-foreground leading-none mb-1">
+								{t("purchase.col.remaining")}
+							</span>
+							<span
+								className={cn(
+									"font-mono tabular-nums text-sm font-medium",
+									remaining > 0 ? "text-foreground" : "text-muted-foreground",
+								)}
+							>
+								{remaining}
+							</span>
+						</div>
 					</div>
 				</div>
-
-				{/* Remaining */}
-				<div className="flex flex-col items-center min-w-[2.5rem]">
-					<span className="text-[10px] text-muted-foreground leading-none mb-1">
-						{t("purchase.col.remaining")}
-					</span>
-					<span
-						className={cn(
-							"font-mono tabular-nums text-sm font-medium",
-							remaining > 0 ? "text-foreground" : "text-muted-foreground",
-						)}
-					>
-						{remaining}
-					</span>
-				</div>
 			</div>
+
+			{item.productImageUrl && (
+				<ProductImageLightbox
+					src={item.productImageUrl ?? item.productThumbUrl ?? ""}
+					alt={item.productName}
+					closeLabel={t("purchase.close")}
+					open={lightboxOpen}
+					onOpenChange={setLightboxOpen}
+				/>
+			)}
 		</div>
 	);
 }

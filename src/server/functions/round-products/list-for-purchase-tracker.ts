@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "#/db/index";
 import { orderItems, orders, products, roundProducts } from "#/db/schema";
 import { requireSession } from "#/server/middleware";
+import { s3PublicUrl } from "#/server/s3";
 
 export const listForPurchaseTracker = createServerFn({ method: "GET" })
 	.inputValidator(z.object({ roundId: z.string().uuid() }))
@@ -21,6 +22,8 @@ export const listForPurchaseTracker = createServerFn({ method: "GET" })
 				productName: products.name,
 				productBrand: products.brand,
 				productCategory: products.category,
+				productThumbKey: products.thumbKey,
+				productImageKey: products.imageKey,
 				orderedQty: sql<number>`COALESCE(SUM(${orderItems.quantity}) FILTER (WHERE ${orders.status} != 'cancelled'), 0)::int`,
 			})
 			.from(roundProducts)
@@ -38,13 +41,19 @@ export const listForPurchaseTracker = createServerFn({ method: "GET" })
 				products.name,
 				products.brand,
 				products.category,
+				products.thumbKey,
+				products.imageKey,
 			)
 			.orderBy(
 				sql`COALESCE(${roundProducts.storeLocation}, 'zzz')`,
 				asc(products.name),
 			);
 
-		return rows;
+		return rows.map(({ productThumbKey, productImageKey, ...r }) => ({
+			...r,
+			productThumbUrl: s3PublicUrl(productThumbKey),
+			productImageUrl: s3PublicUrl(productImageKey),
+		}));
 	});
 
 export type PurchaseTrackerItem = Awaited<
