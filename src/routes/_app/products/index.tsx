@@ -3,7 +3,7 @@ import {
 	useInfiniteQuery,
 	useQuery,
 } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useLocation } from "@tanstack/react-router";
 import { Package, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -36,6 +36,7 @@ export const Route = createFileRoute("/_app/products/")({
 
 function ProductsPage() {
 	const { t, i18n } = useTranslation("products");
+	const location = useLocation();
 	const [q, setQ] = useState("");
 	const debouncedQ = useDebounce(q, 250);
 	const [brandFilter, setBrandFilter] = useState("");
@@ -98,7 +99,11 @@ function ProductsPage() {
 					{t("list.title")}
 				</h1>
 				<Button asChild variant="default">
-					<Link to="/products/$productId" params={{ productId: "new" }}>
+					<Link
+						to="/products/$productId"
+						params={{ productId: "new" }}
+						search={{ from: location.pathname }}
+					>
 						<Plus size={16} />
 						{t("list.addFirst")}
 					</Link>
@@ -207,6 +212,7 @@ function ProductsPage() {
 								<Link
 									to="/products/$productId"
 									params={{ productId: product.id }}
+									search={{ from: location.pathname }}
 									className="block h-full"
 								>
 									<ProductCard product={product} locale={i18n.language} />
@@ -250,15 +256,15 @@ function ProductCard({ product, locale }: ProductCardProps) {
 	return (
 		<Card className="flex flex-row items-center gap-3 px-3 py-3 hover:bg-accent/50 transition-colors min-h-[56px]">
 			<div className="size-12 rounded-lg bg-muted flex items-center justify-center shrink-0 overflow-hidden">
-			{product.thumbUrl ? (
-				<img
-					src={product.thumbUrl}
-					alt=""
-					loading="lazy"
-					decoding="async"
-					className="h-full w-full object-cover"
-				/>
-			) : (
+				{product.thumbUrl ? (
+					<img
+						src={product.thumbUrl}
+						alt=""
+						loading="lazy"
+						decoding="async"
+						className="h-full w-full object-cover"
+					/>
+				) : (
 					<Package size={20} className="text-muted-foreground" />
 				)}
 			</div>

@@ -4,8 +4,23 @@ import {
 	useQueryClient,
 	useSuspenseQuery,
 } from "@tanstack/react-query";
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { AlertCircle, Check, Loader2, Package, Plus, RefreshCw, Save, Search, X } from "lucide-react";
+import {
+	createFileRoute,
+	Link,
+	useLocation,
+	useParams,
+} from "@tanstack/react-router";
+import {
+	AlertCircle,
+	Check,
+	Loader2,
+	Package,
+	Plus,
+	RefreshCw,
+	Save,
+	Search,
+	X,
+} from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CatalogPickerDialog } from "#/components/catalog-picker-dialog";
@@ -73,6 +88,8 @@ function RoundProductsPage() {
 	const { t } = useTranslation(["rounds", "common"]);
 	const { roundId } = useParams({ from: "/_app/rounds/$roundId/products" });
 	const queryClient = useQueryClient();
+	const location = useLocation();
+	const fromPath = location.pathname;
 
 	const { data: round } = useSuspenseQuery({
 		queryKey: ["rounds", roundId],
@@ -415,6 +432,7 @@ function RoundProductsPage() {
 							computed={computed}
 							currency={round.sourceCurrency}
 							listId={storeListId}
+							fromPath={fromPath}
 							onUpdate={updateRow}
 							onRemove={removeRow}
 						/>
@@ -461,6 +479,7 @@ function RoundProductsPage() {
 									computed={computed}
 									currency={round.sourceCurrency}
 									listId={storeListId}
+									fromPath={fromPath}
 									onUpdate={updateRow}
 									onRemove={removeRow}
 								/>
@@ -503,6 +522,7 @@ const MobileProductCard = memo(function MobileProductCard({
 	computed,
 	currency,
 	listId,
+	fromPath,
 	onUpdate,
 	onRemove,
 }: {
@@ -510,6 +530,7 @@ const MobileProductCard = memo(function MobileProductCard({
 	computed: string;
 	currency: string;
 	listId: string;
+	fromPath: string;
 	onUpdate: (productId: string, patch: Partial<DraftRow>) => void;
 	onRemove: (productId: string) => void;
 }) {
@@ -526,21 +547,22 @@ const MobileProductCard = memo(function MobileProductCard({
 		<div className="border border-border rounded-lg p-3 space-y-3 bg-card">
 			<div className="flex items-start justify-between gap-2">
 				<div className="flex items-center gap-2 min-w-0">
-				{row.productThumbUrl ? (
-					<img
-						src={row.productThumbUrl}
-						alt=""
-						loading="lazy"
-						decoding="async"
-						className="w-16 h-16 rounded object-cover shrink-0 bg-muted"
-					/>
-				) : (
-					<div className="w-16 h-16 rounded bg-muted shrink-0" />
+					{row.productThumbUrl ? (
+						<img
+							src={row.productThumbUrl}
+							alt=""
+							loading="lazy"
+							decoding="async"
+							className="w-16 h-16 rounded object-cover shrink-0 bg-muted"
+						/>
+					) : (
+						<div className="w-16 h-16 rounded bg-muted shrink-0" />
 					)}
 					<div className="min-w-0">
 						<Link
 							to="/products/$productId"
 							params={{ productId: row.productId }}
+							search={{ from: fromPath }}
 							className="font-medium text-foreground leading-tight underline-offset-2 hover:underline"
 						>
 							{row.productName}
@@ -706,6 +728,7 @@ const ProductRow = memo(function ProductRow({
 	computed,
 	currency,
 	listId,
+	fromPath,
 	onUpdate,
 	onRemove,
 }: {
@@ -713,6 +736,7 @@ const ProductRow = memo(function ProductRow({
 	computed: string;
 	currency: string;
 	listId: string;
+	fromPath: string;
 	onUpdate: (productId: string, patch: Partial<DraftRow>) => void;
 	onRemove: (productId: string) => void;
 }) {
@@ -728,21 +752,22 @@ const ProductRow = memo(function ProductRow({
 		<TableRow>
 			<TableCell>
 				<div className="flex items-center gap-2">
-				{row.productThumbUrl ? (
-					<img
-						src={row.productThumbUrl}
-						alt=""
-						loading="lazy"
-						decoding="async"
-						className="w-12 h-12 rounded object-cover shrink-0 bg-muted"
-					/>
-				) : (
-					<div className="w-12 h-12 rounded bg-muted shrink-0" />
+					{row.productThumbUrl ? (
+						<img
+							src={row.productThumbUrl}
+							alt=""
+							loading="lazy"
+							decoding="async"
+							className="w-12 h-12 rounded object-cover shrink-0 bg-muted"
+						/>
+					) : (
+						<div className="w-12 h-12 rounded bg-muted shrink-0" />
 					)}
 					<div className="min-w-0">
 						<Link
 							to="/products/$productId"
 							params={{ productId: row.productId }}
+							search={{ from: fromPath }}
 							className="font-medium text-foreground leading-tight underline-offset-2 hover:underline"
 						>
 							{row.productName}

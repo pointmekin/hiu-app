@@ -66,7 +66,9 @@
 		"discardEditConfirm": "ยกเลิกการแก้ไขทั้งหมด?",
 		"copySummary": "คัดลอกสรุปยอด",
 		"createProduct": "สร้างสินค้าใหม่",
-		"createProductQuery": "สร้าง \"{{name}}\""
+		"createProductQuery": "สร้าง \"{{name}}\"",
+		"delete": "ลบออเดอร์",
+		"deleteConfirm": "ลบออเดอร์นี้ถาวร? ไม่สามารถยกเลิกได้"
 	},
 	"item": {
 		"qty": "จำนวน",

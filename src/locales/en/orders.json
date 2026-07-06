@@ -66,7 +66,9 @@
 		"discardEditConfirm": "Discard all edits?",
 		"copySummary": "Copy order summary",
 		"createProduct": "Create new product",
-		"createProductQuery": "Create \"{{name}}\""
+		"createProductQuery": "Create \"{{name}}\"",
+		"delete": "Delete order",
+		"deleteConfirm": "Delete this order permanently? This cannot be undone."
 	},
 	"item": {
 		"qty": "Qty",

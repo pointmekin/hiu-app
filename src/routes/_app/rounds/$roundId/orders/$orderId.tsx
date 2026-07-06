@@ -7,6 +7,7 @@ import {
 import {
 	createFileRoute,
 	Link,
+	useLocation,
 	useNavigate,
 	useParams,
 } from "@tanstack/react-router";
@@ -58,6 +59,7 @@ import {
 import { Separator } from "#/components/ui/separator";
 import { getCustomer } from "#/server/functions/customers/get";
 import { cancelOrder } from "#/server/functions/orders/cancel";
+import { deleteOrder } from "#/server/functions/orders/delete";
 import { getOrder } from "#/server/functions/orders/get";
 import { updateOrder } from "#/server/functions/orders/update";
 import { listRoundProducts } from "#/server/functions/round-products/list";
@@ -97,6 +99,7 @@ function OrderDetailPage() {
 	});
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
+	const location = useLocation();
 
 	// ── Server data ───────────────────────────────────────────────────────────────
 	const { data: order } = useSuspenseQuery({
@@ -285,6 +288,15 @@ function OrderDetailPage() {
 		},
 	});
 
+	const deleteMutation = useMutation({
+		mutationFn: () => deleteOrder({ data: { id: orderId } }),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["orders", roundId] });
+			queryClient.removeQueries({ queryKey: ["orders", orderId] });
+			navigate({ to: "/rounds/$roundId/orders", params: { roundId } });
+		},
+	});
+
 	const saveMutation = useMutation({
 		mutationFn: () =>
 			updateOrder({
@@ -392,15 +404,15 @@ function OrderDetailPage() {
 									<Card key={item.roundProductId} className="px-4 py-3">
 										<div className="flex items-center gap-3">
 											<div className="size-10 rounded-lg bg-muted flex items-center justify-center shrink-0 overflow-hidden">
-											{item.productThumbUrl ? (
-												<img
-													src={item.productThumbUrl}
-													alt=""
-													loading="lazy"
-													decoding="async"
-													className="h-full w-full object-cover"
-												/>
-											) : (
+												{item.productThumbUrl ? (
+													<img
+														src={item.productThumbUrl}
+														alt=""
+														loading="lazy"
+														decoding="async"
+														className="h-full w-full object-cover"
+													/>
+												) : (
 													<Package
 														size={18}
 														className="text-muted-foreground"
@@ -411,6 +423,7 @@ function OrderDetailPage() {
 												<Link
 													to="/products/$productId"
 													params={{ productId: item.productId }}
+													search={{ from: location.pathname }}
 													className="font-medium text-sm truncate hover:underline underline-offset-2 block"
 													onClick={(e) => e.stopPropagation()}
 												>
@@ -728,6 +741,13 @@ function OrderDetailPage() {
 							</AlertDescription>
 						</Alert>
 					)}
+					{deleteMutation.error && (
+						<Alert variant="destructive">
+							<AlertDescription>
+								{(deleteMutation.error as Error).message}
+							</AlertDescription>
+						</Alert>
+					)}
 				</div>
 
 				{/* Right column: sticky sidebar — desktop only */}
@@ -874,6 +894,37 @@ function OrderDetailPage() {
 								<Ban size={16} />
 								{t("orders:action.cancel")}
 							</Button>
+							<Button
+								variant="outline"
+								className="w-full gap-2 text-destructive hover:text-destructive"
+								onClick={() => {
+									if (confirm(t("orders:action.deleteConfirm"))) {
+										deleteMutation.mutate();
+									}
+								}}
+								disabled={deleteMutation.isPending}
+							>
+								<Trash2 size={16} />
+								{t("orders:action.delete")}
+							</Button>
+						</div>
+					)}
+
+					{isCancelled && (
+						<div className="flex flex-col gap-2">
+							<Button
+								variant="outline"
+								className="w-full gap-2 text-destructive hover:text-destructive"
+								onClick={() => {
+									if (confirm(t("orders:action.deleteConfirm"))) {
+										deleteMutation.mutate();
+									}
+								}}
+								disabled={deleteMutation.isPending}
+							>
+								<Trash2 size={16} />
+								{t("orders:action.delete")}
+							</Button>
 						</div>
 					)}
 
@@ -888,6 +939,13 @@ function OrderDetailPage() {
 						<Alert variant="destructive">
 							<AlertDescription>
 								{(cancelMutation.error as Error).message}
+							</AlertDescription>
+						</Alert>
+					)}
+					{deleteMutation.error && (
+						<Alert variant="destructive">
+							<AlertDescription>
+								{(deleteMutation.error as Error).message}
 							</AlertDescription>
 						</Alert>
 					)}
@@ -930,6 +988,25 @@ function OrderDetailPage() {
 						title={t("orders:action.cancel")}
 					>
 						<Ban size={18} />
+					</Button>
+				</div>
+			)}
+
+			{isCancelled && (
+				<div className="md:hidden fixed bottom-16 left-0 right-0 bg-background/95 backdrop-blur-sm border-t px-4 py-3 flex gap-3 z-20">
+					<Button
+						variant="outline"
+						size="lg"
+						className="flex-1 gap-2 text-destructive hover:text-destructive"
+						onClick={() => {
+							if (confirm(t("orders:action.deleteConfirm"))) {
+								deleteMutation.mutate();
+							}
+						}}
+						disabled={deleteMutation.isPending}
+					>
+						<Trash2 size={18} />
+						{t("orders:action.delete")}
 					</Button>
 				</div>
 			)}

@@ -3,7 +3,12 @@ import {
 	useQueryClient,
 	useSuspenseQuery,
 } from "@tanstack/react-query";
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	Link,
+	useLocation,
+	useParams,
+} from "@tanstack/react-router";
 import {
 	ChevronDown,
 	ChevronRight,
@@ -199,6 +204,7 @@ function PurchaseRow({
 	t: ReturnType<typeof useTranslation>["t"];
 }) {
 	const queryClient = useQueryClient();
+	const location = useLocation();
 	const [popoverOpen, setPopoverOpen] = useState(false);
 	const [lightboxOpen, setLightboxOpen] = useState(false);
 	const [draft, setDraft] = useState(String(item.boughtQty));
@@ -270,9 +276,9 @@ function PurchaseRow({
 							aria-label={t("purchase.viewImage")}
 							className="group relative block rounded-md overflow-hidden bg-muted ring-1 ring-border hover:ring-2 hover:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition"
 						>
-						<img
-							src={item.productThumbUrl}
-							alt=""
+							<img
+								src={item.productThumbUrl}
+								alt=""
 								loading="lazy"
 								decoding="async"
 								className="w-16 h-16 object-cover"
@@ -296,6 +302,7 @@ function PurchaseRow({
 						<Link
 							to="/products/$productId"
 							params={{ productId: item.productId }}
+							search={{ from: location.pathname }}
 							className="font-medium text-sm leading-snug hover:underline underline-offset-2 break-words"
 						>
 							{item.productName}

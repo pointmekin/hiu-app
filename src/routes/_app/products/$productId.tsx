@@ -8,12 +8,15 @@ import {
 	createFileRoute,
 	useNavigate,
 	useParams,
+	useRouter,
+	useSearch,
 } from "@tanstack/react-router";
 import imageCompression from "browser-image-compression";
 import { Download, ImagePlus } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 import { Alert, AlertDescription } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
 import {
@@ -39,6 +42,7 @@ type ProductWithUrls = Awaited<ReturnType<typeof getProduct>>;
 import { ProductDetailSkeleton } from "#/components/round-skeletons";
 
 export const Route = createFileRoute("/_app/products/$productId")({
+	validateSearch: z.object({ from: z.string().optional() }),
 	loader: async ({ context: { queryClient }, params }) => {
 		if (params.productId === "new") return;
 		const promise = queryClient.ensureQueryData({
@@ -73,9 +77,16 @@ function ProductFormLoader({ productId }: { productId: string }) {
 function ProductForm({ product }: { product: ProductWithUrls | null }) {
 	const { t } = useTranslation(["products", "common"]);
 	const navigate = useNavigate();
+	const router = useRouter();
+	const { from } = useSearch({ from: "/_app/products/$productId" });
 	const queryClient = useQueryClient();
 	const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 	const [uploadFile, setUploadFile] = useState<File | null>(null);
+
+	function goBack() {
+		if (from) router.history.push(from);
+		else navigate({ to: "/products" });
+	}
 
 	const form = useForm<UpsertProductInput>({
 		resolver: zodResolver(upsertProductSchema),
@@ -116,11 +127,23 @@ function ProductForm({ product }: { product: ProductWithUrls | null }) {
 					// Photo upload failure is non-fatal
 				}
 			}
+			// Refetch queries that display product thumbnails. Both the global
+			// products list and round-products pages show thumbnails — and both
+			// are inactive (unmounted) while on the edit page, so type:"all" is
+			// required (default type:"active" only refetches mounted queries).
+			await Promise.all([
+				queryClient.refetchQueries({
+					queryKey: ["products", "list"],
+					type: "all",
+				}),
+				queryClient.refetchQueries({
+					queryKey: ["round-products"],
+					type: "all",
+				}),
+			]);
+			// Mark detail + filter-options stale for next visit
 			queryClient.invalidateQueries({ queryKey: ["products"] });
-			if (saved.id) {
-				queryClient.invalidateQueries({ queryKey: ["products", saved.id] });
-			}
-			navigate({ to: "/products" });
+			goBack();
 		},
 	});
 
@@ -266,11 +289,7 @@ function ProductForm({ product }: { product: ProductWithUrls | null }) {
 					)}
 
 					<div className="flex gap-3 pt-2">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => navigate({ to: "/products" })}
-						>
+						<Button type="button" variant="outline" onClick={goBack}>
 							{t("common:action.cancel")}
 						</Button>
 						<Button
@@ -313,7 +332,6 @@ function PhotoDropZone({
 		if (!file.type.startsWith("image/")) return;
 		onFile(file);
 	}
-
 
 	function handleDragOver(e: React.DragEvent) {
 		e.preventDefault();

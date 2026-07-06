@@ -7,6 +7,7 @@ import {
 import {
 	createFileRoute,
 	Link,
+	useLocation,
 	useNavigate,
 	useParams,
 } from "@tanstack/react-router";
@@ -82,6 +83,7 @@ function NewOrderPage() {
 	const { roundId } = useParams({ from: "/_app/rounds/$roundId/orders/new" });
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
+	const location = useLocation();
 
 	const { data: round } = useSuspenseQuery({
 		queryKey: ["rounds", roundId],
@@ -298,6 +300,7 @@ function NewOrderPage() {
 											<Link
 												to="/products/$productId"
 												params={{ productId }}
+												search={{ from: location.pathname }}
 												className="font-medium text-sm truncate hover:underline underline-offset-2 block"
 											>
 												{item.productName}
