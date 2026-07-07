@@ -33,6 +33,10 @@
 		"fxRateHint": "The rate applied to calculate sell prices (already includes markup)",
 		"fxPreview": "Example: {{foreign}} {{currency}} = ฿{{thb}}"
 	},
+	"action": {
+		"delete": "Delete round",
+		"deleteConfirm": "Delete this round permanently? Orders and line items in this round will also be deleted. Products in the catalog are kept. This cannot be undone."
+	},
 	"tab": {
 		"overview": "Overview",
 		"products": "Products",

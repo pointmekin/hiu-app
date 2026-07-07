@@ -1,16 +1,25 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
+import {
+	useMutation,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
 import {
 	createFileRoute,
 	Link,
 	Outlet,
 	useLocation,
+	useNavigate,
 	useParams,
 } from "@tanstack/react-router";
+import { Trash2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { RoundLayoutSkeleton } from "#/components/round-skeletons";
 import { RoundStatusBadge } from "#/components/round-status-badge";
+import { Alert, AlertDescription } from "#/components/ui/alert";
+import { Button } from "#/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "#/components/ui/tabs";
+import { deleteRound } from "#/server/functions/rounds/delete";
 import { getRound } from "#/server/functions/rounds/get";
 import type { RoundStatus } from "#/shared/schemas/round";
 
@@ -52,6 +61,8 @@ function RoundLayout() {
 	const { t } = useTranslation("rounds");
 	const { roundId } = useParams({ from: "/_app/rounds/$roundId" });
 	const { pathname } = useLocation();
+	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 
 	const { data: round } = useSuspenseQuery({
 		queryKey: ["rounds", roundId],
@@ -60,6 +71,15 @@ function RoundLayout() {
 
 	const activeTab = getActiveTab(roundId, pathname);
 	const tabsListRef = useRef<HTMLDivElement>(null);
+
+	const deleteMutation = useMutation({
+		mutationFn: () => deleteRound({ data: { id: roundId } }),
+		onSuccess: () => {
+			queryClient.removeQueries({ queryKey: ["rounds", roundId] });
+			queryClient.invalidateQueries({ queryKey: ["rounds"] });
+			navigate({ to: "/rounds" });
+		},
+	});
 
 	useEffect(() => {
 		const activeEl = tabsListRef.current?.querySelector<HTMLElement>(
@@ -90,8 +110,25 @@ function RoundLayout() {
 								{Number(round.fxRate).toFixed(4)}
 							</p>
 						</div>
+					<div className="flex items-center gap-2 shrink-0">
 						<RoundStatusBadge status={round.status as RoundStatus} />
+						<Button
+							variant="ghost"
+							size="icon"
+							className="text-destructive hover:text-destructive"
+							title={t("action.delete")}
+							aria-label={t("action.delete")}
+							disabled={deleteMutation.isPending}
+							onClick={() => {
+								if (confirm(t("action.deleteConfirm"))) {
+									deleteMutation.mutate();
+								}
+							}}
+						>
+							<Trash2 size={16} />
+						</Button>
 					</div>
+				</div>
 
 					<Tabs value={activeTab}>
 						<TabsList
@@ -153,8 +190,15 @@ function RoundLayout() {
 				</div>
 			</div>
 
-			<div className="flex-1 max-w-screen-xl w-full mx-auto px-4 py-6">
-				<Outlet />
+		<div className="flex-1 max-w-screen-xl w-full mx-auto px-4 py-6">
+			{deleteMutation.error && (
+				<Alert variant="destructive" className="mb-4">
+					<AlertDescription>
+						{(deleteMutation.error as Error).message}
+					</AlertDescription>
+				</Alert>
+			)}
+			<Outlet />
 			</div>
 		</div>
 	);
