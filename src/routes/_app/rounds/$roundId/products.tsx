@@ -34,6 +34,7 @@ import { Alert, AlertDescription } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
 import { Checkbox } from "#/components/ui/checkbox";
 import { Input } from "#/components/ui/input";
+import { Switch } from "#/components/ui/switch";
 import {
 	Table,
 	TableBody,
@@ -76,6 +77,9 @@ interface DraftRow {
 
 type SaveStatus = "idle" | "pending" | "saving" | "saved" | "error";
 
+const AUTOSAVE_DELAY_MS = 2000;
+const AUTOSAVE_PREF_KEY = "round-products-autosave";
+
 function computeSellPrice(
 	foreignPrice: number,
 	fxRate: number,
@@ -110,6 +114,9 @@ function RoundProductsPage() {
 
 	useEffect(() => {
 		if (!roundProductRows) return;
+		// Don't clobber in-flight edits when a refetch (e.g. after a save)
+		// returns while the user is still typing.
+		if (isDirtyRef.current) return;
 		setRows(
 			roundProductRows.map((rp) => ({
 				productId: rp.productId,
@@ -130,14 +137,35 @@ function RoundProductsPage() {
 	const [isDirty, setIsDirty] = useState(false);
 	const [textFilter, setTextFilter] = useState("");
 	const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+	const [dirtyTick, setDirtyTick] = useState(0);
+	const [autosaveEnabled, setAutosaveEnabled] = useState<boolean>(() => {
+		if (typeof window === "undefined") return true;
+		return localStorage.getItem(AUTOSAVE_PREF_KEY) !== "off";
+	});
 
 	const savedSnapshotRef = useRef<DraftRow[] | null>(null);
 	const savedStatusTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 	const autosaveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+	const isDirtyRef = useRef(isDirty);
+	isDirtyRef.current = isDirty;
+	const autosaveEnabledRef = useRef(autosaveEnabled);
+	autosaveEnabledRef.current = autosaveEnabled;
 
 	const markDirty = useCallback(() => {
 		setIsDirty(true);
-		setSaveStatus("pending");
+		// Bump on every edit so the autosave timer resets per keystroke.
+		setDirtyTick((n) => n + 1);
+		if (autosaveEnabledRef.current) setSaveStatus("pending");
+	}, []);
+
+	const toggleAutosave = useCallback((next: boolean) => {
+		setAutosaveEnabled(next);
+		try {
+			localStorage.setItem(AUTOSAVE_PREF_KEY, next ? "on" : "off");
+		} catch {
+			// ignore storage failures (private mode, etc.)
+		}
+		if (next && isDirtyRef.current) setSaveStatus("pending");
 	}, []);
 
 	const storeListId = `store-locs-${roundId}`;
@@ -277,14 +305,17 @@ function RoundProductsPage() {
 	const mutateSaveRef = useRef(saveMutation.mutate);
 	mutateSaveRef.current = saveMutation.mutate;
 
-	// Auto-save 2s after the last edit, but never while a save is in flight.
+	// Auto-save AUTOSAVE_DELAY_MS after the last edit, but never while a save
+	// is in flight. dirtyTick changes on every keystroke so the timer resets
+	// each time the user keeps typing.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: dirtyTick is an intentional re-trigger so the timer resets on every keystroke
 	useEffect(() => {
-		if (!isDirty || saveMutation.isPending) return;
+		if (!autosaveEnabled || !isDirty || saveMutation.isPending) return;
 		autosaveTimerRef.current = setTimeout(() => {
 			mutateSaveRef.current();
-		}, 2000);
+		}, AUTOSAVE_DELAY_MS);
 		return () => clearTimeout(autosaveTimerRef.current);
-	}, [isDirty, saveMutation.isPending]);
+	}, [autosaveEnabled, isDirty, saveMutation.isPending, dirtyTick]);
 
 	useEffect(
 		() => () => {
@@ -382,6 +413,20 @@ function RoundProductsPage() {
 								<Save size={14} />
 								{t("rounds:products.saveAll")}
 							</Button>
+							<label
+								htmlFor="products-autosave-toggle"
+								className="flex items-center gap-1.5 ml-1 cursor-pointer select-none"
+							>
+								<Switch
+									id="products-autosave-toggle"
+									checked={autosaveEnabled}
+									onCheckedChange={toggleAutosave}
+									aria-label={t("rounds:products.autosave.toggle")}
+								/>
+								<span className="text-xs text-muted-foreground">
+									{t("rounds:products.autosave.toggle")}
+								</span>
+							</label>
 							<AutoSaveStatus
 								status={saveStatus}
 								onRetry={() => saveMutation.mutate()}

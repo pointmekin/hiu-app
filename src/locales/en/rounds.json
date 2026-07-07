@@ -106,6 +106,7 @@
 		"createProductQuery": "Create \"{{name}}\"",
 		"searching": "Searching...",
 		"autosave": {
+			"toggle": "Auto-save",
 			"saving": "Saving…",
 			"saved": "Saved",
 			"error": "Save failed — retry"
