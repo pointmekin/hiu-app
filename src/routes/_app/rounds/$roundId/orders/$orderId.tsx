@@ -175,14 +175,21 @@ function OrderDetailPage() {
 	const summaryText = (() => {
 		const fmt = (n: number) =>
 			n.toLocaleString("th-TH", { minimumFractionDigits: 0 });
-		const lines: string[] = ["ขออนุญาติรวมยอดค่ะ 🙏", "รายการ:"];
+		const lines: string[] = ["ขออนุญาตสรุปยอดนะคะ 🙏", "รายการ:"];
 		editItems.forEach((item, i) => {
 			lines.push(
 				`${i + 1}. ${item.productName} ×${item.quantity}: ${fmt(item.unitPriceThb * item.quantity)}`,
 			);
 		});
 		lines.push(`ค่าส่ง: ${fmt(editShippingFee)}`);
-		lines.push(`รวมทั้งหมด: ${fmt(editTotal)}`);
+		lines.push(`รวมทั้งหมด: ${fmt(editTotal)} บาทค่ะ`);
+		if (round?.deliveryEta) {
+			const dateStr = new Intl.DateTimeFormat("en-GB", {
+				dateStyle: "short",
+				timeZone: "Asia/Bangkok",
+			}).format(new Date(round.deliveryEta));
+			lines.push(`📦 จัดส่งวันที่ : ${dateStr}`);
+		}
 		if (paidAmountThb > 0) lines.push(`ชำระแล้ว: ${fmt(paidAmountThb)}`);
 		// if (editBalance > 0) lines.push(`คงเหลือ: ${fmt(editBalance)}`)
 		return lines.join("\n");
