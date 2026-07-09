@@ -185,7 +185,8 @@ function OrderDetailPage() {
 		lines.push(`รวมทั้งหมด: ${fmt(editTotal)} บาทค่ะ`);
 		if (round?.deliveryEta) {
 			const dateStr = new Intl.DateTimeFormat("en-GB", {
-				dateStyle: "short",
+				day: "numeric",
+				month: "numeric",
 				timeZone: "Asia/Bangkok",
 			}).format(new Date(round.deliveryEta));
 			lines.push(`📦 จัดส่งวันที่ : ${dateStr}`);
