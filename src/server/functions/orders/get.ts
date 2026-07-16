@@ -31,6 +31,7 @@ export const getOrder = createServerFn({ method: "GET" })
 				paidAmountThb: orders.paidAmountThb,
 				paymentStatus: orders.paymentStatus,
 				kerryTracking: orders.kerryTracking,
+				isPacked: orders.isPacked,
 				status: orders.status,
 				notes: orders.notes,
 				createdAt: orders.createdAt,

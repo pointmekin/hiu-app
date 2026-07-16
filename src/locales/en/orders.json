@@ -53,6 +53,12 @@
 		"paid": "Paid",
 		"refunded": "Refunded"
 	},
+	"packed": {
+		"packed": "Packed",
+		"notPacked": "Not packed",
+		"markPacked": "Tap to mark as packed",
+		"markUnpacked": "Tap to mark as not packed"
+	},
 	"action": {
 		"cancel": "Cancel order",
 		"cancelConfirm": "Confirm cancel this order?",

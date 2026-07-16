@@ -194,6 +194,7 @@ export const orders = pgTable("orders", {
 		.default("0"),
 	paymentStatus: text("payment_status").notNull().default("pending"),
 	kerryTracking: text("kerry_tracking"),
+	isPacked: boolean("is_packed").notNull().default(false),
 	status: text("status").notNull().default("active"),
 	notes: text("notes"),
 	createdAt: timestamp("created_at", { withTimezone: true })

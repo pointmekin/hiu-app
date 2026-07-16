@@ -19,6 +19,7 @@ import {
 	Copy,
 	Minus,
 	Package,
+	PackageCheck,
 	Plus,
 	PlusCircle,
 	Trash2,
@@ -57,6 +58,7 @@ import {
 	SelectValue,
 } from "#/components/ui/select";
 import { Separator } from "#/components/ui/separator";
+import { Toggle } from "#/components/ui/toggle";
 import { getCustomer } from "#/server/functions/customers/get";
 import { cancelOrder } from "#/server/functions/orders/cancel";
 import { deleteOrder } from "#/server/functions/orders/delete";
@@ -329,12 +331,88 @@ function OrderDetailPage() {
 		},
 	});
 
+	const packedMutation = useMutation({
+		mutationFn: (isPacked: boolean) =>
+			updateOrder({ data: { id: orderId, isPacked } }),
+		onMutate: async (isPacked) => {
+			await queryClient.cancelQueries({ queryKey: ["orders", orderId] });
+			const previousOrder = queryClient.getQueryData<typeof order>([
+				"orders",
+				orderId,
+			]);
+
+			queryClient.setQueryData<typeof order>(
+				["orders", orderId],
+				(currentOrder) =>
+					currentOrder ? { ...currentOrder, isPacked } : currentOrder,
+			);
+
+			return { previousOrder };
+		},
+		onError: (_error, _isPacked, context) => {
+			if (context?.previousOrder) {
+				queryClient.setQueryData(["orders", orderId], context.previousOrder);
+			}
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries({ queryKey: ["orders", orderId] });
+			queryClient.invalidateQueries({ queryKey: ["orders", roundId] });
+		},
+	});
+
+	const packedToggle = (
+		<Toggle
+			variant="outline"
+			size="lg"
+			pressed={order.isPacked}
+			onPressedChange={(pressed) => packedMutation.mutate(pressed)}
+			disabled={packedMutation.isPending}
+			aria-label={
+				order.isPacked
+					? t("orders:packed.markUnpacked")
+					: t("orders:packed.markPacked")
+			}
+			className="h-auto min-h-11 w-full justify-between whitespace-normal px-3 py-2 text-left data-[state=on]:border-emerald-600/40 data-[state=on]:bg-emerald-50 data-[state=on]:text-emerald-800 dark:data-[state=on]:border-emerald-400/40 dark:data-[state=on]:bg-emerald-950/50 dark:data-[state=on]:text-emerald-200"
+		>
+			<span className="flex min-w-0 items-center gap-2.5">
+				{order.isPacked ? (
+					<PackageCheck className="size-5 text-emerald-600 dark:text-emerald-400" />
+				) : (
+					<Package className="size-5 text-muted-foreground" />
+				)}
+				<span className="min-w-0">
+					<span className="block font-semibold leading-tight">
+						{order.isPacked
+							? t("orders:packed.packed")
+							: t("orders:packed.notPacked")}
+					</span>
+					<span className="block text-xs font-normal leading-tight opacity-70">
+						{order.isPacked
+							? t("orders:packed.markUnpacked")
+							: t("orders:packed.markPacked")}
+					</span>
+				</span>
+			</span>
+			<span
+				aria-hidden="true"
+				className="relative h-5 w-9 shrink-0 rounded-full bg-input transition-colors data-[state=on]:bg-emerald-600"
+				data-state={order.isPacked ? "on" : "off"}
+			>
+				<span
+					className={`absolute top-0.5 size-4 rounded-full bg-background shadow-sm transition-transform ${
+						order.isPacked ? "translate-x-[18px]" : "translate-x-0.5"
+					}`}
+				/>
+			</span>
+		</Toggle>
+	);
+
 	// ── Render ────────────────────────────────────────────────────────────────────
 	return (
 		<>
 			<div className="md:flex md:gap-8 md:items-start">
 				{/* Left column: form content */}
-				<div className="space-y-5 pb-32 md:pb-8 md:flex-1 md:min-w-0">
+				<div className="space-y-5 pb-48 md:pb-8 md:flex-1 md:min-w-0">
 					{/* Header */}
 					<div className="flex items-center gap-3">
 						<Button
@@ -756,6 +834,13 @@ function OrderDetailPage() {
 							</AlertDescription>
 						</Alert>
 					)}
+					{packedMutation.error && (
+						<Alert variant="destructive">
+							<AlertDescription>
+								{(packedMutation.error as Error).message}
+							</AlertDescription>
+						</Alert>
+					)}
 				</div>
 
 				{/* Right column: sticky sidebar — desktop only */}
@@ -869,6 +954,7 @@ function OrderDetailPage() {
 
 					{!isCancelled && (
 						<div className="flex flex-col gap-2">
+							{packedToggle}
 							<Button
 								variant="default"
 								className="w-full"
@@ -957,46 +1043,56 @@ function OrderDetailPage() {
 							</AlertDescription>
 						</Alert>
 					)}
+					{packedMutation.error && (
+						<Alert variant="destructive">
+							<AlertDescription>
+								{(packedMutation.error as Error).message}
+							</AlertDescription>
+						</Alert>
+					)}
 				</div>
 			</div>
 
 			{/* Mobile fixed bottom bar */}
 			{!isCancelled && (
-				<div className="md:hidden fixed bottom-16 left-0 right-0 bg-background/95 backdrop-blur-sm border-t px-4 py-3 flex gap-3 z-20">
-					<Button
-						variant="default"
-						size="lg"
-						className="flex-1"
-						disabled={!isDirty || saveMutation.isPending}
-						onClick={() => saveMutation.mutate()}
-					>
-						{saveMutation.isPending
-							? t("common:loading")
-							: t("orders:action.saveChanges")}
-					</Button>
-					{!isPaid && (
+				<div className="md:hidden fixed bottom-16 left-0 right-0 bg-background/95 backdrop-blur-sm border-t px-4 py-3 flex flex-col gap-2 z-20">
+					{packedToggle}
+					<div className="flex gap-2">
+						<Button
+							variant="default"
+							size="lg"
+							className="flex-1"
+							disabled={!isDirty || saveMutation.isPending}
+							onClick={() => saveMutation.mutate()}
+						>
+							{saveMutation.isPending
+								? t("common:loading")
+								: t("orders:action.saveChanges")}
+						</Button>
+						{!isPaid && (
+							<Button
+								variant="outline"
+								size="lg"
+								onClick={() => setPaymentSheetOpen(true)}
+								title={t("orders:action.recordPayment")}
+							>
+								<Banknote size={18} />
+							</Button>
+						)}
 						<Button
 							variant="outline"
 							size="lg"
-							onClick={() => setPaymentSheetOpen(true)}
-							title={t("orders:action.recordPayment")}
+							onClick={() => {
+								if (confirm(t("orders:action.cancelConfirm"))) {
+									cancelMutation.mutate();
+								}
+							}}
+							disabled={cancelMutation.isPending}
+							title={t("orders:action.cancel")}
 						>
-							<Banknote size={18} />
+							<Ban size={18} />
 						</Button>
-					)}
-					<Button
-						variant="outline"
-						size="lg"
-						onClick={() => {
-							if (confirm(t("orders:action.cancelConfirm"))) {
-								cancelMutation.mutate();
-							}
-						}}
-						disabled={cancelMutation.isPending}
-						title={t("orders:action.cancel")}
-					>
-						<Ban size={18} />
-					</Button>
+					</div>
 				</div>
 			)}
 

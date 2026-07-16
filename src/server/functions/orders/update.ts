@@ -31,6 +31,7 @@ export const updateOrder = createServerFn({ method: "POST" })
 		if (fields.notes !== undefined) updateData.notes = fields.notes;
 		if (fields.kerryTracking !== undefined)
 			updateData.kerryTracking = fields.kerryTracking;
+		if (fields.isPacked !== undefined) updateData.isPacked = fields.isPacked;
 
 		// Replace items when provided: delete existing, insert new
 		let newSubtotal: number | undefined;

@@ -37,6 +37,7 @@ export const updateOrderSchema = z.object({
 	shippingFeeThb: z.number().min(0).optional(),
 	notes: z.string().optional().nullable(),
 	kerryTracking: z.string().optional().nullable(),
+	isPacked: z.boolean().optional(),
 	items: z.array(orderItemInputSchema).min(1).optional(),
 });
 
