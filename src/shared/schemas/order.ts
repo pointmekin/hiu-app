@@ -46,6 +46,7 @@ export type UpdateOrderInput = z.infer<typeof updateOrderSchema>;
 export const listOrdersSchema = z.object({
 	roundId: z.string().uuid(),
 	paymentStatus: z.enum(PAYMENT_STATUSES).optional(),
+	isPacked: z.boolean().optional(),
 	status: z.enum(ORDER_STATUSES).optional(),
 });
 

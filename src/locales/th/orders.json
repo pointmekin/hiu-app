@@ -7,9 +7,13 @@
 		"searchPlaceholder": "ค้นหาชื่อลูกค้า...",
 		"filter": {
 			"all": "ทั้งหมด",
+			"payment": "ชำระเงิน",
+			"packing": "การแพ็ก",
 			"pending": "รอชำระ",
 			"partial": "มัดจำแล้ว",
 			"paid": "ชำระแล้ว",
+			"notPacked": "ยังไม่แพ็ก",
+			"packed": "แพ็กแล้ว",
 			"active": "ยังไม่ยกเลิก",
 			"cancelled": "ยกเลิกแล้ว"
 		}

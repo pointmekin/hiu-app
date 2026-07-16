@@ -19,6 +19,8 @@ export const listOrders = createServerFn({ method: "GET" })
 		const conditions = [eq(orders.roundId, data.roundId)];
 		if (data.paymentStatus)
 			conditions.push(eq(orders.paymentStatus, data.paymentStatus));
+		if (data.isPacked !== undefined)
+			conditions.push(eq(orders.isPacked, data.isPacked));
 		if (data.status) conditions.push(eq(orders.status, data.status));
 
 		const rows = await db
@@ -33,6 +35,7 @@ export const listOrders = createServerFn({ method: "GET" })
 				paidAmountThb: orders.paidAmountThb,
 				paymentStatus: orders.paymentStatus,
 				kerryTracking: orders.kerryTracking,
+				isPacked: orders.isPacked,
 				status: orders.status,
 				notes: orders.notes,
 				createdAt: orders.createdAt,

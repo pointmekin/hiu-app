@@ -7,9 +7,13 @@
 		"searchPlaceholder": "Search by customer name...",
 		"filter": {
 			"all": "All",
+			"payment": "Payment",
+			"packing": "Packing",
 			"pending": "Pending",
 			"partial": "Deposit paid",
 			"paid": "Paid",
+			"notPacked": "Not packed",
+			"packed": "Packed",
 			"active": "Not cancelled",
 			"cancelled": "Cancelled"
 		}

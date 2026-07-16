@@ -5,21 +5,29 @@ import {
 	useNavigate,
 	useParams,
 } from "@tanstack/react-router";
-import { Plus, Search, ShoppingCart } from "lucide-react";
-import { useState } from "react";
+import {
+	Package,
+	PackageCheck,
+	Plus,
+	Search,
+	ShoppingCart,
+	WalletCards,
+} from "lucide-react";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EmptyState } from "#/components/empty-state";
 import { OrdersListSkeleton } from "#/components/round-skeletons";
 import { Button } from "#/components/ui/button";
 import { Card } from "#/components/ui/card";
 import { Input } from "#/components/ui/input";
+import { cn } from "#/lib/utils";
 import { listOrders } from "#/server/functions/orders/list";
 import type { PaymentStatus } from "#/shared/schemas/order";
 
 export const Route = createFileRoute("/_app/rounds/$roundId/orders/")({
 	loader: async ({ context: { queryClient }, params }) => {
 		const promise = queryClient.ensureQueryData({
-			queryKey: ["orders", params.roundId, "all"],
+			queryKey: ["orders", params.roundId, "all", "all"],
 			queryFn: () => listOrders({ data: { roundId: params.roundId } }),
 		});
 		if (typeof window === "undefined") {
@@ -30,28 +38,48 @@ export const Route = createFileRoute("/_app/rounds/$roundId/orders/")({
 	component: OrdersPage,
 });
 
-const FILTER_OPTIONS: Array<{ key: string; paymentStatus?: PaymentStatus }> = [
+const PAYMENT_FILTER_OPTIONS: Array<{
+	key: string;
+	paymentStatus?: PaymentStatus;
+}> = [
 	{ key: "all" },
 	{ key: "pending", paymentStatus: "pending" },
 	{ key: "partial", paymentStatus: "partial" },
 	{ key: "paid", paymentStatus: "paid" },
 ];
 
+const PACKING_FILTER_OPTIONS: Array<{
+	key: string;
+	isPacked?: boolean;
+	icon?: typeof Package;
+}> = [
+	{ key: "all" },
+	{ key: "notPacked", isPacked: false, icon: Package },
+	{ key: "packed", isPacked: true, icon: PackageCheck },
+];
+
 function OrdersPage() {
 	const { t } = useTranslation("orders");
 	const { roundId } = useParams({ from: "/_app/rounds/$roundId/orders/" });
-	const [filter, setFilter] = useState<string>("all");
+	const [paymentFilter, setPaymentFilter] = useState("all");
+	const [packingFilter, setPackingFilter] = useState("all");
 	const [textFilter, setTextFilter] = useState("");
 
-	const selectedFilter = FILTER_OPTIONS.find((f) => f.key === filter);
+	const selectedPaymentFilter = PAYMENT_FILTER_OPTIONS.find(
+		(option) => option.key === paymentFilter,
+	);
+	const selectedPackingFilter = PACKING_FILTER_OPTIONS.find(
+		(option) => option.key === packingFilter,
+	);
 
 	const { data: orders } = useSuspenseQuery({
-		queryKey: ["orders", roundId, filter],
+		queryKey: ["orders", roundId, paymentFilter, packingFilter],
 		queryFn: () =>
 			listOrders({
 				data: {
 					roundId,
-					paymentStatus: selectedFilter?.paymentStatus,
+					paymentStatus: selectedPaymentFilter?.paymentStatus,
+					isPacked: selectedPackingFilter?.isPacked,
 				},
 			}),
 	});
@@ -72,46 +100,68 @@ function OrdersPage() {
 
 	return (
 		<div>
-			<div className="sticky top-[108px] md:top-[164px] z-10 bg-background pb-3 border-2 rounded-xl	p-3 shadow-2xl">
-				<div className="flex items-center justify-between mb-3">
-					<h2 className="text-lg font-semibold">{t("list.title")}</h2>
-					<Button asChild variant="default" size="sm">
+			<div className="sticky top-[108px] md:top-[164px] z-10 rounded-xl border bg-background/95 p-2.5 shadow-lg backdrop-blur-sm">
+				<div className="flex items-center gap-2">
+					<h2 className="hidden shrink-0 px-1 text-lg font-semibold sm:block">
+						{t("list.title")}
+					</h2>
+					<div className="relative min-w-0 flex-1">
+						<Search
+							size={14}
+							className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+						/>
+						<Input
+							className="h-8 pl-8 text-sm"
+							placeholder={t("list.searchPlaceholder")}
+							value={textFilter}
+							onChange={(e) => setTextFilter(e.target.value)}
+						/>
+					</div>
+					<Button asChild variant="default" size="sm" className="px-2 sm:px-3">
 						<Link to="/rounds/$roundId/orders/new" params={{ roundId }}>
 							<Plus size={16} />
-							{t("list.createNew")}
+							<span className="hidden sm:inline">{t("list.createNew")}</span>
+							<span className="sr-only sm:hidden">{t("list.createNew")}</span>
 						</Link>
 					</Button>
 				</div>
 
-				<div className="relative mb-3">
-					<Search
-						size={14}
-						className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-					/>
-					<Input
-						className="pl-8 h-8 text-sm"
-						placeholder={t("list.searchPlaceholder")}
-						value={textFilter}
-						onChange={(e) => setTextFilter(e.target.value)}
-					/>
-				</div>
+				<div className="mt-2 flex gap-2 overflow-x-auto pb-0.5">
+					<FilterGroup
+						label={t("list.filter.payment")}
+						icon={<WalletCards size={13} />}
+					>
+						{PAYMENT_FILTER_OPTIONS.map((option) => (
+							<FilterButton
+								key={option.key}
+								active={paymentFilter === option.key}
+								onClick={() => setPaymentFilter(option.key)}
+							>
+								{t(`list.filter.${option.key}`)}
+							</FilterButton>
+						))}
+					</FilterGroup>
 
-				{/* Filter tabs */}
-				<div className="flex gap-1 overflow-x-auto pb-1">
-					{FILTER_OPTIONS.map((opt) => (
-						<button
-							key={opt.key}
-							type="button"
-							onClick={() => setFilter(opt.key)}
-							className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-								filter === opt.key
-									? "bg-foreground text-background"
-									: "bg-muted text-muted-foreground hover:text-foreground"
-							}`}
-						>
-							{t(`list.filter.${opt.key}`)}
-						</button>
-					))}
+					<FilterGroup
+						label={t("list.filter.packing")}
+						icon={<Package size={13} />}
+						className="border-emerald-600/20 bg-emerald-50/50 dark:border-emerald-400/20 dark:bg-emerald-950/20"
+					>
+						{PACKING_FILTER_OPTIONS.map((option) => {
+							const Icon = option.icon;
+							return (
+								<FilterButton
+									key={option.key}
+									active={packingFilter === option.key}
+									onClick={() => setPackingFilter(option.key)}
+									activeClassName="bg-emerald-700 text-white hover:text-white dark:bg-emerald-600"
+								>
+									{Icon && <Icon size={12} />}
+									{t(`list.filter.${option.key}`)}
+								</FilterButton>
+							);
+						})}
+					</FilterGroup>
 				</div>
 			</div>
 
@@ -150,6 +200,63 @@ function OrdersPage() {
 				</div>
 			)}
 		</div>
+	);
+}
+
+function FilterGroup({
+	label,
+	icon,
+	className,
+	children,
+}: {
+	label: string;
+	icon: ReactNode;
+	className?: string;
+	children: ReactNode;
+}) {
+	return (
+		<div
+			className={cn(
+				"flex shrink-0 items-center gap-1 rounded-lg border bg-muted/30 p-1",
+				className,
+			)}
+		>
+			<span className="flex items-center gap-1 px-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+				{icon}
+				{label}
+			</span>
+			<div className="h-4 w-px bg-border" aria-hidden="true" />
+			{children}
+		</div>
+	);
+}
+
+function FilterButton({
+	active,
+	activeClassName,
+	onClick,
+	children,
+}: {
+	active: boolean;
+	activeClassName?: string;
+	onClick: () => void;
+	children: ReactNode;
+}) {
+	return (
+		<button
+			type="button"
+			aria-pressed={active}
+			onClick={onClick}
+			className={cn(
+				"flex h-6 shrink-0 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors",
+				!active && "hover:bg-background hover:text-foreground",
+				active &&
+					"bg-foreground text-background shadow-sm",
+				active && activeClassName,
+			)}
+		>
+			{children}
+		</button>
 	);
 }
 
