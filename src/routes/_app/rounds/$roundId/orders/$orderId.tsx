@@ -30,6 +30,7 @@ import {
 	CustomerCombobox,
 	type CustomerOption,
 } from "#/components/customer-combobox";
+import { CustomerForm } from "#/components/customer-form";
 import { InlineProductDialog } from "#/components/inline-product-dialog";
 import { PaymentSheet } from "#/components/payment-sheet";
 import { Alert, AlertDescription } from "#/components/ui/alert";
@@ -43,6 +44,12 @@ import {
 	CommandItem,
 	CommandList,
 } from "#/components/ui/command";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "#/components/ui/dialog";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
 import {
@@ -95,7 +102,7 @@ export const Route = createFileRoute("/_app/rounds/$roundId/orders/$orderId")({
 });
 
 function OrderDetailPage() {
-	const { t } = useTranslation(["orders", "payments", "common"]);
+	const { t } = useTranslation(["orders", "payments", "customers", "common"]);
 	const { roundId, orderId } = useParams({
 		from: "/_app/rounds/$roundId/orders/$orderId",
 	});
@@ -137,6 +144,7 @@ function OrderDetailPage() {
 	const [inlineDialogOpen, setInlineDialogOpen] = useState(false);
 	const [inlineCreateQuery, setInlineCreateQuery] = useState("");
 	const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
+	const [addAddressOpen, setAddAddressOpen] = useState(false);
 	const [copied, setCopied] = useState(false);
 
 	// ── Supporting queries ────────────────────────────────────────────────────────
@@ -453,28 +461,47 @@ function OrderDetailPage() {
 					</div>
 
 					{/* Address */}
-					{editCustomerData && editCustomerData.addresses.length > 0 && (
+					{editCustomerData && (
 						<div className="space-y-1.5">
-							<Label>{t("orders:field.address")}</Label>
-							<Select
-								value={editAddressId ?? "none"}
-								onValueChange={(v) => setEditAddressId(v === "none" ? null : v)}
-								disabled={isCancelled}
-							>
-								<SelectTrigger>
-									<SelectValue placeholder={t("orders:form.selectAddress")} />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="none">
-										{t("orders:form.selectAddress")}
-									</SelectItem>
-									{editCustomerData.addresses.map((addr) => (
-										<SelectItem key={addr.id} value={addr.id}>
-											{addr.recipientName} · {addr.address.slice(0, 30)}
+							<div className="flex items-center justify-between">
+								<Label>{t("orders:field.address")}</Label>
+								<Button
+									variant="ghost"
+									size="sm"
+									disabled={isCancelled}
+									onClick={() => setAddAddressOpen(true)}
+								>
+									<Plus size={14} />
+									{t("customers:form.addAddress")}
+								</Button>
+							</div>
+							{editCustomerData.addresses.length === 0 ? (
+								<p className="text-sm text-muted-foreground">
+									{t("customers:form.noAddress")}
+								</p>
+							) : (
+								<Select
+									value={editAddressId ?? "none"}
+									onValueChange={(v) =>
+										setEditAddressId(v === "none" ? null : v)
+									}
+									disabled={isCancelled}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder={t("orders:form.selectAddress")} />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="none">
+											{t("orders:form.selectAddress")}
 										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+										{editCustomerData.addresses.map((addr) => (
+											<SelectItem key={addr.id} value={addr.id}>
+												{addr.recipientName} · {addr.address.slice(0, 30)}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							)}
 						</div>
 					)}
 
@@ -1149,6 +1176,41 @@ function OrderDetailPage() {
 				totalThb={editTotal}
 				paidAmountThb={paidAmountThb}
 			/>
+
+			<Dialog open={addAddressOpen} onOpenChange={setAddAddressOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>{t("customers:form.newAddress")}</DialogTitle>
+					</DialogHeader>
+					<CustomerForm
+						initialValues={{
+							id: editCustomerId,
+							displayName: editCustomerName,
+							address: {
+								recipientName: "",
+								mobile: editCustomerData?.phone ?? "",
+								address: "",
+								postalCode: "",
+								isDefault: editCustomerData?.addresses.length === 0,
+							},
+						}}
+						addressOnly
+						onSuccess={async () => {
+							const refreshed = await queryClient.fetchQuery({
+								queryKey: ["customers", editCustomerId],
+								queryFn: () => getCustomer({ data: { id: editCustomerId } }),
+							});
+							const newest = [...refreshed.addresses].sort(
+								(a, b) =>
+									new Date(a.createdAt).getTime() -
+									new Date(b.createdAt).getTime(),
+							)[refreshed.addresses.length - 1];
+							if (newest) setEditAddressId(newest.id);
+							setAddAddressOpen(false);
+						}}
+					/>
+				</DialogContent>
+			</Dialog>
 		</>
 	);
 }
