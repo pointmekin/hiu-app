@@ -22,6 +22,7 @@ import { Card } from "#/components/ui/card";
 import { Input } from "#/components/ui/input";
 import { cn } from "#/lib/utils";
 import { listOrders } from "#/server/functions/orders/list";
+import { getEffectivePaymentStatus } from "#/shared/payment-status";
 import type { PaymentStatus } from "#/shared/schemas/order";
 
 export const Route = createFileRoute("/_app/rounds/$roundId/orders/")({
@@ -293,6 +294,11 @@ function OrderCard({
 	const total = Number(order.totalThb) || 0;
 	const paid = Number(order.paidAmountThb) || 0;
 	const balance = total - paid;
+	const paymentStatus = getEffectivePaymentStatus(
+		order.paymentStatus,
+		paid,
+		total,
+	);
 
 	const paymentStatusColors: Record<string, string> = {
 		pending: "text-muted-foreground",
@@ -321,10 +327,10 @@ function OrderCard({
 					{order.customerName}
 				</Link>
 				<p
-					className={`text-sm ${paymentStatusColors[order.paymentStatus] ?? "text-muted-foreground"}`}
+					className={`text-sm ${paymentStatusColors[paymentStatus] ?? "text-muted-foreground"}`}
 				>
-					{t(`paymentStatus.${order.paymentStatus}`)}
-					{order.paymentStatus !== "paid" && balance > 0 && (
+					{t(`paymentStatus.${paymentStatus}`)}
+					{paymentStatus !== "paid" && balance > 0 && (
 						<span className="ml-1 font-mono">
 							· คงเหลือ{" "}
 							{balance.toLocaleString("th-TH", {

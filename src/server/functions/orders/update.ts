@@ -4,6 +4,7 @@ import { db } from "#/db/index";
 import { customers, orderItems, orders } from "#/db/schema";
 import { writeAudit } from "#/server/audit";
 import { requireSession } from "#/server/middleware";
+import { getEffectivePaymentStatus } from "#/shared/payment-status";
 import { updateOrderSchema } from "#/shared/schemas/order";
 
 export const updateOrder = createServerFn({ method: "POST" })
@@ -16,6 +17,8 @@ export const updateOrder = createServerFn({ method: "POST" })
 			.select({
 				subtotalThb: orders.subtotalThb,
 				shippingFeeThb: orders.shippingFeeThb,
+				paidAmountThb: orders.paidAmountThb,
+				paymentStatus: orders.paymentStatus,
 			})
 			.from(orders)
 			.where(eq(orders.id, id))
@@ -62,7 +65,13 @@ export const updateOrder = createServerFn({ method: "POST" })
 		}
 
 		if (newSubtotal !== undefined || fields.shippingFeeThb !== undefined) {
-			updateData.totalThb = (subtotal + shipping).toFixed(2);
+			const total = subtotal + shipping;
+			updateData.totalThb = total.toFixed(2);
+			updateData.paymentStatus = getEffectivePaymentStatus(
+				current.paymentStatus,
+				Number(current.paidAmountThb),
+				total,
+			);
 		}
 
 		const [updated] = await db

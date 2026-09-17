@@ -74,6 +74,7 @@ import { updateOrder } from "#/server/functions/orders/update";
 import { listRoundProducts } from "#/server/functions/round-products/list";
 import { getRound } from "#/server/functions/rounds/get";
 import { getSettings } from "#/server/functions/settings/get";
+import { getEffectivePaymentStatus } from "#/shared/payment-status";
 
 type EditItem = {
 	roundProductId: string;
@@ -174,6 +175,11 @@ function OrderDetailPage() {
 		39, 50, 80,
 	];
 	const paidAmountThb = Number(order.paidAmountThb);
+	const paymentStatus = getEffectivePaymentStatus(
+		order.paymentStatus,
+		paidAmountThb,
+		Number(order.totalThb),
+	);
 
 	const editSubtotal = editItems.reduce(
 		(s, i) => s + i.unitPriceThb * i.quantity,
@@ -216,7 +222,7 @@ function OrderDetailPage() {
 	);
 
 	const isCancelled = order.status === "cancelled";
-	const isPaid = order.paymentStatus === "paid";
+	const isPaid = paymentStatus === "paid";
 
 	// isDirty: compare form state to last-saved order. Goes false again after refetch.
 	const isDirty =
@@ -437,9 +443,9 @@ function OrderDetailPage() {
 								{order.customerName}
 							</p>
 							<p
-								className={`text-sm ${paymentStatusColors[order.paymentStatus] ?? "text-muted-foreground"}`}
+								className={`text-sm ${paymentStatusColors[paymentStatus] ?? "text-muted-foreground"}`}
 							>
-								{t(`orders:paymentStatus.${order.paymentStatus}`)}
+								{t(`orders:paymentStatus.${paymentStatus}`)}
 								{isCancelled && (
 									<span className="ml-2 text-muted-foreground">
 										· {t("orders:status.cancelled")}

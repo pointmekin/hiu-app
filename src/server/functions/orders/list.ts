@@ -9,6 +9,7 @@ import {
 	roundProducts,
 } from "#/db/schema";
 import { requireSession } from "#/server/middleware";
+import { getEffectivePaymentStatus } from "#/shared/payment-status";
 import { listOrdersSchema } from "#/shared/schemas/order";
 
 export const listOrders = createServerFn({ method: "GET" })
@@ -17,8 +18,6 @@ export const listOrders = createServerFn({ method: "GET" })
 		await requireSession();
 
 		const conditions = [eq(orders.roundId, data.roundId)];
-		if (data.paymentStatus)
-			conditions.push(eq(orders.paymentStatus, data.paymentStatus));
 		if (data.isPacked !== undefined)
 			conditions.push(eq(orders.isPacked, data.isPacked));
 		if (data.status) conditions.push(eq(orders.status, data.status));
@@ -81,8 +80,17 @@ export const listOrders = createServerFn({ method: "GET" })
 			itemsByOrderId.set(item.orderId, list);
 		}
 
-		return rows.map((order) => ({
+		const result = rows.map((order) => ({
 			...order,
+			paymentStatus: getEffectivePaymentStatus(
+				order.paymentStatus,
+				Number(order.paidAmountThb),
+				Number(order.totalThb),
+			),
 			items: itemsByOrderId.get(order.id) ?? [],
 		}));
+
+		return data.paymentStatus
+			? result.filter((order) => order.paymentStatus === data.paymentStatus)
+			: result;
 	});
