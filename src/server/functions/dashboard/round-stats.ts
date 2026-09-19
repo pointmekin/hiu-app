@@ -76,7 +76,7 @@ export const getRoundStats = createServerFn({ method: "GET" })
 					coalesce(count(*), 0)::text as total_orders,
 					coalesce(sum(NULLIF(o.total_thb, 'NaN'::numeric)), 0)::text as total_revenue,
 					coalesce(sum(oi.foreign_cost), 0)::text as total_cost,
-					coalesce(sum(NULLIF(o.total_thb, 'NaN'::numeric) - NULLIF(o.paid_amount_thb, 'NaN'::numeric)), 0)::text as outstanding_balance,
+					coalesce(sum(greatest(NULLIF(o.total_thb, 'NaN'::numeric) - NULLIF(o.paid_amount_thb, 'NaN'::numeric), 0)), 0)::text as outstanding_balance,
 					coalesce(count(*) filter (where o.payment_status = 'paid'), 0)::text as paid_count,
 					coalesce(count(*), 0)::text as total_active
 				from orders o
@@ -96,7 +96,7 @@ export const getRoundStats = createServerFn({ method: "GET" })
 				select
 					o.payment_status,
 					count(*)::text as cnt,
-					coalesce(sum(NULLIF(o.total_thb, 'NaN'::numeric) - NULLIF(o.paid_amount_thb, 'NaN'::numeric)), 0)::text as total_remaining
+					coalesce(sum(greatest(NULLIF(o.total_thb, 'NaN'::numeric) - NULLIF(o.paid_amount_thb, 'NaN'::numeric), 0)), 0)::text as total_remaining
 				from orders o
 				where o.round_id = ${data.roundId} and o.status = 'active'
 				group by o.payment_status
