@@ -118,7 +118,7 @@ function SettingsPage() {
 						type="text"
 						value={currencies}
 						onChange={(e) => setCurrencies(e.target.value)}
-						placeholder="JPY, USD, GBP, HKD, AUD"
+						placeholder="JPY, USD, GBP, HKD, AUD, CAD"
 					/>
 				</div>
 

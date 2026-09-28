@@ -7,7 +7,7 @@ import type { AppSettings } from "#/shared/schemas/settings";
 const DEFAULTS: AppSettings = {
 	shippingFeePresets: [39, 50, 80],
 	defaultShippingFee: 50,
-	sourceCurrencies: ["JPY", "USD", "GBP", "HKD", "AUD"],
+	sourceCurrencies: ["JPY", "USD", "GBP", "HKD", "AUD", "CAD"],
 	defaultLocale: "th",
 };
 

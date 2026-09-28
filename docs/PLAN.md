@@ -7,7 +7,7 @@
 ### Changelog v2 → v3
 - **Runtime / deploy** moved from Cloudflare Workers back to a **Node serverless platform — Vercel** (Netlify is an equivalent fallback). Restores `sharp`, removes M0 spike risk, simplifies image pipeline and DB driver choices.
 - **Fee model overhauled.** Replaced the three-model selector with an **effective FX rate** + optional **per-item fee** + per-product manual override. Matches how Chom actually thinks about pricing.
-- **Currencies** now first-class: JPY, USD, GBP, HKD, AUD, plus extensible via app settings. Each round picks one.
+- **Currencies** now first-class: JPY, USD, GBP, HKD, AUD, CAD, plus extensible via app settings. Each round picks one.
 - **i18n added.** Thai default, English alternative. Cookie-based locale switch. UI strings, validation messages, date/number formatting localized. User-entered data is never translated.
 - **Image pipeline** simplified — server-side `sharp` for thumbnails is back, client-side compression remains for faster mobile uploads. **Storage: AWS S3** (switched from R2).
 - **มัดจำ default** removed — manual entry only, per Chom's answer.
@@ -70,7 +70,7 @@ This is **simpler than v2's three-model design** and matches the existing mental
 |---|---|---|
 | 1 | Per-user or shared login | **Still open.** Default assumption: per-user (audit log is more useful, better-auth handles it cheaply). Confirm with Chom before M3. |
 | 2 | Fee model | **Effective FX rate + optional per-item fee + manual override.** See §2. |
-| 3 | Source currencies | JPY, USD, GBP, HKD, AUD initially. Add more via `app_settings.source_currencies` without code change. |
+| 3 | Source currencies | JPY, USD, GBP, HKD, AUD, CAD initially. Add more via `app_settings.source_currencies` without code change. |
 | 4 | Real Kerry template | Use the existing template file. Need a copy checked into the repo as the golden file before M4. |
 | 5 | มัดจำ default | **Manual entry, no default amount.** |
 | 6 | Multiple addresses per customer | Yes — default + history. |
@@ -157,7 +157,7 @@ create table rounds (
   purchase_end date,
   delivery_eta date,
   status text not null check (status in ('draft','open','closed','shipping','done','archived')) default 'draft',
-  source_currency text not null,                       -- 'JPY', 'USD', 'GBP', 'HKD', 'AUD', ...
+  source_currency text not null,                       -- 'JPY', 'USD', 'GBP', 'HKD', 'AUD', 'CAD', ...
   fx_rate numeric(12,6) not null,                      -- EFFECTIVE rate (already includes markup over market)
   per_item_fee_thb numeric(12,2) not null default 0,   -- optional flat addition per item
   default_shipping_fee numeric(12,2) not null default 50,
@@ -264,7 +264,7 @@ create table app_settings (
 -- Seed:
 --   ('shipping_fee_presets', '[39, 50, 80]')
 --   ('default_shipping_fee', '50')
---   ('source_currencies', '["JPY","USD","GBP","HKD","AUD"]')
+--   ('source_currencies', '["JPY","USD","GBP","HKD","AUD","CAD"]')
 --   ('default_locale', '"th"')
 
 -- Audit
