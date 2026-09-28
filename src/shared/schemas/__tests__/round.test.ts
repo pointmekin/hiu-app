@@ -28,6 +28,19 @@ describe("createRoundSchema", () => {
 		).toThrow();
 	});
 
+	it("accepts CAD currency", () => {
+		const result = createRoundSchema.parse({
+			name: "Canada Oct 2026",
+			country: "Canada",
+			sourceCurrency: "CAD",
+			fxRate: 25.5,
+			status: "draft",
+			perItemFeeTh: 0,
+			defaultShippingFee: 50,
+		});
+		expect(result.sourceCurrency).toBe("CAD");
+	});
+
 	it("rejects invalid currency", () => {
 		expect(() =>
 			createRoundSchema.parse({
