@@ -14,7 +14,7 @@ export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 export const orderItemInputSchema = z.object({
 	roundProductId: z.string().uuid(),
 	quantity: z.number().int().positive(),
-	unitPriceThb: z.number().positive(),
+	unitPriceThb: z.number().min(0),
 });
 
 export type OrderItemInput = z.infer<typeof orderItemInputSchema>;
