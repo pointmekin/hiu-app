@@ -16,7 +16,7 @@ const createProductAndAddToRoundSchema = z.object({
 });
 
 export const createProductAndAddToRound = createServerFn({ method: "POST" })
-	.inputValidator(createProductAndAddToRoundSchema)
+	.validator(createProductAndAddToRoundSchema)
 	.handler(async ({ data }) => {
 		const session = await requireSession();
 

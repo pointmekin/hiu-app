@@ -36,7 +36,7 @@ const cursorSchema = z.object({
 export type CustomerListCursor = z.infer<typeof cursorSchema>;
 
 export const listCustomers = createServerFn({ method: "GET" })
-	.inputValidator(
+	.validator(
 		z.object({
 			q: z.string().optional(),
 			limit: z.coerce.number().default(PAGE_SIZE),

@@ -13,7 +13,7 @@ function computePaymentStatus(paidAmount: number, totalThb: number): string {
 }
 
 export const recordPayment = createServerFn({ method: "POST" })
-	.inputValidator(recordPaymentSchema)
+	.validator(recordPaymentSchema)
 	.handler(async ({ data }) => {
 		const session = await requireSession();
 

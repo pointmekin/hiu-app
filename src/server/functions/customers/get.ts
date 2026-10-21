@@ -6,7 +6,7 @@ import { customerAddresses, customers } from "#/db/schema";
 import { requireSession } from "#/server/middleware";
 
 export const getCustomer = createServerFn({ method: "GET" })
-	.inputValidator(z.object({ id: z.string().uuid() }))
+	.validator(z.object({ id: z.string().uuid() }))
 	.handler(async ({ data }) => {
 		await requireSession();
 		const [customer] = await db

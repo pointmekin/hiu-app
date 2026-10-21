@@ -9,45 +9,45 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
-import { Route as AppSettingsRouteImport } from './routes/_app/settings'
-import { Route as AppRoundsRouteImport } from './routes/_app/rounds'
-import { Route as AppProductsRouteImport } from './routes/_app/products'
-import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppCustomersRouteImport } from './routes/_app/customers'
-import { Route as AppRoundsIndexRouteImport } from './routes/_app/rounds/index'
-import { Route as AppProductsIndexRouteImport } from './routes/_app/products/index'
-import { Route as AppDashboardIndexRouteImport } from './routes/_app/dashboard/index'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppProductsRouteImport } from './routes/_app/products'
+import { Route as AppRoundsRouteImport } from './routes/_app/rounds'
+import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppCustomersIndexRouteImport } from './routes/_app/customers/index'
-import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as AppRoundsNewRouteImport } from './routes/_app/rounds/new'
-import { Route as AppRoundsRoundIdRouteImport } from './routes/_app/rounds/$roundId'
-import { Route as AppProductsProductIdRouteImport } from './routes/_app/products/$productId'
-import { Route as AppDashboardAuditRouteImport } from './routes/_app/dashboard/audit'
 import { Route as AppCustomersCustomerIdRouteImport } from './routes/_app/customers/$customerId'
-import { Route as AppRoundsRoundIdIndexRouteImport } from './routes/_app/rounds/$roundId/index'
-import { Route as ApiExportsKerryRoundIdRouteImport } from './routes/api/exports/kerry.$roundId'
-import { Route as ApiExportsJapan05RoundIdRouteImport } from './routes/api/exports/japan05.$roundId'
-import { Route as AppRoundsRoundIdSummaryRouteImport } from './routes/_app/rounds/$roundId/summary'
-import { Route as AppRoundsRoundIdStatsRouteImport } from './routes/_app/rounds/$roundId/stats'
-import { Route as AppRoundsRoundIdShippingRouteImport } from './routes/_app/rounds/$roundId/shipping'
-import { Route as AppRoundsRoundIdPurchaseRouteImport } from './routes/_app/rounds/$roundId/purchase'
-import { Route as AppRoundsRoundIdProductsRouteImport } from './routes/_app/rounds/$roundId/products'
-import { Route as AppRoundsRoundIdOrdersRouteImport } from './routes/_app/rounds/$roundId/orders'
+import { Route as AppDashboardIndexRouteImport } from './routes/_app/dashboard/index'
+import { Route as AppDashboardAuditRouteImport } from './routes/_app/dashboard/audit'
+import { Route as AppProductsIndexRouteImport } from './routes/_app/products/index'
+import { Route as AppProductsProductIdRouteImport } from './routes/_app/products/$productId'
+import { Route as AppRoundsIndexRouteImport } from './routes/_app/rounds/index'
+import { Route as AppRoundsRoundIdRouteImport } from './routes/_app/rounds/$roundId'
+import { Route as AppRoundsNewRouteImport } from './routes/_app/rounds/new'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AppDashboardRoundRoundIdRouteImport } from './routes/_app/dashboard/round/$roundId'
+import { Route as AppRoundsRoundIdIndexRouteImport } from './routes/_app/rounds/$roundId/index'
+import { Route as AppRoundsRoundIdOrdersRouteImport } from './routes/_app/rounds/$roundId/orders'
+import { Route as AppRoundsRoundIdProductsRouteImport } from './routes/_app/rounds/$roundId/products'
+import { Route as AppRoundsRoundIdPurchaseRouteImport } from './routes/_app/rounds/$roundId/purchase'
+import { Route as AppRoundsRoundIdShippingRouteImport } from './routes/_app/rounds/$roundId/shipping'
+import { Route as AppRoundsRoundIdStatsRouteImport } from './routes/_app/rounds/$roundId/stats'
+import { Route as AppRoundsRoundIdSummaryRouteImport } from './routes/_app/rounds/$roundId/summary'
+import { Route as ApiExportsJapan05RoundIdRouteImport } from './routes/api/exports/japan05.$roundId'
+import { Route as ApiExportsKerryRoundIdRouteImport } from './routes/api/exports/kerry.$roundId'
 import { Route as AppRoundsRoundIdOrdersIndexRouteImport } from './routes/_app/rounds/$roundId/orders/index'
-import { Route as AppRoundsRoundIdOrdersNewRouteImport } from './routes/_app/rounds/$roundId/orders/new'
 import { Route as AppRoundsRoundIdOrdersOrderIdRouteImport } from './routes/_app/rounds/$roundId/orders/$orderId'
+import { Route as AppRoundsRoundIdOrdersNewRouteImport } from './routes/_app/rounds/$roundId/orders/new'
 
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
@@ -55,19 +55,9 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
-const AppSettingsRoute = AppSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppRoundsRoute = AppRoundsRouteImport.update({
-  id: '/rounds',
-  path: '/rounds',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppProductsRoute = AppProductsRouteImport.update({
-  id: '/products',
-  path: '/products',
+const AppCustomersRoute = AppCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
   getParentRoute: () => AppRoute,
 } as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
@@ -75,39 +65,54 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
-const AppCustomersRoute = AppCustomersRouteImport.update({
-  id: '/customers',
-  path: '/customers',
+const AppProductsRoute = AppProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
   getParentRoute: () => AppRoute,
 } as any)
-const AppRoundsIndexRoute = AppRoundsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppRoundsRoute,
+const AppRoundsRoute = AppRoundsRouteImport.update({
+  id: '/rounds',
+  path: '/rounds',
+  getParentRoute: () => AppRoute,
 } as any)
-const AppProductsIndexRoute = AppProductsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppProductsRoute,
-} as any)
-const AppDashboardIndexRoute = AppDashboardIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppDashboardRoute,
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppCustomersIndexRoute = AppCustomersIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppCustomersRoute,
 } as any)
-const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
-  id: '/api/auth/$',
-  path: '/api/auth/$',
-  getParentRoute: () => rootRouteImport,
+const AppCustomersCustomerIdRoute = AppCustomersCustomerIdRouteImport.update({
+  id: '/$customerId',
+  path: '/$customerId',
+  getParentRoute: () => AppCustomersRoute,
 } as any)
-const AppRoundsNewRoute = AppRoundsNewRouteImport.update({
-  id: '/new',
-  path: '/new',
+const AppDashboardIndexRoute = AppDashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppDashboardRoute,
+} as any)
+const AppDashboardAuditRoute = AppDashboardAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AppDashboardRoute,
+} as any)
+const AppProductsIndexRoute = AppProductsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppProductsRoute,
+} as any)
+const AppProductsProductIdRoute = AppProductsProductIdRouteImport.update({
+  id: '/$productId',
+  path: '/$productId',
+  getParentRoute: () => AppProductsRoute,
+} as any)
+const AppRoundsIndexRoute = AppRoundsIndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => AppRoundsRoute,
 } as any)
 const AppRoundsRoundIdRoute = AppRoundsRoundIdRouteImport.update({
@@ -115,51 +120,36 @@ const AppRoundsRoundIdRoute = AppRoundsRoundIdRouteImport.update({
   path: '/$roundId',
   getParentRoute: () => AppRoundsRoute,
 } as any)
-const AppProductsProductIdRoute = AppProductsProductIdRouteImport.update({
-  id: '/$productId',
-  path: '/$productId',
-  getParentRoute: () => AppProductsRoute,
+const AppRoundsNewRoute = AppRoundsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AppRoundsRoute,
 } as any)
-const AppDashboardAuditRoute = AppDashboardAuditRouteImport.update({
-  id: '/audit',
-  path: '/audit',
-  getParentRoute: () => AppDashboardRoute,
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppCustomersCustomerIdRoute = AppCustomersCustomerIdRouteImport.update({
-  id: '/$customerId',
-  path: '/$customerId',
-  getParentRoute: () => AppCustomersRoute,
-} as any)
+const AppDashboardRoundRoundIdRoute =
+  AppDashboardRoundRoundIdRouteImport.update({
+    id: '/round/$roundId',
+    path: '/round/$roundId',
+    getParentRoute: () => AppDashboardRoute,
+  } as any)
 const AppRoundsRoundIdIndexRoute = AppRoundsRoundIdIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoundsRoundIdRoute,
 } as any)
-const ApiExportsKerryRoundIdRoute = ApiExportsKerryRoundIdRouteImport.update({
-  id: '/api/exports/kerry/$roundId',
-  path: '/api/exports/kerry/$roundId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiExportsJapan05RoundIdRoute =
-  ApiExportsJapan05RoundIdRouteImport.update({
-    id: '/api/exports/japan05/$roundId',
-    path: '/api/exports/japan05/$roundId',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const AppRoundsRoundIdSummaryRoute = AppRoundsRoundIdSummaryRouteImport.update({
-  id: '/summary',
-  path: '/summary',
+const AppRoundsRoundIdOrdersRoute = AppRoundsRoundIdOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
   getParentRoute: () => AppRoundsRoundIdRoute,
 } as any)
-const AppRoundsRoundIdStatsRoute = AppRoundsRoundIdStatsRouteImport.update({
-  id: '/stats',
-  path: '/stats',
-  getParentRoute: () => AppRoundsRoundIdRoute,
-} as any)
-const AppRoundsRoundIdShippingRoute =
-  AppRoundsRoundIdShippingRouteImport.update({
-    id: '/shipping',
-    path: '/shipping',
+const AppRoundsRoundIdProductsRoute =
+  AppRoundsRoundIdProductsRouteImport.update({
+    id: '/products',
+    path: '/products',
     getParentRoute: () => AppRoundsRoundIdRoute,
   } as any)
 const AppRoundsRoundIdPurchaseRoute =
@@ -168,39 +158,49 @@ const AppRoundsRoundIdPurchaseRoute =
     path: '/purchase',
     getParentRoute: () => AppRoundsRoundIdRoute,
   } as any)
-const AppRoundsRoundIdProductsRoute =
-  AppRoundsRoundIdProductsRouteImport.update({
-    id: '/products',
-    path: '/products',
+const AppRoundsRoundIdShippingRoute =
+  AppRoundsRoundIdShippingRouteImport.update({
+    id: '/shipping',
+    path: '/shipping',
     getParentRoute: () => AppRoundsRoundIdRoute,
   } as any)
-const AppRoundsRoundIdOrdersRoute = AppRoundsRoundIdOrdersRouteImport.update({
-  id: '/orders',
-  path: '/orders',
+const AppRoundsRoundIdStatsRoute = AppRoundsRoundIdStatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
   getParentRoute: () => AppRoundsRoundIdRoute,
 } as any)
-const AppDashboardRoundRoundIdRoute =
-  AppDashboardRoundRoundIdRouteImport.update({
-    id: '/round/$roundId',
-    path: '/round/$roundId',
-    getParentRoute: () => AppDashboardRoute,
+const AppRoundsRoundIdSummaryRoute = AppRoundsRoundIdSummaryRouteImport.update({
+  id: '/summary',
+  path: '/summary',
+  getParentRoute: () => AppRoundsRoundIdRoute,
+} as any)
+const ApiExportsJapan05RoundIdRoute =
+  ApiExportsJapan05RoundIdRouteImport.update({
+    id: '/api/exports/japan05/$roundId',
+    path: '/api/exports/japan05/$roundId',
+    getParentRoute: () => rootRouteImport,
   } as any)
+const ApiExportsKerryRoundIdRoute = ApiExportsKerryRoundIdRouteImport.update({
+  id: '/api/exports/kerry/$roundId',
+  path: '/api/exports/kerry/$roundId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRoundsRoundIdOrdersIndexRoute =
   AppRoundsRoundIdOrdersIndexRouteImport.update({
     id: '/',
     path: '/',
     getParentRoute: () => AppRoundsRoundIdOrdersRoute,
   } as any)
-const AppRoundsRoundIdOrdersNewRoute =
-  AppRoundsRoundIdOrdersNewRouteImport.update({
-    id: '/new',
-    path: '/new',
-    getParentRoute: () => AppRoundsRoundIdOrdersRoute,
-  } as any)
 const AppRoundsRoundIdOrdersOrderIdRoute =
   AppRoundsRoundIdOrdersOrderIdRouteImport.update({
     id: '/$orderId',
     path: '/$orderId',
+    getParentRoute: () => AppRoundsRoundIdOrdersRoute,
+  } as any)
+const AppRoundsRoundIdOrdersNewRoute =
+  AppRoundsRoundIdOrdersNewRouteImport.update({
+    id: '/new',
+    path: '/new',
     getParentRoute: () => AppRoundsRoundIdOrdersRoute,
   } as any)
 
@@ -400,18 +400,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_app': {
       id: '/_app'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/': {
@@ -421,25 +421,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/settings': {
-      id: '/_app/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AppSettingsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/rounds': {
-      id: '/_app/rounds'
-      path: '/rounds'
-      fullPath: '/rounds'
-      preLoaderRoute: typeof AppRoundsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/products': {
-      id: '/_app/products'
-      path: '/products'
-      fullPath: '/products'
-      preLoaderRoute: typeof AppProductsRouteImport
+    '/_app/customers': {
+      id: '/_app/customers'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof AppCustomersRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/dashboard': {
@@ -449,33 +435,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/customers': {
-      id: '/_app/customers'
-      path: '/customers'
-      fullPath: '/customers'
-      preLoaderRoute: typeof AppCustomersRouteImport
+    '/_app/products': {
+      id: '/_app/products'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof AppProductsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/rounds/': {
-      id: '/_app/rounds/'
-      path: '/'
-      fullPath: '/rounds/'
-      preLoaderRoute: typeof AppRoundsIndexRouteImport
-      parentRoute: typeof AppRoundsRoute
+    '/_app/rounds': {
+      id: '/_app/rounds'
+      path: '/rounds'
+      fullPath: '/rounds'
+      preLoaderRoute: typeof AppRoundsRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/_app/products/': {
-      id: '/_app/products/'
-      path: '/'
-      fullPath: '/products/'
-      preLoaderRoute: typeof AppProductsIndexRouteImport
-      parentRoute: typeof AppProductsRoute
-    }
-    '/_app/dashboard/': {
-      id: '/_app/dashboard/'
-      path: '/'
-      fullPath: '/dashboard/'
-      preLoaderRoute: typeof AppDashboardIndexRouteImport
-      parentRoute: typeof AppDashboardRoute
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/customers/': {
       id: '/_app/customers/'
@@ -484,18 +463,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCustomersIndexRouteImport
       parentRoute: typeof AppCustomersRoute
     }
-    '/api/auth/$': {
-      id: '/api/auth/$'
-      path: '/api/auth/$'
-      fullPath: '/api/auth/$'
-      preLoaderRoute: typeof ApiAuthSplatRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_app/customers/$customerId': {
+      id: '/_app/customers/$customerId'
+      path: '/$customerId'
+      fullPath: '/customers/$customerId'
+      preLoaderRoute: typeof AppCustomersCustomerIdRouteImport
+      parentRoute: typeof AppCustomersRoute
     }
-    '/_app/rounds/new': {
-      id: '/_app/rounds/new'
-      path: '/new'
-      fullPath: '/rounds/new'
-      preLoaderRoute: typeof AppRoundsNewRouteImport
+    '/_app/dashboard/': {
+      id: '/_app/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof AppDashboardIndexRouteImport
+      parentRoute: typeof AppDashboardRoute
+    }
+    '/_app/dashboard/audit': {
+      id: '/_app/dashboard/audit'
+      path: '/audit'
+      fullPath: '/dashboard/audit'
+      preLoaderRoute: typeof AppDashboardAuditRouteImport
+      parentRoute: typeof AppDashboardRoute
+    }
+    '/_app/products/': {
+      id: '/_app/products/'
+      path: '/'
+      fullPath: '/products/'
+      preLoaderRoute: typeof AppProductsIndexRouteImport
+      parentRoute: typeof AppProductsRoute
+    }
+    '/_app/products/$productId': {
+      id: '/_app/products/$productId'
+      path: '/$productId'
+      fullPath: '/products/$productId'
+      preLoaderRoute: typeof AppProductsProductIdRouteImport
+      parentRoute: typeof AppProductsRoute
+    }
+    '/_app/rounds/': {
+      id: '/_app/rounds/'
+      path: '/'
+      fullPath: '/rounds/'
+      preLoaderRoute: typeof AppRoundsIndexRouteImport
       parentRoute: typeof AppRoundsRoute
     }
     '/_app/rounds/$roundId': {
@@ -505,81 +512,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRoundsRoundIdRouteImport
       parentRoute: typeof AppRoundsRoute
     }
-    '/_app/products/$productId': {
-      id: '/_app/products/$productId'
-      path: '/$productId'
-      fullPath: '/products/$productId'
-      preLoaderRoute: typeof AppProductsProductIdRouteImport
-      parentRoute: typeof AppProductsRoute
+    '/_app/rounds/new': {
+      id: '/_app/rounds/new'
+      path: '/new'
+      fullPath: '/rounds/new'
+      preLoaderRoute: typeof AppRoundsNewRouteImport
+      parentRoute: typeof AppRoundsRoute
     }
-    '/_app/dashboard/audit': {
-      id: '/_app/dashboard/audit'
-      path: '/audit'
-      fullPath: '/dashboard/audit'
-      preLoaderRoute: typeof AppDashboardAuditRouteImport
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/dashboard/round/$roundId': {
+      id: '/_app/dashboard/round/$roundId'
+      path: '/round/$roundId'
+      fullPath: '/dashboard/round/$roundId'
+      preLoaderRoute: typeof AppDashboardRoundRoundIdRouteImport
       parentRoute: typeof AppDashboardRoute
-    }
-    '/_app/customers/$customerId': {
-      id: '/_app/customers/$customerId'
-      path: '/$customerId'
-      fullPath: '/customers/$customerId'
-      preLoaderRoute: typeof AppCustomersCustomerIdRouteImport
-      parentRoute: typeof AppCustomersRoute
     }
     '/_app/rounds/$roundId/': {
       id: '/_app/rounds/$roundId/'
       path: '/'
       fullPath: '/rounds/$roundId/'
       preLoaderRoute: typeof AppRoundsRoundIdIndexRouteImport
-      parentRoute: typeof AppRoundsRoundIdRoute
-    }
-    '/api/exports/kerry/$roundId': {
-      id: '/api/exports/kerry/$roundId'
-      path: '/api/exports/kerry/$roundId'
-      fullPath: '/api/exports/kerry/$roundId'
-      preLoaderRoute: typeof ApiExportsKerryRoundIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/exports/japan05/$roundId': {
-      id: '/api/exports/japan05/$roundId'
-      path: '/api/exports/japan05/$roundId'
-      fullPath: '/api/exports/japan05/$roundId'
-      preLoaderRoute: typeof ApiExportsJapan05RoundIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_app/rounds/$roundId/summary': {
-      id: '/_app/rounds/$roundId/summary'
-      path: '/summary'
-      fullPath: '/rounds/$roundId/summary'
-      preLoaderRoute: typeof AppRoundsRoundIdSummaryRouteImport
-      parentRoute: typeof AppRoundsRoundIdRoute
-    }
-    '/_app/rounds/$roundId/stats': {
-      id: '/_app/rounds/$roundId/stats'
-      path: '/stats'
-      fullPath: '/rounds/$roundId/stats'
-      preLoaderRoute: typeof AppRoundsRoundIdStatsRouteImport
-      parentRoute: typeof AppRoundsRoundIdRoute
-    }
-    '/_app/rounds/$roundId/shipping': {
-      id: '/_app/rounds/$roundId/shipping'
-      path: '/shipping'
-      fullPath: '/rounds/$roundId/shipping'
-      preLoaderRoute: typeof AppRoundsRoundIdShippingRouteImport
-      parentRoute: typeof AppRoundsRoundIdRoute
-    }
-    '/_app/rounds/$roundId/purchase': {
-      id: '/_app/rounds/$roundId/purchase'
-      path: '/purchase'
-      fullPath: '/rounds/$roundId/purchase'
-      preLoaderRoute: typeof AppRoundsRoundIdPurchaseRouteImport
-      parentRoute: typeof AppRoundsRoundIdRoute
-    }
-    '/_app/rounds/$roundId/products': {
-      id: '/_app/rounds/$roundId/products'
-      path: '/products'
-      fullPath: '/rounds/$roundId/products'
-      preLoaderRoute: typeof AppRoundsRoundIdProductsRouteImport
       parentRoute: typeof AppRoundsRoundIdRoute
     }
     '/_app/rounds/$roundId/orders': {
@@ -589,12 +547,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRoundsRoundIdOrdersRouteImport
       parentRoute: typeof AppRoundsRoundIdRoute
     }
-    '/_app/dashboard/round/$roundId': {
-      id: '/_app/dashboard/round/$roundId'
-      path: '/round/$roundId'
-      fullPath: '/dashboard/round/$roundId'
-      preLoaderRoute: typeof AppDashboardRoundRoundIdRouteImport
-      parentRoute: typeof AppDashboardRoute
+    '/_app/rounds/$roundId/products': {
+      id: '/_app/rounds/$roundId/products'
+      path: '/products'
+      fullPath: '/rounds/$roundId/products'
+      preLoaderRoute: typeof AppRoundsRoundIdProductsRouteImport
+      parentRoute: typeof AppRoundsRoundIdRoute
+    }
+    '/_app/rounds/$roundId/purchase': {
+      id: '/_app/rounds/$roundId/purchase'
+      path: '/purchase'
+      fullPath: '/rounds/$roundId/purchase'
+      preLoaderRoute: typeof AppRoundsRoundIdPurchaseRouteImport
+      parentRoute: typeof AppRoundsRoundIdRoute
+    }
+    '/_app/rounds/$roundId/shipping': {
+      id: '/_app/rounds/$roundId/shipping'
+      path: '/shipping'
+      fullPath: '/rounds/$roundId/shipping'
+      preLoaderRoute: typeof AppRoundsRoundIdShippingRouteImport
+      parentRoute: typeof AppRoundsRoundIdRoute
+    }
+    '/_app/rounds/$roundId/stats': {
+      id: '/_app/rounds/$roundId/stats'
+      path: '/stats'
+      fullPath: '/rounds/$roundId/stats'
+      preLoaderRoute: typeof AppRoundsRoundIdStatsRouteImport
+      parentRoute: typeof AppRoundsRoundIdRoute
+    }
+    '/_app/rounds/$roundId/summary': {
+      id: '/_app/rounds/$roundId/summary'
+      path: '/summary'
+      fullPath: '/rounds/$roundId/summary'
+      preLoaderRoute: typeof AppRoundsRoundIdSummaryRouteImport
+      parentRoute: typeof AppRoundsRoundIdRoute
+    }
+    '/api/exports/japan05/$roundId': {
+      id: '/api/exports/japan05/$roundId'
+      path: '/api/exports/japan05/$roundId'
+      fullPath: '/api/exports/japan05/$roundId'
+      preLoaderRoute: typeof ApiExportsJapan05RoundIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/exports/kerry/$roundId': {
+      id: '/api/exports/kerry/$roundId'
+      path: '/api/exports/kerry/$roundId'
+      fullPath: '/api/exports/kerry/$roundId'
+      preLoaderRoute: typeof ApiExportsKerryRoundIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_app/rounds/$roundId/orders/': {
       id: '/_app/rounds/$roundId/orders/'
@@ -603,18 +603,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRoundsRoundIdOrdersIndexRouteImport
       parentRoute: typeof AppRoundsRoundIdOrdersRoute
     }
-    '/_app/rounds/$roundId/orders/new': {
-      id: '/_app/rounds/$roundId/orders/new'
-      path: '/new'
-      fullPath: '/rounds/$roundId/orders/new'
-      preLoaderRoute: typeof AppRoundsRoundIdOrdersNewRouteImport
-      parentRoute: typeof AppRoundsRoundIdOrdersRoute
-    }
     '/_app/rounds/$roundId/orders/$orderId': {
       id: '/_app/rounds/$roundId/orders/$orderId'
       path: '/$orderId'
       fullPath: '/rounds/$roundId/orders/$orderId'
       preLoaderRoute: typeof AppRoundsRoundIdOrdersOrderIdRouteImport
+      parentRoute: typeof AppRoundsRoundIdOrdersRoute
+    }
+    '/_app/rounds/$roundId/orders/new': {
+      id: '/_app/rounds/$roundId/orders/new'
+      path: '/new'
+      fullPath: '/rounds/$roundId/orders/new'
+      preLoaderRoute: typeof AppRoundsRoundIdOrdersNewRouteImport
       parentRoute: typeof AppRoundsRoundIdOrdersRoute
     }
   }

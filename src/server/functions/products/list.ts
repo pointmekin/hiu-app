@@ -72,7 +72,7 @@ export type ProductListCursor = z.infer<typeof cursorSchema>;
 export type ProductListItem = ReturnType<typeof mapRow>;
 
 export const listProducts = createServerFn({ method: "GET" })
-	.inputValidator(
+	.validator(
 		z.object({
 			q: z.string().optional(),
 			limit: z.coerce.number().default(PAGE_SIZE),

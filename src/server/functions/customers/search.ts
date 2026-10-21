@@ -5,7 +5,7 @@ import { requireSession } from "#/server/middleware";
 import { searchCustomersSchema } from "#/shared/schemas/customer";
 
 export const searchCustomers = createServerFn({ method: "GET" })
-	.inputValidator(searchCustomersSchema)
+	.validator(searchCustomersSchema)
 	.handler(async ({ data }) => {
 		await requireSession();
 		const { query, limit } = data;

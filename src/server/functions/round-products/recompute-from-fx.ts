@@ -7,7 +7,7 @@ import { requireSession } from "#/server/middleware";
 import { recomputeFromFxSchema } from "#/shared/schemas/round-product";
 
 export const recomputeFromFx = createServerFn({ method: "POST" })
-	.inputValidator(recomputeFromFxSchema)
+	.validator(recomputeFromFxSchema)
 	.handler(async ({ data }) => {
 		const session = await requireSession();
 

@@ -66,7 +66,7 @@ interface DailyRow {
 }
 
 export const getRoundStats = createServerFn({ method: "GET" })
-	.inputValidator(z.object({ roundId: z.string().uuid() }))
+	.validator(z.object({ roundId: z.string().uuid() }))
 	.handler(async ({ data }) => {
 		await requireSession();
 

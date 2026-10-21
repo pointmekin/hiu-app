@@ -25,7 +25,7 @@ interface AuditRow {
 }
 
 export const listAuditLog = createServerFn({ method: "GET" })
-	.inputValidator(
+	.validator(
 		z.object({
 			entity: z.string().optional(),
 			limit: z.coerce.number().min(1).max(100).default(50),

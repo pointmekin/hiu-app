@@ -7,7 +7,7 @@ import { requireSession } from "#/server/middleware";
 import { upsertRoundProductsSchema } from "#/shared/schemas/round-product";
 
 export const upsertRoundProducts = createServerFn({ method: "POST" })
-	.inputValidator(upsertRoundProductsSchema)
+	.validator(upsertRoundProductsSchema)
 	.handler(async ({ data }) => {
 		const session = await requireSession();
 

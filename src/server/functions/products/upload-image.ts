@@ -18,7 +18,7 @@ function randomHex(len: number): string {
 }
 
 export const uploadProductImage = createServerFn({ method: "POST" })
-	.inputValidator(
+	.validator(
 		z.object({
 			productId: z.string().uuid(),
 			mimeType: z.string(),
