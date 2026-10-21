@@ -7,7 +7,7 @@ import { writeAudit } from "#/server/audit";
 import { requireSession } from "#/server/middleware";
 
 export const cancelOrder = createServerFn({ method: "POST" })
-	.inputValidator(z.object({ id: z.string().uuid() }))
+	.validator(z.object({ id: z.string().uuid() }))
 	.handler(async ({ data }) => {
 		const session = await requireSession();
 

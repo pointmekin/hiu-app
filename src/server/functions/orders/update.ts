@@ -8,7 +8,7 @@ import { getEffectivePaymentStatus } from "#/shared/payment-status";
 import { updateOrderSchema } from "#/shared/schemas/order";
 
 export const updateOrder = createServerFn({ method: "POST" })
-	.inputValidator(updateOrderSchema)
+	.validator(updateOrderSchema)
 	.handler(async ({ data }) => {
 		const session = await requireSession();
 		const { id, ...fields } = data;

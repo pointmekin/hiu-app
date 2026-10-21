@@ -6,7 +6,7 @@ import { requireSession } from "#/server/middleware";
 import { createRoundSchema } from "#/shared/schemas/round";
 
 export const createRound = createServerFn({ method: "POST" })
-	.inputValidator(createRoundSchema)
+	.validator(createRoundSchema)
 	.handler(async ({ data }) => {
 		const session = await requireSession();
 

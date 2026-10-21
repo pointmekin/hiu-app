@@ -13,7 +13,7 @@ import { getEffectivePaymentStatus } from "#/shared/payment-status";
 import { listOrdersSchema } from "#/shared/schemas/order";
 
 export const listOrders = createServerFn({ method: "GET" })
-	.inputValidator(listOrdersSchema)
+	.validator(listOrdersSchema)
 	.handler(async ({ data }) => {
 		await requireSession();
 

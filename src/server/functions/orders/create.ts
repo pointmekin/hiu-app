@@ -7,7 +7,7 @@ import { requireSession } from "#/server/middleware";
 import { createOrderSchema } from "#/shared/schemas/order";
 
 export const createOrder = createServerFn({ method: "POST" })
-	.inputValidator(createOrderSchema)
+	.validator(createOrderSchema)
 	.handler(async ({ data }) => {
 		const session = await requireSession();
 

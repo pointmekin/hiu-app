@@ -15,7 +15,7 @@ import { requireSession } from "#/server/middleware";
 import { s3PublicUrl } from "#/server/s3";
 
 export const getOrder = createServerFn({ method: "GET" })
-	.inputValidator(z.object({ id: z.string().uuid() }))
+	.validator(z.object({ id: z.string().uuid() }))
 	.handler(async ({ data }) => {
 		await requireSession();
 

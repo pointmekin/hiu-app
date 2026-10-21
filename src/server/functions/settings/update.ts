@@ -6,7 +6,7 @@ import { requireSession } from "#/server/middleware";
 import { updateSettingsSchema } from "#/shared/schemas/settings";
 
 export const updateSettings = createServerFn({ method: "POST" })
-	.inputValidator(updateSettingsSchema)
+	.validator(updateSettingsSchema)
 	.handler(async ({ data }) => {
 		const session = await requireSession();
 
