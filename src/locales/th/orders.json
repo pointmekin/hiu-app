@@ -5,6 +5,7 @@
 		"emptyHint": "กด «สร้างออเดอร์» เพื่อเริ่มรับออเดอร์",
 		"createNew": "สร้างออเดอร์",
 		"searchPlaceholder": "ค้นหาชื่อลูกค้า...",
+		"missingAddress": "ยังไม่มีที่อยู่",
 		"filter": {
 			"all": "ทั้งหมด",
 			"payment": "ชำระเงิน",
