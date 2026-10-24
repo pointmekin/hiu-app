@@ -6,6 +6,7 @@ import {
 	useParams,
 } from "@tanstack/react-router";
 import {
+	MapPinOff,
 	Package,
 	PackageCheck,
 	Plus,
@@ -21,18 +22,26 @@ import { Button } from "#/components/ui/button";
 import { Card } from "#/components/ui/card";
 import { Input } from "#/components/ui/input";
 import { cn } from "#/lib/utils";
+import { getCustomersMissingAddress } from "#/server/functions/exports/get-customers-missing-address";
 import { listOrders } from "#/server/functions/orders/list";
 import { getEffectivePaymentStatus } from "#/shared/payment-status";
 import type { PaymentStatus } from "#/shared/schemas/order";
 
 export const Route = createFileRoute("/_app/rounds/$roundId/orders/")({
 	loader: async ({ context: { queryClient }, params }) => {
-		const promise = queryClient.ensureQueryData({
-			queryKey: ["orders", params.roundId, "all", "all"],
-			queryFn: () => listOrders({ data: { roundId: params.roundId } }),
-		});
+		const promises = Promise.all([
+			queryClient.ensureQueryData({
+				queryKey: ["orders", params.roundId, "all", "all"],
+				queryFn: () => listOrders({ data: { roundId: params.roundId } }),
+			}),
+			queryClient.ensureQueryData({
+				queryKey: ["customers-missing-address", params.roundId],
+				queryFn: () =>
+					getCustomersMissingAddress({ data: { roundId: params.roundId } }),
+			}),
+		]);
 		if (typeof window === "undefined") {
-			await promise;
+			await promises;
 		}
 	},
 	pendingComponent: OrdersListSkeleton,
@@ -84,6 +93,15 @@ function OrdersPage() {
 				},
 			}),
 	});
+
+	const { data: missingAddressCustomers } = useSuspenseQuery({
+		queryKey: ["customers-missing-address", roundId],
+		queryFn: () => getCustomersMissingAddress({ data: { roundId } }),
+		refetchOnMount: "always",
+	});
+	const missingAddressCustomerIds = new Set(
+		missingAddressCustomers.map((c) => c.customerId),
+	);
 
 	const needle = textFilter.trim().toLowerCase();
 	const visibleOrders = needle
@@ -178,7 +196,14 @@ function OrdersPage() {
 				<div className="space-y-4">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-2">
 						{activeOrders.map((order) => (
-							<OrderCard key={order.id} order={order} roundId={roundId} />
+							<OrderCard
+								key={order.id}
+								order={order}
+								roundId={roundId}
+								isMissingAddress={missingAddressCustomerIds.has(
+									order.customerId,
+								)}
+							/>
 						))}
 					</div>
 					{cancelledOrders.length > 0 && (
@@ -283,10 +308,12 @@ function OrderCard({
 	order,
 	roundId,
 	dimmed = false,
+	isMissingAddress = false,
 }: {
 	order: OrderCardOrder;
 	roundId: string;
 	dimmed?: boolean;
+	isMissingAddress?: boolean;
 }) {
 	const { t } = useTranslation("orders");
 	const navigate = useNavigate();
@@ -326,6 +353,12 @@ function OrderCard({
 				>
 					{order.customerName}
 				</Link>
+				{isMissingAddress && (
+					<span className="ml-2 inline-flex items-center gap-1 rounded-md bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-800 align-middle dark:bg-amber-950/50 dark:text-amber-300">
+						<MapPinOff size={11} />
+						{t("list.missingAddress")}
+					</span>
+				)}
 				<p
 					className={`text-sm ${paymentStatusColors[paymentStatus] ?? "text-muted-foreground"}`}
 				>
