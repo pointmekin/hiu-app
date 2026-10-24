@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "#/db/index";
 import {
+	customerAddresses,
 	customers,
 	orderItems,
 	orders,
@@ -9,6 +10,7 @@ import {
 	roundProducts,
 } from "#/db/schema";
 import { requireSession } from "#/server/middleware";
+import { getAddressStatus } from "#/shared/address-status";
 import { getEffectivePaymentStatus } from "#/shared/payment-status";
 import { listOrdersSchema } from "#/shared/schemas/order";
 
@@ -62,6 +64,23 @@ export const listOrders = createServerFn({ method: "GET" })
 			.innerJoin(products, eq(roundProducts.productId, products.id))
 			.where(inArray(orderItems.orderId, orderIds));
 
+		const addressRows = await db
+			.select({
+				id: customerAddresses.id,
+				customerId: customerAddresses.customerId,
+				recipientName: customerAddresses.recipientName,
+				mobile: customerAddresses.mobile,
+				address: customerAddresses.address,
+				postalCode: customerAddresses.postalCode,
+			})
+			.from(customerAddresses)
+			.where(
+				inArray(
+					customerAddresses.customerId,
+					rows.map((r) => r.customerId),
+				),
+			);
+
 		const itemsByOrderId = new Map<
 			string,
 			Array<{
@@ -88,6 +107,10 @@ export const listOrders = createServerFn({ method: "GET" })
 				Number(order.totalThb),
 			),
 			items: itemsByOrderId.get(order.id) ?? [],
+			addressStatus: getAddressStatus(
+				order.addressId,
+				addressRows.filter((a) => a.customerId === order.customerId),
+			),
 		}));
 
 		return data.paymentStatus

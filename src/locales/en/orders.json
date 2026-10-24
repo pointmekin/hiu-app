@@ -5,7 +5,10 @@
 		"emptyHint": "Click «Create order» to take your first order",
 		"createNew": "Create order",
 		"searchPlaceholder": "Search by customer name...",
-		"missingAddress": "No address",
+		"addressStatus": {
+			"missing": "No address",
+			"unassigned": "Address not set"
+		},
 		"filter": {
 			"all": "All",
 			"payment": "Payment",
