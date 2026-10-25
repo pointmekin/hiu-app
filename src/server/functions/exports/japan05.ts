@@ -62,7 +62,7 @@ export async function fetchJapan05Data(roundId: string): Promise<ItemRow[]> {
 		.orderBy(customers.displayName, orders.id, products.name);
 }
 
-function paymentStatusLabel(status: string): string {
+export function paymentStatusLabel(status: string): string {
 	const labels: Record<string, string> = {
 		pending: "รอชำระ",
 		partial: "มัดจำแล้ว",

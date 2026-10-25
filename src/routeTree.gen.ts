@@ -37,6 +37,7 @@ import { Route as AppRoundsRoundIdStatsRouteImport } from './routes/_app/rounds/
 import { Route as AppRoundsRoundIdSummaryRouteImport } from './routes/_app/rounds/$roundId/summary'
 import { Route as ApiExportsJapan05RoundIdRouteImport } from './routes/api/exports/japan05.$roundId'
 import { Route as ApiExportsKerryRoundIdRouteImport } from './routes/api/exports/kerry.$roundId'
+import { Route as ApiExportsRoundStatsRoundIdRouteImport } from './routes/api/exports/round-stats.$roundId'
 import { Route as AppRoundsRoundIdOrdersIndexRouteImport } from './routes/_app/rounds/$roundId/orders/index'
 import { Route as AppRoundsRoundIdOrdersOrderIdRouteImport } from './routes/_app/rounds/$roundId/orders/$orderId'
 import { Route as AppRoundsRoundIdOrdersNewRouteImport } from './routes/_app/rounds/$roundId/orders/new'
@@ -185,6 +186,12 @@ const ApiExportsKerryRoundIdRoute = ApiExportsKerryRoundIdRouteImport.update({
   path: '/api/exports/kerry/$roundId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiExportsRoundStatsRoundIdRoute =
+  ApiExportsRoundStatsRoundIdRouteImport.update({
+    id: '/api/exports/round-stats/$roundId',
+    path: '/api/exports/round-stats/$roundId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AppRoundsRoundIdOrdersIndexRoute =
   AppRoundsRoundIdOrdersIndexRouteImport.update({
     id: '/',
@@ -231,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/rounds/$roundId/summary': typeof AppRoundsRoundIdSummaryRoute
   '/api/exports/japan05/$roundId': typeof ApiExportsJapan05RoundIdRoute
   '/api/exports/kerry/$roundId': typeof ApiExportsKerryRoundIdRoute
+  '/api/exports/round-stats/$roundId': typeof ApiExportsRoundStatsRoundIdRoute
   '/rounds/$roundId/': typeof AppRoundsRoundIdIndexRoute
   '/rounds/$roundId/orders/$orderId': typeof AppRoundsRoundIdOrdersOrderIdRoute
   '/rounds/$roundId/orders/new': typeof AppRoundsRoundIdOrdersNewRoute
@@ -257,6 +265,7 @@ export interface FileRoutesByTo {
   '/rounds/$roundId/summary': typeof AppRoundsRoundIdSummaryRoute
   '/api/exports/japan05/$roundId': typeof ApiExportsJapan05RoundIdRoute
   '/api/exports/kerry/$roundId': typeof ApiExportsKerryRoundIdRoute
+  '/api/exports/round-stats/$roundId': typeof ApiExportsRoundStatsRoundIdRoute
   '/rounds/$roundId': typeof AppRoundsRoundIdIndexRoute
   '/rounds/$roundId/orders/$orderId': typeof AppRoundsRoundIdOrdersOrderIdRoute
   '/rounds/$roundId/orders/new': typeof AppRoundsRoundIdOrdersNewRoute
@@ -291,6 +300,7 @@ export interface FileRoutesById {
   '/_app/rounds/$roundId/summary': typeof AppRoundsRoundIdSummaryRoute
   '/api/exports/japan05/$roundId': typeof ApiExportsJapan05RoundIdRoute
   '/api/exports/kerry/$roundId': typeof ApiExportsKerryRoundIdRoute
+  '/api/exports/round-stats/$roundId': typeof ApiExportsRoundStatsRoundIdRoute
   '/_app/rounds/$roundId/': typeof AppRoundsRoundIdIndexRoute
   '/_app/rounds/$roundId/orders/$orderId': typeof AppRoundsRoundIdOrdersOrderIdRoute
   '/_app/rounds/$roundId/orders/new': typeof AppRoundsRoundIdOrdersNewRoute
@@ -325,6 +335,7 @@ export interface FileRouteTypes {
     | '/rounds/$roundId/summary'
     | '/api/exports/japan05/$roundId'
     | '/api/exports/kerry/$roundId'
+    | '/api/exports/round-stats/$roundId'
     | '/rounds/$roundId/'
     | '/rounds/$roundId/orders/$orderId'
     | '/rounds/$roundId/orders/new'
@@ -351,6 +362,7 @@ export interface FileRouteTypes {
     | '/rounds/$roundId/summary'
     | '/api/exports/japan05/$roundId'
     | '/api/exports/kerry/$roundId'
+    | '/api/exports/round-stats/$roundId'
     | '/rounds/$roundId'
     | '/rounds/$roundId/orders/$orderId'
     | '/rounds/$roundId/orders/new'
@@ -384,6 +396,7 @@ export interface FileRouteTypes {
     | '/_app/rounds/$roundId/summary'
     | '/api/exports/japan05/$roundId'
     | '/api/exports/kerry/$roundId'
+    | '/api/exports/round-stats/$roundId'
     | '/_app/rounds/$roundId/'
     | '/_app/rounds/$roundId/orders/$orderId'
     | '/_app/rounds/$roundId/orders/new'
@@ -396,6 +409,7 @@ export interface RootRouteChildren {
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiExportsJapan05RoundIdRoute: typeof ApiExportsJapan05RoundIdRoute
   ApiExportsKerryRoundIdRoute: typeof ApiExportsKerryRoundIdRoute
+  ApiExportsRoundStatsRoundIdRoute: typeof ApiExportsRoundStatsRoundIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -596,6 +610,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiExportsKerryRoundIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/exports/round-stats/$roundId': {
+      id: '/api/exports/round-stats/$roundId'
+      path: '/api/exports/round-stats/$roundId'
+      fullPath: '/api/exports/round-stats/$roundId'
+      preLoaderRoute: typeof ApiExportsRoundStatsRoundIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/rounds/$roundId/orders/': {
       id: '/_app/rounds/$roundId/orders/'
       path: '/'
@@ -747,6 +768,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiExportsJapan05RoundIdRoute: ApiExportsJapan05RoundIdRoute,
   ApiExportsKerryRoundIdRoute: ApiExportsKerryRoundIdRoute,
+  ApiExportsRoundStatsRoundIdRoute: ApiExportsRoundStatsRoundIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
