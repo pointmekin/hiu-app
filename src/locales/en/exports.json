@@ -47,5 +47,11 @@
 			"description": "Customers in this round with active orders but no complete shipping address on file",
 			"empty": "All customers have a complete shipping address"
 		}
+	},
+	"roundStats": {
+		"title": "Export Round Stats",
+		"description": "All numbers from the Stats tab, with the raw data and the Excel formulas used for each calculation",
+		"download": "Download Stats.xlsx",
+		"sheets": "Summary · Orders · Items · Payments · Daily"
 	}
 }
