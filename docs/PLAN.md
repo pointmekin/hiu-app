@@ -646,11 +646,16 @@ Default filter: orders with `payment_status IN ('paid', 'partial')` — partial-
 ## 15. Dashboard & analytics
 
 ### Per-round
-- KPIs: total orders, total revenue ฿, cost (foreign × fx), gross margin, outstanding balance, paid count / total count.
-- Payment funnel chart: pending → partial → paid (counts and ฿).
-- Top 10 products by qty.
-- Top 10 customers by spend.
-- Daily orders received during the round (line chart).
+- Collection: expected revenue (all active orders, incl. shipping), collected (`paid_amount_thb`), outstanding, % collected (stacked bar).
+- KPIs: total orders, paid count / total count, cost (foreign × fx), gross margin, shipping fees.
+- Gross margin = product subtotal − product cost. Shipping fees are excluded because Kerry costs are not recorded.
+- Money breakdown: product cost / gross margin / shipping fees (stacked bar).
+- Payment status: pending → partial → paid (counts, paid ฿ and remaining ฿).
+- Fulfillment: packed and Kerry-tracked counts.
+- Money over time: cumulative expected (by order date) vs collected (by `order_payments.paid_at`, net of refunds).
+- Top 10 customers by spend (paid vs outstanding).
+- Top 10 products by qty (with ฿).
+- Payment methods (donut, net ฿).
 
 ### Cross-round
 - Last 6 rounds revenue + margin trend.

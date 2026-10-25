@@ -14,24 +14,58 @@
 	"round": {
 		"title": "สถิติรอบ",
 		"totalOrders": "ออเดอร์ทั้งหมด",
-		"totalRevenue": "รายรับรวม",
+		"expectedRevenue": "รายรับที่คาดว่าจะได้",
+		"expectedRevenueHint": "ยอดรวมทุกออเดอร์ที่ใช้งานอยู่ รวมค่าส่ง",
+		"collectedRevenue": "ได้รับแล้ว",
+		"collectedRevenueHint": "เงินที่ลูกค้าโอนเข้ามาแล้ว",
+		"outstandingBalance": "ยอดค้างชำระ",
+		"collectedPercent": "เก็บแล้ว {{percent}}%",
 		"totalCost": "ต้นทุนรวม",
 		"grossMargin": "กำไรขั้นต้น",
-		"outstandingBalance": "ยอดค้างชำระ",
+		"grossMarginHint": "ยอดขายสินค้าหักต้นทุนสินค้า ไม่รวมค่าส่ง",
+		"shippingFees": "ค่าส่ง",
 		"paidCount": "ชำระแล้ว",
+		"collection": {
+			"title": "ความคืบหน้าการเก็บเงิน",
+			"collected": "ได้รับแล้ว",
+			"outstanding": "ค้างชำระ"
+		},
+		"breakdown": {
+			"title": "เงินไปอยู่ที่ไหน",
+			"cost": "ต้นทุนสินค้า",
+			"margin": "กำไรขั้นต้น",
+			"shipping": "ค่าส่ง",
+			"loss": "ยอดขายสินค้าต่ำกว่าต้นทุนสินค้า"
+		},
 		"paymentFunnel": {
 			"title": "สถานะชำระเงิน",
 			"pending": "รอชำระ",
 			"partial": "มัดจำ",
 			"paid": "ชำระแล้ว",
-			"count": "จำนวน",
-			"amount": "จำนวนเงิน"
+			"orders": "{{count}} ออเดอร์",
+			"paidAmount": "ชำระแล้ว",
+			"remaining": "คงเหลือ"
+		},
+		"cashFlow": {
+			"title": "ยอดเงินตามเวลา",
+			"hint": "ยอดสะสมรายวัน: มูลค่าออเดอร์ที่รับ เทียบกับเงินที่ได้รับ",
+			"expected": "คาดว่าจะได้",
+			"collected": "ได้รับแล้ว"
 		},
 		"topProducts": "สินค้าขายดี (10 อันดับ)",
-		"topCustomers": "ลูกค้ายอดสูง (10 อันดับ)",
-		"dailyOrders": "ออเดอร์รายวัน",
+		"qty": "จำนวน",
 		"revenue": "รายรับ",
-		"orderCount": "จำนวนออเดอร์"
+		"topCustomers": "ลูกค้ายอดสูง (10 อันดับ)",
+		"fulfillment": {
+			"title": "การจัดส่ง",
+			"packed": "แพ็คแล้ว",
+			"tracked": "มีเลขพัสดุ Kerry"
+		},
+		"paymentMethods": {
+			"title": "ช่องทางชำระเงิน",
+			"unknown": "ไม่ระบุ",
+			"payments": "{{count}} รายการ"
+		}
 	},
 	"audit": {
 		"title": "ประวัติการใช้งาน",

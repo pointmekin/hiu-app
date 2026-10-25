@@ -14,24 +14,58 @@
 	"round": {
 		"title": "Round Stats",
 		"totalOrders": "Total Orders",
-		"totalRevenue": "Total Revenue",
+		"expectedRevenue": "Expected Revenue",
+		"expectedRevenueHint": "All active orders, including shipping fees",
+		"collectedRevenue": "Collected",
+		"collectedRevenueHint": "Money received from customers",
+		"outstandingBalance": "Outstanding Balance",
+		"collectedPercent": "{{percent}}% collected",
 		"totalCost": "Total Cost",
 		"grossMargin": "Gross Margin",
-		"outstandingBalance": "Outstanding Balance",
+		"grossMarginHint": "Product sales minus product cost. Shipping fees are not included.",
+		"shippingFees": "Shipping Fees",
 		"paidCount": "Paid",
+		"collection": {
+			"title": "Collection Progress",
+			"collected": "Collected",
+			"outstanding": "Outstanding"
+		},
+		"breakdown": {
+			"title": "Where the Money Goes",
+			"cost": "Product Cost",
+			"margin": "Gross Margin",
+			"shipping": "Shipping Fees",
+			"loss": "Product sales are below the product cost."
+		},
 		"paymentFunnel": {
 			"title": "Payment Status",
 			"pending": "Pending",
 			"partial": "Deposit",
 			"paid": "Paid",
-			"count": "Count",
-			"amount": "Amount"
+			"orders": "{{count}} orders",
+			"paidAmount": "Paid",
+			"remaining": "Remaining"
+		},
+		"cashFlow": {
+			"title": "Money Over Time",
+			"hint": "Running totals by day: order value received vs money collected",
+			"expected": "Expected",
+			"collected": "Collected"
 		},
 		"topProducts": "Top Products (10)",
-		"topCustomers": "Top Customers (10)",
-		"dailyOrders": "Daily Orders",
+		"qty": "Qty",
 		"revenue": "Revenue",
-		"orderCount": "Order Count"
+		"topCustomers": "Top Customers (10)",
+		"fulfillment": {
+			"title": "Fulfillment",
+			"packed": "Packed",
+			"tracked": "Has Kerry tracking"
+		},
+		"paymentMethods": {
+			"title": "Payment Methods",
+			"unknown": "Not specified",
+			"payments": "{{count}} payments"
+		}
 	},
 	"audit": {
 		"title": "Audit Log",
