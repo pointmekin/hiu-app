@@ -37,6 +37,25 @@ function SummaryPage() {
 					</Button>
 				</CardContent>
 			</Card>
+
+			<Card>
+				<CardHeader>
+					<CardTitle>{t("exports:roundStats.title")}</CardTitle>
+					<CardDescription>
+						{t("exports:roundStats.description")}
+					</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<p className="text-sm text-muted-foreground mb-4">
+						{t("exports:roundStats.sheets")}
+					</p>
+					<Button asChild variant="outline">
+						<a href={`/api/exports/round-stats/${roundId}`} download>
+							{t("exports:roundStats.download")}
+						</a>
+					</Button>
+				</CardContent>
+			</Card>
 		</div>
 	);
 }
