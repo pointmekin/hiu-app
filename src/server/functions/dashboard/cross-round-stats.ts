@@ -26,6 +26,7 @@ interface RecentRoundRow {
 	name: string;
 	country: string;
 	revenue: string;
+	subtotal: string;
 	total_cost: string;
 	order_count: string;
 }
@@ -56,15 +57,19 @@ export const getCrossRoundStats = createServerFn({ method: "GET" }).handler(
 					r.id::text as round_id,
 					r.name,
 					r.country,
-					coalesce(sum(o.total_thb), 0)::text as revenue,
-					coalesce(sum(
-						oi.quantity * rp.foreign_price * r.fx_rate
-					), 0)::text as total_cost,
+					coalesce(sum(NULLIF(o.total_thb, 'NaN'::numeric)), 0)::text as revenue,
+					coalesce(sum(NULLIF(o.subtotal_thb, 'NaN'::numeric)), 0)::text as subtotal,
+					coalesce(sum(oc.cost), 0)::text as total_cost,
 					coalesce(count(o.id), 0)::text as order_count
 				from rounds r
 				left join orders o on o.round_id = r.id and o.status = 'active'
-				left join order_items oi on oi.order_id = o.id
-				left join round_products rp on rp.id = oi.round_product_id
+				left join (
+					select oi.order_id, sum(oi.quantity * rp.foreign_price * rr.fx_rate) as cost
+					from order_items oi
+					inner join round_products rp on rp.id = oi.round_product_id
+					inner join rounds rr on rr.id = rp.round_id
+					group by oi.order_id
+				) oc on oc.order_id = o.id
 				where r.status != 'draft'
 				group by r.id
 				order by r.created_at desc
@@ -123,7 +128,7 @@ export const getCrossRoundStats = createServerFn({ method: "GET" }).handler(
 				name: r.name,
 				country: r.country,
 				revenue: r.revenue,
-				margin: (Number(r.revenue) - Number(r.total_cost)).toFixed(2),
+				margin: (Number(r.subtotal) - Number(r.total_cost)).toFixed(2),
 				orderCount: Number(r.order_count),
 			})),
 			repeatCustomerRate,
