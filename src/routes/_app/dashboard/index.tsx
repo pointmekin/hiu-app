@@ -22,6 +22,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "#/components/ui/table";
+import { BRAND_PALETTE } from "#/lib/chart-theme";
 import { getCrossRoundStats } from "#/server/functions/dashboard/cross-round-stats";
 
 export const Route = createFileRoute("/_app/dashboard/")({
@@ -91,13 +92,13 @@ function CrossRoundDashboard() {
 							<Bar
 								dataKey="revenueNum"
 								name={t("crossRound.revenue")}
-								fill="var(--hanko)"
+								fill={BRAND_PALETTE.hanko}
 								radius={[4, 4, 0, 0]}
 							/>
 							<Bar
 								dataKey="marginNum"
 								name={t("crossRound.margin")}
-								fill="var(--ink-muted)"
+								fill={BRAND_PALETTE.inkMuted}
 								radius={[4, 4, 0, 0]}
 							/>
 						</BarChart>
@@ -146,13 +147,15 @@ function CrossRoundDashboard() {
 									/>
 									<Bar
 										dataKey="roundCount"
-										fill="var(--ink-muted)"
+										fill={BRAND_PALETTE.inkMuted}
 										radius={[0, 4, 4, 0]}
 									>
 										{data.countryBreakdown.map((_, i) => (
 											<Cell
 												key={String(i)}
-												fill={i === 0 ? "var(--hanko)" : "var(--ink-muted)"}
+												fill={
+													i === 0 ? BRAND_PALETTE.hanko : BRAND_PALETTE.inkMuted
+												}
 											/>
 										))}
 									</Bar>
