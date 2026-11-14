@@ -72,13 +72,14 @@ export const listProductSuggestions = createServerFn({ method: "GET" })
 			: sql``;
 
 		const result = await db.execute(sql`
-			select p.id, p.name, p.brand, p.source_country, p.default_price_thb, p.thumb_key,
+			select p.id, p.name, p.brand, p.default_price_thb, p.thumb_key,
+			       coalesce(p.source_country, last_rp.country) as source_country,
 			       last_rp.sell_price_thb as last_sell_price_thb,
 			       last_rp.foreign_price as last_foreign_price,
 			       last_rp.source_currency as last_source_currency
 			from products p
 			left join lateral (
-				select rp.sell_price_thb, rp.foreign_price, r.source_currency, rp.created_at
+				select rp.sell_price_thb, rp.foreign_price, r.source_currency, r.country, rp.created_at
 				from round_products rp
 				join rounds r on r.id = rp.round_id
 				where rp.product_id = p.id and rp.round_id <> ${data.roundId}
