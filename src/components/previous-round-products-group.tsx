@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { ProductSuggestionRow } from "#/components/product-suggestion-row";
+import { ProductPickerRow } from "#/components/product-picker-row";
 import { CommandGroup, CommandItem } from "#/components/ui/command";
 import { useDebounce } from "#/lib/use-debounce";
 import { listProductSuggestions } from "#/server/functions/products/list-suggestions";
@@ -83,7 +83,13 @@ export function PreviousRoundProductsGroup({
 					onSelect={() => mutation.mutate(product.id)}
 					className="py-2"
 				>
-					<ProductSuggestionRow product={product} />
+					<ProductPickerRow
+						name={product.name}
+						brand={product.brand}
+						sourceCountry={product.sourceCountry}
+						thumbUrl={product.thumbUrl}
+						priceThb={product.lastSellPriceThb ?? product.defaultPriceThb}
+					/>
 				</CommandItem>
 			))}
 		</CommandGroup>

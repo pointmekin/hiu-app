@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2, PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ProductSuggestionRow } from "#/components/product-suggestion-row";
+import { ProductPickerRow } from "#/components/product-picker-row";
 import {
 	Command,
 	CommandEmpty,
@@ -127,7 +127,15 @@ export function CatalogPickerDialog({
 										onSelect={() => handleSelect(product)}
 										className="flex items-center gap-3 px-4 py-3 cursor-pointer data-[selected=true]:bg-muted data-[selected=true]:text-foreground"
 									>
-										<ProductSuggestionRow product={product} />
+										<ProductPickerRow
+											name={product.name}
+											brand={product.brand}
+											sourceCountry={product.sourceCountry}
+											thumbUrl={product.thumbUrl}
+											priceThb={
+												product.lastSellPriceThb ?? product.defaultPriceThb
+											}
+										/>
 									</CommandItem>
 								))}
 					</CommandList>

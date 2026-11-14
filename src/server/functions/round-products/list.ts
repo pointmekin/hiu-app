@@ -21,6 +21,7 @@ export const listRoundProducts = createServerFn({ method: "GET" })
 				storeLocation: roundProducts.storeLocation,
 				productName: products.name,
 				productBrand: products.brand,
+				productSourceCountry: products.sourceCountry,
 				productThumbKey: products.thumbKey,
 			})
 			.from(roundProducts)

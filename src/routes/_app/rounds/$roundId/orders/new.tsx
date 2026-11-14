@@ -23,6 +23,7 @@ import {
 	InlineProductDialog,
 } from "#/components/inline-product-dialog";
 import { PreviousRoundProductsGroup } from "#/components/previous-round-products-group";
+import { ProductPickerRow } from "#/components/product-picker-row";
 import { OrderDetailSkeleton } from "#/components/round-skeletons";
 import { Alert, AlertDescription } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
@@ -258,19 +259,13 @@ function NewOrderPage() {
 												setProductQuery("");
 											}}
 										>
-											<div className="min-w-0 flex-1">
-												<p className="font-medium truncate">{rp.productName}</p>
-												{rp.productBrand && (
-													<p className="text-xs text-muted-foreground">
-														{rp.productBrand}
-													</p>
-												)}
-											</div>
-											<span className="font-mono text-sm ml-2 shrink-0">
-												{Number.isFinite(Number(rp.sellPriceThb))
-													? `${Number(rp.sellPriceThb).toLocaleString("th-TH", { minimumFractionDigits: 0 })} ฿`
-													: "—"}
-											</span>
+											<ProductPickerRow
+												name={rp.productName}
+												brand={rp.productBrand}
+												sourceCountry={rp.productSourceCountry}
+												thumbUrl={rp.productThumbUrl}
+												priceThb={Number(rp.sellPriceThb)}
+											/>
 										</CommandItem>
 									))}
 								</CommandGroup>
