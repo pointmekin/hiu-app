@@ -18,7 +18,11 @@ import {
 	CustomerCombobox,
 	type CustomerOption,
 } from "#/components/customer-combobox";
-import { InlineProductDialog } from "#/components/inline-product-dialog";
+import {
+	type InlineCreatedProduct,
+	InlineProductDialog,
+} from "#/components/inline-product-dialog";
+import { PreviousRoundProductsGroup } from "#/components/previous-round-products-group";
 import { OrderDetailSkeleton } from "#/components/round-skeletons";
 import { Alert, AlertDescription } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
@@ -131,6 +135,15 @@ function NewOrderPage() {
 				.toLowerCase()
 				.includes(productQuery.toLowerCase()),
 	);
+
+	function addCreatedItem(rp: InlineCreatedProduct) {
+		draft.addItem({
+			roundProductId: rp.id,
+			productName: rp.productName,
+			productBrand: rp.productBrand,
+			unitPriceThb: Number(rp.sellPriceThb) || 0,
+		});
+	}
 
 	const mutation = useMutation({
 		mutationFn: () =>
@@ -261,6 +274,16 @@ function NewOrderPage() {
 										</CommandItem>
 									))}
 								</CommandGroup>
+								<PreviousRoundProductsGroup
+									roundId={roundId}
+									query={productQuery}
+									enabled={productSearchOpen}
+									onAdded={(rp) => {
+										addCreatedItem(rp);
+										setProductSearchOpen(false);
+										setProductQuery("");
+									}}
+								/>
 								<CommandSeparator />
 								<CommandGroup>
 									<CommandItem
@@ -431,14 +454,7 @@ function NewOrderPage() {
 				sourceCurrency={round.sourceCurrency}
 				fxRate={Number(round.fxRate)}
 				perItemFeeThb={Number(round.perItemFeeTh)}
-				onCreated={(rp) => {
-					draft.addItem({
-						roundProductId: rp.id,
-						productName: rp.productName,
-						productBrand: rp.productBrand,
-						unitPriceThb: Number(rp.sellPriceThb) || 0,
-					});
-				}}
+				onCreated={addCreatedItem}
 			/>
 
 			{/* Sticky bottom CTA */}

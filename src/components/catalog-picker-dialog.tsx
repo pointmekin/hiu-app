@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Package, PlusCircle } from "lucide-react";
+import { Loader2, PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ProductSuggestionRow } from "#/components/product-suggestion-row";
 import {
 	Command,
 	CommandEmpty,
@@ -18,18 +19,22 @@ import {
 import { Skeleton } from "#/components/ui/skeleton";
 import { useDebounce } from "#/lib/use-debounce";
 import { useKeyboardInset } from "#/lib/use-keyboard-inset";
-import type { ProductListItem } from "#/server/functions/products/list";
-import { listProducts } from "#/server/functions/products/list";
+import {
+	listProductSuggestions,
+	type ProductSuggestion,
+} from "#/server/functions/products/list-suggestions";
 
 interface CatalogPickerDialogProps {
+	roundId: string;
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	excludeIds: string[];
-	onSelect: (product: ProductListItem) => void;
+	onSelect: (product: ProductSuggestion) => void;
 	onCreateNew?: (query: string) => void;
 }
 
 export function CatalogPickerDialog({
+	roundId,
 	open,
 	onOpenChange,
 	excludeIds,
@@ -42,16 +47,15 @@ export function CatalogPickerDialog({
 	const keyboardInset = useKeyboardInset();
 
 	const { data, isFetching } = useQuery({
-		queryKey: ["products", debouncedQ],
-		queryFn: () => listProducts({ data: { q: debouncedQ, limit: 30 } }),
+		queryKey: ["product-suggestions", roundId, debouncedQ],
+		queryFn: () =>
+			listProductSuggestions({ data: { roundId, q: debouncedQ, limit: 30 } }),
 		enabled: open,
 	});
 
-	const available = (data?.items ?? []).filter(
-		(p) => !excludeIds.includes(p.id),
-	);
+	const available = (data ?? []).filter((p) => !excludeIds.includes(p.id));
 
-	function handleSelect(product: ProductListItem) {
+	function handleSelect(product: ProductSuggestion) {
 		onSelect(product);
 		onOpenChange(false);
 		setQ("");
@@ -121,29 +125,7 @@ export function CatalogPickerDialog({
 										onSelect={() => handleSelect(product)}
 										className="flex items-center gap-3 px-4 py-3 cursor-pointer data-[selected=true]:bg-muted data-[selected=true]:text-foreground"
 									>
-										<div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center shrink-0 overflow-hidden">
-										{product.thumbUrl ? (
-											<img
-												src={product.thumbUrl}
-												alt=""
-												loading="lazy"
-												decoding="async"
-												className="h-full w-full object-cover"
-											/>
-										) : (
-												<Package size={18} className="text-muted-foreground" />
-											)}
-										</div>
-										<div className="min-w-0">
-											<p className="font-medium text-foreground truncate">
-												{product.name}
-											</p>
-											{product.brand && (
-												<p className="text-xs text-muted-foreground">
-													{product.brand}
-												</p>
-											)}
-										</div>
+										<ProductSuggestionRow product={product} />
 									</CommandItem>
 								))}
 					</CommandList>

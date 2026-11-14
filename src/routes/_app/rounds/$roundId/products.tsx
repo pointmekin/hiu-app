@@ -44,11 +44,12 @@ import {
 	TableRow,
 } from "#/components/ui/table";
 import { cn } from "#/lib/utils";
-import type { ProductListItem } from "#/server/functions/products/list";
+import type { ProductSuggestion } from "#/server/functions/products/list-suggestions";
 import { listRoundProducts } from "#/server/functions/round-products/list";
 import { recomputeFromFx } from "#/server/functions/round-products/recompute-from-fx";
 import { upsertRoundProducts } from "#/server/functions/round-products/upsert-many";
 import { getRound } from "#/server/functions/rounds/get";
+import { resolveCarryOverPrice } from "#/shared/pricing";
 
 export const Route = createFileRoute("/_app/rounds/$roundId/products")({
 	loader: async ({ context: { queryClient }, params }) => {
@@ -215,20 +216,24 @@ function RoundProductsPage() {
 		[markDirty],
 	);
 
-	function addFromCatalog(product: ProductListItem) {
+	function addFromCatalog(product: ProductSuggestion) {
 		const alreadyAdded = rows.some((r) => r.productId === product.id);
 		if (alreadyAdded) return;
-		const hasDefaultPrice = product.defaultPriceThb != null;
+		const price = resolveCarryOverPrice(product, {
+			sourceCurrency: round.sourceCurrency,
+			fxRate,
+			perItemFee,
+		});
 		setRows((prev) => [
 			...prev,
 			{
 				productId: product.id,
 				productName: product.name,
 				productBrand: product.brand,
-				productThumbUrl: null,
-				foreignPrice: "0",
-				sellPriceThb: hasDefaultPrice ? String(product.defaultPriceThb) : "0",
-				priceOverridden: hasDefaultPrice,
+				productThumbUrl: product.thumbUrl,
+				foreignPrice: String(price.foreignPrice),
+				sellPriceThb: price.sellPriceThb.toFixed(2),
+				priceOverridden: price.priceOverridden,
 				storeLocation: "",
 			},
 		]);
@@ -353,6 +358,7 @@ function RoundProductsPage() {
 					}
 				/>
 				<CatalogPickerDialog
+					roundId={roundId}
 					open={showCatalog}
 					onOpenChange={setShowCatalog}
 					excludeIds={rows.map((r) => r.productId)}
@@ -541,6 +547,7 @@ function RoundProductsPage() {
 			</datalist>
 
 			<CatalogPickerDialog
+				roundId={roundId}
 				open={showCatalog}
 				onOpenChange={setShowCatalog}
 				excludeIds={rows.map((r) => r.productId)}
