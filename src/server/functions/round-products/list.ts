@@ -1,8 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "#/db/index";
-import { products, roundProducts } from "#/db/schema";
+import { products, roundProducts, rounds } from "#/db/schema";
 import { requireSession } from "#/server/middleware";
 import { s3PublicUrl } from "#/server/s3";
 
@@ -21,11 +21,14 @@ export const listRoundProducts = createServerFn({ method: "GET" })
 				storeLocation: roundProducts.storeLocation,
 				productName: products.name,
 				productBrand: products.brand,
-				productSourceCountry: products.sourceCountry,
+				productSourceCountry: sql<
+					string | null
+				>`coalesce(${products.sourceCountry}, ${rounds.country})`,
 				productThumbKey: products.thumbKey,
 			})
 			.from(roundProducts)
 			.innerJoin(products, eq(roundProducts.productId, products.id))
+			.innerJoin(rounds, eq(roundProducts.roundId, rounds.id))
 			.where(eq(roundProducts.roundId, data.roundId))
 			.orderBy(products.name);
 
