@@ -47,9 +47,11 @@ export function CatalogPickerDialog({
 	const keyboardInset = useKeyboardInset();
 
 	const { data, isFetching } = useQuery({
-		queryKey: ["product-suggestions", roundId, debouncedQ],
+		queryKey: ["product-suggestions", roundId, "with-current", debouncedQ],
 		queryFn: () =>
-			listProductSuggestions({ data: { roundId, q: debouncedQ, limit: 30 } }),
+			listProductSuggestions({
+				data: { roundId, q: debouncedQ, limit: 30, includeCurrentRound: true },
+			}),
 		enabled: open,
 	});
 
