@@ -40,8 +40,10 @@ function mapRow(row: SuggestionRow) {
 export type ProductSuggestion = ReturnType<typeof mapRow>;
 
 /**
- * Catalog products not yet in this round, with the price from their latest use
- * in another round.
+ * Catalog products with the price from their latest use in another round.
+ * Products already saved in this round are left out unless
+ * `includeCurrentRound` is set. The round-products editor sets it because
+ * its unsaved draft can remove a saved row that the operator must add back.
  * Products used most recently come first, so items from the previous round
  * are at the top when the query is empty.
  */
@@ -51,6 +53,7 @@ export const listProductSuggestions = createServerFn({ method: "GET" })
 			roundId: z.string().uuid(),
 			q: z.string().optional(),
 			limit: z.coerce.number().int().min(1).max(100).default(DEFAULT_LIMIT),
+			includeCurrentRound: z.boolean().default(false),
 		}),
 	)
 	.handler(async ({ data }) => {
@@ -82,10 +85,10 @@ export const listProductSuggestions = createServerFn({ method: "GET" })
 				order by rp.created_at desc
 				limit 1
 			) last_rp on true
-			where not exists (
+			where (${data.includeCurrentRound} or not exists (
 				select 1 from round_products cur
 				where cur.product_id = p.id and cur.round_id = ${data.roundId}
-			)
+			))
 			${searchFilter}
 			order by ${searchOrder} last_rp.created_at desc nulls last, p.name
 			limit ${data.limit}
