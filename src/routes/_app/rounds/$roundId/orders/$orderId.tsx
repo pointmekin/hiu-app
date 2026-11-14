@@ -31,8 +31,12 @@ import {
 	type CustomerOption,
 } from "#/components/customer-combobox";
 import { CustomerForm } from "#/components/customer-form";
-import { InlineProductDialog } from "#/components/inline-product-dialog";
+import {
+	type InlineCreatedProduct,
+	InlineProductDialog,
+} from "#/components/inline-product-dialog";
 import { PaymentSheet } from "#/components/payment-sheet";
+import { PreviousRoundProductsGroup } from "#/components/previous-round-products-group";
 import { Alert, AlertDescription } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
 import { Card } from "#/components/ui/card";
@@ -254,7 +258,9 @@ function OrderDetailPage() {
 		setEditAddressId(null);
 	}
 
-	function addEditItem(rp: (typeof roundProductRows)[number]) {
+	function addEditItem(
+		rp: InlineCreatedProduct & { productThumbUrl?: string | null },
+	) {
 		setEditItems((prev) => {
 			const existing = prev.find((i) => i.roundProductId === rp.id);
 			if (existing) {
@@ -684,6 +690,16 @@ function OrderDetailPage() {
 													</CommandItem>
 												))}
 											</CommandGroup>
+											<PreviousRoundProductsGroup
+												roundId={roundId}
+												query={productQuery}
+												enabled={productPickerOpen}
+												onAdded={(rp) => {
+													addEditItem(rp);
+													setProductPickerOpen(false);
+													setProductQuery("");
+												}}
+											/>
 										</CommandList>
 									</Command>
 								</PopoverContent>

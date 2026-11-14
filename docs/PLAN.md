@@ -749,6 +749,7 @@ All aggregation in SQL. Materialize `round_stats` view if any single dashboard q
 - **Exit criteria**: operator can edit any field on an existing order; all edits are auditable in the audit log.
 
 ### M6d — Inline product creation & order tools (1 week)
+- **Pick products from previous rounds** — the new-order and order-detail product pickers show a "From previous rounds" group: catalog products not yet in this round, most recently used first. Each suggestion shows the thumbnail, name, brand, source country, and the last sell price (else `default_price_thb`). Picking one creates the `round_product` and adds the line item. The round-products catalog dialog uses the same suggestions. Starting price (`resolveCarryOverPrice` in `src/shared/pricing.ts`): `default_price_thb` as an override; else the last foreign price recomputed with this round's FX when the currency matches; else the last THB sell price as an override; else 0.
 - **Inline product creation from combobox** — in both the new-order page and the order-detail product picker, add a "Create new product" option at the bottom of the dropdown when no exact match is found. Opens a small dialog (name, brand, foreign price). On save: product is created, added to the current round as a `round_product` (priced via the round's FX rate), and immediately inserted as a line item. Eliminates the round-trip to the catalog page mid-order.
 - **Copyable order summary message** — on the order detail page, a "Copy summary" button generates a Thai-language message for pasting into LINE/chat:
   ```
