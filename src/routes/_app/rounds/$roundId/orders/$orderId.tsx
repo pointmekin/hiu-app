@@ -24,7 +24,7 @@ import {
 	PlusCircle,
 	Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	CustomerCombobox,
@@ -75,7 +75,10 @@ import { getCustomer } from "#/server/functions/customers/get";
 import { cancelOrder } from "#/server/functions/orders/cancel";
 import { deleteOrder } from "#/server/functions/orders/delete";
 import { getOrder } from "#/server/functions/orders/get";
-import { updateOrder } from "#/server/functions/orders/update";
+import {
+	saveDefaultOrderAddress,
+	updateOrder,
+} from "#/server/functions/orders/update";
 import { listRoundProducts } from "#/server/functions/round-products/list";
 import { getRound } from "#/server/functions/rounds/get";
 import { getSettings } from "#/server/functions/settings/get";
@@ -104,6 +107,7 @@ export const Route = createFileRoute("/_app/rounds/$roundId/orders/$orderId")({
 		}
 	},
 	pendingComponent: OrderDetailSkeleton,
+	remountDeps: ({ params }) => params.orderId,
 	component: OrderDetailPage,
 });
 
@@ -127,9 +131,7 @@ function OrderDetailPage() {
 	const [editCustomerName, setEditCustomerName] = useState(
 		() => order.customerName,
 	);
-	const [editAddressId, setEditAddressId] = useState<string | null>(
-		() => order.addressId ?? null,
-	);
+	const [addressChoice, setAddressChoice] = useState<string | null>();
 	const [editItems, setEditItems] = useState<EditItem[]>(() =>
 		order.items.map((item) => ({
 			roundProductId: item.roundProductId,
@@ -228,11 +230,20 @@ function OrderDetailPage() {
 
 	const isCancelled = order.status === "cancelled";
 	const isPaid = paymentStatus === "paid";
+	const savedAddressId =
+		editCustomerId === order.customerId ? order.addressId : null;
+	const defaultAddressId = editCustomerData?.addresses.find(
+		(address) => address.isDefault,
+	)?.id;
+	const editAddressId =
+		addressChoice === undefined
+			? (savedAddressId ?? (isCancelled ? null : defaultAddressId) ?? null)
+			: addressChoice;
 
 	// isDirty: compare form state to last-saved order. Goes false again after refetch.
 	const isDirty =
 		editCustomerId !== order.customerId ||
-		editAddressId !== (order.addressId ?? null) ||
+		(addressChoice !== undefined && addressChoice !== order.addressId) ||
 		editShippingFee !== Number(order.shippingFeeThb) ||
 		editNotes !== (order.notes ?? "") ||
 		editItems.length !== order.items.length ||
@@ -256,7 +267,7 @@ function OrderDetailPage() {
 	function handleEditCustomerSelect(customer: CustomerOption) {
 		setEditCustomerId(customer.id);
 		setEditCustomerName(customer.display_name);
-		setEditAddressId(null);
+		setAddressChoice(undefined);
 	}
 
 	function addEditItem(
@@ -335,7 +346,8 @@ function OrderDetailPage() {
 					id: orderId,
 					customerId:
 						editCustomerId !== order.customerId ? editCustomerId : undefined,
-					addressId: editAddressId,
+					addressId:
+						editCustomerId !== order.customerId ? editAddressId : addressChoice,
 					shippingFeeThb: editShippingFee,
 					notes: editNotes || null,
 					items: editItems.map((item) => ({
@@ -351,6 +363,65 @@ function OrderDetailPage() {
 			queryClient.invalidateQueries({ queryKey: ["orders", roundId] });
 		},
 	});
+
+	const {
+		mutate: saveDefaultAddress,
+		variables: attemptedDefaultAddressId,
+		isPending: isSavingDefault,
+		error: defaultAddressError,
+	} = useMutation({
+		mutationFn: (addressId: string) =>
+			saveDefaultOrderAddress({
+				data: { id: orderId, customerId: order.customerId, addressId },
+			}),
+		onSuccess: async (saved) => {
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: ["orders", orderId] }),
+				queryClient.invalidateQueries({ queryKey: ["orders", roundId] }),
+				!saved &&
+					queryClient.invalidateQueries({
+						queryKey: ["customers", order.customerId],
+					}),
+			]);
+		},
+	});
+
+	useEffect(() => {
+		if (
+			!isSavingDefault &&
+			!saveMutation.isPending &&
+			!isCancelled &&
+			editCustomerId === order.customerId &&
+			!savedAddressId &&
+			addressChoice === undefined &&
+			defaultAddressId &&
+			defaultAddressId !== attemptedDefaultAddressId
+		) {
+			saveDefaultAddress(defaultAddressId);
+		}
+	}, [
+		isSavingDefault,
+		attemptedDefaultAddressId,
+		saveMutation.isPending,
+		isCancelled,
+		editCustomerId,
+		order.customerId,
+		savedAddressId,
+		addressChoice,
+		defaultAddressId,
+		saveDefaultAddress,
+	]);
+
+	const failedDefaultAddressId =
+		defaultAddressError &&
+		!isCancelled &&
+		editCustomerId === order.customerId &&
+		!savedAddressId &&
+		addressChoice === undefined &&
+		defaultAddressId === attemptedDefaultAddressId
+			? defaultAddressId
+			: undefined;
+	const isSaving = saveMutation.isPending || isSavingDefault;
 
 	const packedMutation = useMutation({
 		mutationFn: (isPacked: boolean) =>
@@ -496,7 +567,7 @@ function OrderDetailPage() {
 								<Select
 									value={editAddressId ?? "none"}
 									onValueChange={(v) =>
-										setEditAddressId(v === "none" ? null : v)
+										setAddressChoice(v === "none" ? null : v)
 									}
 									disabled={isCancelled}
 								>
@@ -514,6 +585,21 @@ function OrderDetailPage() {
 										))}
 									</SelectContent>
 								</Select>
+							)}
+							{failedDefaultAddressId && (
+								<Alert variant="destructive">
+									<AlertDescription>
+										{defaultAddressError?.message}
+										<Button
+											variant="outline"
+											size="sm"
+											disabled={isSaving}
+											onClick={() => saveDefaultAddress(failedDefaultAddressId)}
+										>
+											{t("orders:action.retryAddressSave")}
+										</Button>
+									</AlertDescription>
+								</Alert>
 							)}
 						</div>
 					)}
@@ -857,9 +943,7 @@ function OrderDetailPage() {
 					{/* Errors */}
 					{saveMutation.error && (
 						<Alert variant="destructive">
-							<AlertDescription>
-								{(saveMutation.error as Error).message}
-							</AlertDescription>
+							<AlertDescription>{saveMutation.error.message}</AlertDescription>
 						</Alert>
 					)}
 					{cancelMutation.error && (
@@ -1000,10 +1084,10 @@ function OrderDetailPage() {
 							<Button
 								variant="default"
 								className="w-full"
-								disabled={!isDirty || saveMutation.isPending}
+								disabled={!isDirty || isSaving}
 								onClick={() => saveMutation.mutate()}
 							>
-								{saveMutation.isPending
+								{isSaving
 									? t("common:loading")
 									: t("orders:action.saveChanges")}
 							</Button>
@@ -1066,9 +1150,7 @@ function OrderDetailPage() {
 
 					{saveMutation.error && (
 						<Alert variant="destructive">
-							<AlertDescription>
-								{(saveMutation.error as Error).message}
-							</AlertDescription>
+							<AlertDescription>{saveMutation.error.message}</AlertDescription>
 						</Alert>
 					)}
 					{cancelMutation.error && (
@@ -1104,12 +1186,10 @@ function OrderDetailPage() {
 							variant="default"
 							size="lg"
 							className="flex-1"
-							disabled={!isDirty || saveMutation.isPending}
+							disabled={!isDirty || isSaving}
 							onClick={() => saveMutation.mutate()}
 						>
-							{saveMutation.isPending
-								? t("common:loading")
-								: t("orders:action.saveChanges")}
+							{isSaving ? t("common:loading") : t("orders:action.saveChanges")}
 						</Button>
 						{!isPaid && (
 							<Button
@@ -1220,7 +1300,14 @@ function OrderDetailPage() {
 									new Date(a.createdAt).getTime() -
 									new Date(b.createdAt).getTime(),
 							)[refreshed.addresses.length - 1];
-							if (newest) setEditAddressId(newest.id);
+							if (
+								newest &&
+								(!newest.isDefault ||
+									savedAddressId ||
+									addressChoice !== undefined)
+							) {
+								setAddressChoice(newest.id);
+							}
 							setAddAddressOpen(false);
 						}}
 					/>

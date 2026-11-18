@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
-import { eq } from "drizzle-orm";
+import { and, eq, exists, isNull, ne } from "drizzle-orm";
+import { z } from "zod";
 import { db } from "#/db/index";
-import { customers, orderItems, orders } from "#/db/schema";
+import { customerAddresses, customers, orderItems, orders } from "#/db/schema";
 import { writeAudit } from "#/server/audit";
 import { requireSession } from "#/server/middleware";
 import { getEffectivePaymentStatus } from "#/shared/payment-status";
@@ -99,4 +100,51 @@ export const updateOrder = createServerFn({ method: "POST" })
 		});
 
 		return updated;
+	});
+
+export const saveDefaultOrderAddress = createServerFn({ method: "POST" })
+	.validator(
+		updateOrderSchema.pick({ id: true }).extend({
+			customerId: z.string().uuid(),
+			addressId: z.string().uuid(),
+		}),
+	)
+	.handler(async ({ data: { id, customerId, addressId } }) => {
+		const session = await requireSession();
+		const defaultAddress = db
+			.select({ id: customerAddresses.id })
+			.from(customerAddresses)
+			.where(
+				and(
+					eq(customerAddresses.id, addressId),
+					eq(customerAddresses.customerId, customerId),
+					eq(customerAddresses.isDefault, true),
+				),
+			);
+
+		const [updated] = await db
+			.update(orders)
+			.set({ addressId, updatedAt: new Date() })
+			.where(
+				and(
+					eq(orders.id, id),
+					eq(orders.customerId, customerId),
+					isNull(orders.addressId),
+					ne(orders.status, "cancelled"),
+					exists(defaultAddress),
+				),
+			)
+			.returning({ id: orders.id });
+
+		if (updated) {
+			await writeAudit({
+				userId: session.user.id,
+				entity: "order",
+				entityId: id,
+				action: "update",
+				diff: { addressId },
+			});
+		}
+
+		return !!updated;
 	});

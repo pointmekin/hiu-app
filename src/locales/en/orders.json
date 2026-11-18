@@ -78,6 +78,7 @@
 		"editing": "Editing",
 		"discardEdit": "Discard changes",
 		"saveChanges": "Save changes",
+		"retryAddressSave": "Retry saving address",
 		"discardEditConfirm": "Discard all edits?",
 		"copySummary": "Copy order summary",
 		"createProduct": "Create new product",
