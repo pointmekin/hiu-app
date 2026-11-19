@@ -290,6 +290,8 @@ function RoundProductsPage() {
 			queryClient.invalidateQueries({
 				queryKey: ["round-products", roundId],
 			});
+			queryClient.invalidateQueries({ queryKey: ["orders"] });
+			queryClient.invalidateQueries({ queryKey: ["dashboard"] });
 			if (savedSnapshotRef.current !== rowsRef.current) {
 				// Rows changed during save — stay pending so autosave re-fires.
 				setSaveStatus("pending");
@@ -336,6 +338,8 @@ function RoundProductsPage() {
 			queryClient.invalidateQueries({
 				queryKey: ["round-products", roundId],
 			});
+			queryClient.invalidateQueries({ queryKey: ["orders"] });
+			queryClient.invalidateQueries({ queryKey: ["dashboard"] });
 		},
 	});
 

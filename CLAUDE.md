@@ -50,9 +50,8 @@ This is an internal admin tool replacing the Excel-based workflow for a ร้�
 
 1. Per-user logins or shared? Default assumption: per-user.
 2. Buddhist or Gregorian calendar for Thai dates? Default: Gregorian.
-3. Mid-round FX rate change — recompute non-overridden round_products only, freeze order_items? Default: yes.
-4. Kerry template file — still need the real one before M4.
-5. Thai font preference — Plex Sans Thai Looped vs Sarabun vs Noto Sans Thai.
+3. Kerry template file — still need the real one before M4.
+4. Thai font preference — Plex Sans Thai Looped vs Sarabun vs Noto Sans Thai.
 
 Update this list when answered.
 
