@@ -135,3 +135,55 @@ it.each([
 	expect(note.value).toBe("Unsaved note");
 	expect(updateOrder).not.toHaveBeenCalled();
 });
+
+it("refreshes the customer summary after repricing without resetting the draft", async () => {
+	const item = {
+		roundProductId: "round-product",
+		productId: "product",
+		productName: "Test product",
+		unitPriceThb: "0.00",
+		quantity: 2,
+	};
+	const order = {
+		customerId: "customer",
+		customerName: "Test Customer",
+		addressId: null,
+		shippingFeeThb: "50.00",
+		paidAmountThb: "0.00",
+		totalThb: "50.00",
+		paymentStatus: "pending",
+		status: "active",
+		items: [item],
+		payments: [],
+	};
+	getOrder.mockResolvedValue(order);
+	getCustomer.mockResolvedValue({ id: "customer", addresses: [] });
+	const client = new QueryClient();
+	client.setQueryData(["orders", "order"], order);
+	const Page = Route.options.component;
+	if (!Page) throw new Error("Missing order page");
+
+	await act(async () => {
+		render(
+			<QueryClientProvider client={client}>
+				<Suspense>
+					<Page />
+				</Suspense>
+			</QueryClientProvider>,
+		);
+	});
+	await screen.findAllByText(/Test product ×2: 0/);
+	const note = screen.getByPlaceholderText("...") as HTMLInputElement;
+	fireEvent.change(note, { target: { value: "Unsaved note" } });
+
+	getOrder.mockResolvedValue({
+		...order,
+		totalThb: "350.00",
+		items: [{ ...item, unitPriceThb: "150.00" }],
+	});
+	await act(async () => {
+		await client.invalidateQueries({ queryKey: ["orders", "order"] });
+	});
+	await screen.findAllByText(/Test product ×2: 300/);
+	expect(note.value).toBe("Unsaved note");
+});

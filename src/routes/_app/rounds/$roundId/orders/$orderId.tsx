@@ -132,7 +132,7 @@ function OrderDetailPage() {
 		() => order.customerName,
 	);
 	const [addressChoice, setAddressChoice] = useState<string | null>();
-	const [editItems, setEditItems] = useState<EditItem[]>(() =>
+	const [draftItems, setEditItems] = useState<EditItem[]>(() =>
 		order.items.map((item) => ({
 			roundProductId: item.roundProductId,
 			productId: item.productId,
@@ -187,6 +187,18 @@ function OrderDetailPage() {
 		paidAmountThb,
 		Number(order.totalThb),
 	);
+
+	// Use fetched prices without resetting quantities or other draft edits.
+	const prices = new Map(
+		roundProductRows.map((product) => [product.id, product.sellPriceThb]),
+	);
+	for (const item of order.items) {
+		prices.set(item.roundProductId, item.unitPriceThb);
+	}
+	const editItems = draftItems.map((item) => ({
+		...item,
+		unitPriceThb: Number(prices.get(item.roundProductId) ?? item.unitPriceThb),
+	}));
 
 	const editSubtotal = editItems.reduce(
 		(s, i) => s + i.unitPriceThb * i.quantity,
@@ -357,10 +369,11 @@ function OrderDetailPage() {
 					})),
 				},
 			}),
-		onSuccess: () => {
-			// Refetch causes order to update → isDirty becomes false naturally
-			queryClient.invalidateQueries({ queryKey: ["orders", orderId] });
-			queryClient.invalidateQueries({ queryKey: ["orders", roundId] });
+		onSuccess: async () => {
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: ["orders", orderId] }),
+				queryClient.invalidateQueries({ queryKey: ["orders", roundId] }),
+			]);
 		},
 	});
 
