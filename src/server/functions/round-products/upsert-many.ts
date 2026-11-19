@@ -5,6 +5,7 @@ import { orderItems, roundProducts } from "#/db/schema";
 import { writeAudit } from "#/server/audit";
 import { requireSession } from "#/server/middleware";
 import { upsertRoundProductsSchema } from "#/shared/schemas/round-product";
+import { lockRound, syncOrderPrices } from "../orders/pricing";
 
 export const upsertRoundProducts = createServerFn({ method: "POST" })
 	.validator(upsertRoundProductsSchema)
@@ -29,6 +30,7 @@ export const upsertRoundProducts = createServerFn({ method: "POST" })
 		// (e.g. a dropped Neon connection) commits the deletes but loses the
 		// price edits — a silent partial write.
 		const result = await db.transaction(async (tx) => {
+			await lockRound(tx, data.roundId);
 			// Rows currently in this round whose productId is absent from the
 			// payload are ones the user removed in the editor. They must be deleted
 			// — an upsert-only flow leaves them in place and they reappear on refetch.
@@ -67,7 +69,7 @@ export const upsertRoundProducts = createServerFn({ method: "POST" })
 				deletedCount = removed.length;
 			}
 
-			return rows.length
+			const saved = rows.length
 				? await tx
 						.insert(roundProducts)
 						.values(rows)
@@ -83,6 +85,12 @@ export const upsertRoundProducts = createServerFn({ method: "POST" })
 						})
 						.returning()
 				: [];
+
+			await syncOrderPrices(
+				tx,
+				saved.map(({ id }) => id),
+			);
+			return saved;
 		});
 
 		await writeAudit({

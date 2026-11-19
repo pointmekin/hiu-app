@@ -572,7 +572,7 @@ Manual override [   ฿680   ]  [✓ override]  ← when set, calc won't touch i
 Store           [ Don Quijote Shinjuku  ]
 ```
 
-When the round's `fx_rate` or `per_item_fee_thb` changes, a `recomputeFromFx` action re-applies the formula to all rows where `price_overridden = false`. Overridden rows are left alone.
+When the round's `fx_rate` or `per_item_fee_thb` changes, a `recomputeFromFx` action re-applies the formula to all rows where `price_overridden = false`. Overridden rows are left alone. Whenever the selling price changes, existing order items linked to that round product use the updated price and their orders recalculate totals and payment status.
 
 ### Mobile-first
 
@@ -907,7 +907,6 @@ No Workers-specific code, no lock-in.
 2. **Real Kerry template** — get the actual file Kerry currently accepts and check it in as the golden test artifact.
 3. **Buddhist vs Gregorian calendar** in Thai date display — Thai e-commerce mostly uses Gregorian even when the UI is in Thai, but ask.
 4. **Thai UI font preference** — Plex Sans Thai Looped is my proposal; Sarabun and Noto Sans Thai are reasonable fallbacks. Show two mockups, let her pick.
-5. **Effective FX rate refresh** — when she changes the round's `fx_rate` mid-round, what's the expected behavior on existing round_products that have already been ordered? My default: leave existing `order_items.unit_price_thb` alone (they're frozen at order time), recompute `round_products.sell_price_thb` for not-yet-overridden rows only. Confirm.
 
 ---
 

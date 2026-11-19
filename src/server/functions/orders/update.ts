@@ -7,6 +7,7 @@ import { writeAudit } from "#/server/audit";
 import { requireSession } from "#/server/middleware";
 import { getEffectivePaymentStatus } from "#/shared/payment-status";
 import { updateOrderSchema } from "#/shared/schemas/order";
+import { lockRound, priceOrderItems } from "./pricing";
 
 export const updateOrder = createServerFn({ method: "POST" })
 	.validator(updateOrderSchema)
@@ -14,74 +15,81 @@ export const updateOrder = createServerFn({ method: "POST" })
 		const session = await requireSession();
 		const { id, ...fields } = data;
 
-		const [current] = await db
-			.select({
-				subtotalThb: orders.subtotalThb,
-				shippingFeeThb: orders.shippingFeeThb,
-				paidAmountThb: orders.paidAmountThb,
-				paymentStatus: orders.paymentStatus,
-			})
-			.from(orders)
-			.where(eq(orders.id, id))
-			.limit(1);
+		const updated = await db.transaction(async (tx) => {
+			const [order] = await tx
+				.select({ roundId: orders.roundId })
+				.from(orders)
+				.where(eq(orders.id, id));
+			if (!order) throw new Error("Order not found");
 
-		if (!current) throw new Error("Order not found");
+			await lockRound(tx, order.roundId);
+			const [current] = await tx
+				.select({
+					subtotalThb: orders.subtotalThb,
+					shippingFeeThb: orders.shippingFeeThb,
+					paidAmountThb: orders.paidAmountThb,
+					paymentStatus: orders.paymentStatus,
+				})
+				.from(orders)
+				.where(eq(orders.id, id))
+				.for("no key update");
 
-		const updateData: Record<string, unknown> = { updatedAt: new Date() };
+			if (!current) throw new Error("Order not found");
 
-		if (fields.customerId !== undefined)
-			updateData.customerId = fields.customerId;
-		if (fields.addressId !== undefined) updateData.addressId = fields.addressId;
-		if (fields.notes !== undefined) updateData.notes = fields.notes;
-		if (fields.kerryTracking !== undefined)
-			updateData.kerryTracking = fields.kerryTracking;
-		if (fields.isPacked !== undefined) updateData.isPacked = fields.isPacked;
+			const updateData: Record<string, unknown> = { updatedAt: new Date() };
 
-		// Replace items when provided: delete existing, insert new
-		let newSubtotal: number | undefined;
-		if (fields.items !== undefined) {
-			await db.delete(orderItems).where(eq(orderItems.orderId, id));
-			await db.insert(orderItems).values(
-				fields.items.map((item) => ({
-					orderId: id,
-					roundProductId: item.roundProductId,
-					quantity: item.quantity,
-					unitPriceThb: item.unitPriceThb.toFixed(2),
-					lineTotalThb: (item.unitPriceThb * item.quantity).toFixed(2),
-				})),
-			);
-			newSubtotal = fields.items.reduce(
-				(sum, item) => sum + item.unitPriceThb * item.quantity,
-				0,
-			);
-			updateData.subtotalThb = newSubtotal.toFixed(2);
-		}
+			if (fields.customerId !== undefined)
+				updateData.customerId = fields.customerId;
+			if (fields.addressId !== undefined)
+				updateData.addressId = fields.addressId;
+			if (fields.notes !== undefined) updateData.notes = fields.notes;
+			if (fields.kerryTracking !== undefined)
+				updateData.kerryTracking = fields.kerryTracking;
+			if (fields.isPacked !== undefined) updateData.isPacked = fields.isPacked;
 
-		// Recompute total when either subtotal or shipping fee changes
-		const subtotal = newSubtotal ?? Number(current.subtotalThb);
-		const shipping = fields.shippingFeeThb ?? Number(current.shippingFeeThb);
+			// Replace items when provided: delete existing, insert new
+			let newSubtotal: number | undefined;
+			if (fields.items !== undefined) {
+				const items = await priceOrderItems(tx, order.roundId, fields.items);
+				await tx.delete(orderItems).where(eq(orderItems.orderId, id));
+				await tx
+					.insert(orderItems)
+					.values(items.map((item) => ({ ...item, orderId: id })));
+				newSubtotal = items.reduce(
+					(sum, item) => sum + Number(item.lineTotalThb),
+					0,
+				);
+				updateData.subtotalThb = newSubtotal.toFixed(2);
+			}
 
-		if (fields.shippingFeeThb !== undefined) {
-			updateData.shippingFeeThb = shipping.toFixed(2);
-		}
+			// Recompute total when either subtotal or shipping fee changes
+			const subtotal = newSubtotal ?? Number(current.subtotalThb);
+			const shipping = fields.shippingFeeThb ?? Number(current.shippingFeeThb);
 
-		if (newSubtotal !== undefined || fields.shippingFeeThb !== undefined) {
-			const total = subtotal + shipping;
-			updateData.totalThb = total.toFixed(2);
-			updateData.paymentStatus = getEffectivePaymentStatus(
-				current.paymentStatus,
-				Number(current.paidAmountThb),
-				total,
-			);
-		}
+			if (fields.shippingFeeThb !== undefined) {
+				updateData.shippingFeeThb = shipping.toFixed(2);
+			}
 
-		const [updated] = await db
-			.update(orders)
-			.set(updateData)
-			.where(eq(orders.id, id))
-			.returning();
+			if (newSubtotal !== undefined || fields.shippingFeeThb !== undefined) {
+				const total = subtotal + shipping;
+				updateData.totalThb = total.toFixed(2);
+				updateData.paymentStatus = getEffectivePaymentStatus(
+					current.paymentStatus,
+					Number(current.paidAmountThb),
+					total,
+				);
+			}
 
-		if (!updated) throw new Error("Order not found");
+			const [updated] = await tx
+				.update(orders)
+				.set(updateData)
+				.where(eq(orders.id, id))
+				.returning();
+
+			if (!updated) throw new Error("Order not found");
+
+			return updated;
+		});
 
 		// Keep customer's last_ordered_at fresh when customer changes
 		if (fields.customerId !== undefined) {
