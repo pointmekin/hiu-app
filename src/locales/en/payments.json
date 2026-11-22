@@ -20,6 +20,9 @@
 	"history": {
 		"title": "Payment history",
 		"empty": "No payments yet",
-		"at": "at {{date}}"
+		"at": "at {{date}}",
+		"delete": "Delete {{type}} of {{amount}} recorded at {{date}}",
+		"deleteConfirm": "Delete the {{type}} entry of {{amount}} recorded at {{date}}? The paid amount and balance will be recalculated.",
+		"deleteError": "Could not delete the payment entry. Try again."
 	}
 }

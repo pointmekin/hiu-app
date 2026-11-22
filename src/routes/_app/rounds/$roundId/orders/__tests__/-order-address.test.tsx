@@ -13,12 +13,14 @@ import { Suspense } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 import { Route } from "../$orderId";
 
-const { getOrder, getCustomer, saveDefault, updateOrder } = vi.hoisted(() => ({
-	getOrder: vi.fn(),
-	getCustomer: vi.fn(),
-	saveDefault: vi.fn(),
-	updateOrder: vi.fn(),
-}));
+const { getOrder, getCustomer, saveDefault, updateOrder, deletePayment } =
+	vi.hoisted(() => ({
+		getOrder: vi.fn(),
+		getCustomer: vi.fn(),
+		saveDefault: vi.fn(),
+		updateOrder: vi.fn(),
+		deletePayment: vi.fn(),
+	}));
 
 vi.mock("@tanstack/react-router", async (importOriginal) => ({
 	...(await importOriginal<typeof import("@tanstack/react-router")>()),
@@ -28,8 +30,12 @@ vi.mock("@tanstack/react-router", async (importOriginal) => ({
 	Link: () => null,
 }));
 vi.mock("react-i18next", () => ({
-	useTranslation: () => ({ t: (key: string) => key }),
+	useTranslation: () => ({
+		t: (key: string) => key,
+		i18n: { resolvedLanguage: "en" },
+	}),
 }));
+vi.mock("#/server/functions/payments/record", () => ({ deletePayment }));
 vi.mock("#/server/functions/orders/get", () => ({ getOrder }));
 vi.mock("#/server/functions/orders/update", () => ({
 	updateOrder,
@@ -49,6 +55,7 @@ vi.mock("#/server/functions/settings/get", () => ({
 afterEach(() => {
 	cleanup();
 	vi.resetAllMocks();
+	vi.restoreAllMocks();
 });
 
 it.each([
@@ -186,4 +193,76 @@ it("refreshes the customer summary after repricing without resetting the draft",
 	});
 	await screen.findAllByText(/Test product ×2: 300/);
 	expect(note.value).toBe("Unsaved note");
+});
+
+it("uses the reconciled history when another tab deleted a payment and refreshing fails", async () => {
+	const order = {
+		customerId: "customer",
+		customerName: "Test Customer",
+		addressId: null,
+		shippingFeeThb: "100.00",
+		paidAmountThb: "100.00",
+		totalThb: "100.00",
+		paymentStatus: "paid",
+		status: "active",
+		items: [],
+		payments: [
+			{
+				id: "payment",
+				type: "remainder",
+				amountThb: "50.00",
+				paidAt: new Date(),
+			},
+			{
+				id: "other-payment",
+				type: "deposit",
+				amountThb: "50.00",
+				paidAt: new Date(),
+			},
+		],
+	};
+	getOrder.mockResolvedValue(order);
+	getCustomer.mockResolvedValue({ id: "customer", addresses: [] });
+	deletePayment.mockImplementation(async () => {
+		getOrder.mockRejectedValue(new Error("Order refresh failed"));
+		return { paidAmountThb: "0.00", paymentStatus: "pending", payments: [] };
+	});
+	const confirm = vi
+		.spyOn(window, "confirm")
+		.mockReturnValueOnce(false)
+		.mockReturnValueOnce(true);
+	const client = new QueryClient({
+		defaultOptions: { queries: { retry: false } },
+	});
+	client.setQueryData(["orders", "order"], order);
+	const Page = Route.options.component;
+	if (!Page) throw new Error("Missing order page");
+
+	render(
+		<QueryClientProvider client={client}>
+			<Suspense>
+				<Page />
+			</Suspense>
+		</QueryClientProvider>,
+	);
+	const [deleteButton] = await screen.findAllByRole("button", {
+		name: "payments:history.delete",
+	});
+	fireEvent.click(deleteButton);
+	expect(confirm).toHaveBeenCalledWith("payments:history.deleteConfirm");
+	expect(deletePayment).not.toHaveBeenCalled();
+
+	fireEvent.click(deleteButton);
+	await waitFor(() =>
+		expect(client.getQueryState(["orders", "order"])?.status).toBe("error"),
+	);
+	expect(screen.getByText("orders:paymentStatus.pending")).toBeTruthy();
+	expect(client.getQueryData(["orders", "order"])).toMatchObject({
+		paidAmountThb: "0.00",
+		payments: [],
+	});
+	expect(deletePayment).toHaveBeenCalledExactlyOnceWith({
+		data: { orderId: "order", paymentId: "payment" },
+	});
+	expect(screen.queryAllByText("payments:history.title")).toHaveLength(0);
 });

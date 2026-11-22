@@ -280,7 +280,7 @@ create table audit_log (
 create index audit_log_entity_idx on audit_log (entity, entity_id, at desc);
 ```
 
-Same `recompute_order_payment_status` trigger as v2 — refreshes `paid_amount_thb` and `payment_status` whenever `order_payments` changes.
+Recording or deleting an entry locks the order and refreshes `paid_amount_thb` and `payment_status` from the remaining payment records in the same transaction. Refunds reduce the paid amount.
 
 ---
 
@@ -510,7 +510,7 @@ Notable functions:
 - `catalog/products` — search, upsert, uploadImage.
 - `customers/` — search (autocomplete), get, upsert; addresses sub-routes.
 - `orders/` — list (filterable), get, create, update, markPaid, cancel, setTracking.
-- `payments/` — record (deposit / remainder / full / refund).
+- `payments/` — record a deposit, remainder, full payment, or refund, and delete a recorded entry from the order detail.
 - `exports/japan05` — XLSX stream.
 - `exports/kerry` — XLSX stream.
 - `dashboard/roundStats`, `dashboard/overallStats` — aggregations.

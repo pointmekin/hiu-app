@@ -80,6 +80,7 @@ import {
 	saveDefaultOrderAddress,
 	updateOrder,
 } from "#/server/functions/orders/update";
+import { deletePayment } from "#/server/functions/payments/record";
 import { listRoundProducts } from "#/server/functions/round-products/list";
 import { getRound } from "#/server/functions/rounds/get";
 import { getSettings } from "#/server/functions/settings/get";
@@ -113,7 +114,12 @@ export const Route = createFileRoute("/_app/rounds/$roundId/orders/$orderId")({
 });
 
 function OrderDetailPage() {
-	const { t } = useTranslation(["orders", "payments", "customers", "common"]);
+	const { t, i18n } = useTranslation([
+		"orders",
+		"payments",
+		"customers",
+		"common",
+	]);
 	const { roundId, orderId } = useParams({
 		from: "/_app/rounds/$roundId/orders/$orderId",
 	});
@@ -352,6 +358,24 @@ function OrderDetailPage() {
 		},
 	});
 
+	const deletePaymentMutation = useMutation({
+		mutationFn: (paymentId: string) =>
+			deletePayment({ data: { orderId, paymentId } }),
+		onSuccess: async (reconciled) => {
+			const queryKey = ["orders", orderId];
+			await queryClient.cancelQueries({ queryKey, exact: true });
+			queryClient.setQueryData<typeof order>(
+				queryKey,
+				(current) => current && { ...current, ...reconciled },
+			);
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: ["orders"] }),
+				queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+				queryClient.invalidateQueries({ queryKey: ["audit"] }),
+			]);
+		},
+	});
+
 	const saveMutation = useMutation({
 		mutationFn: () =>
 			updateOrder({
@@ -514,6 +538,85 @@ function OrderDetailPage() {
 	);
 
 	// ── Render ────────────────────────────────────────────────────────────────────
+	const paymentDateFormat = new Intl.DateTimeFormat(
+		i18n.resolvedLanguage === "en" ? "en-GB" : "th-TH",
+		{
+			dateStyle: "short",
+			timeStyle: "short",
+			timeZone: "Asia/Bangkok",
+			calendar: "gregory",
+		},
+	);
+	const paymentHistory = order.payments.length > 0 && (
+		<div>
+			<p className="mb-2 text-sm font-medium">{t("payments:history.title")}</p>
+			<Card className="divide-y">
+				{order.payments.map((payment) => {
+					const type = t(`payments:type.${payment.type}`);
+					const amount = new Intl.NumberFormat("th-TH", {
+						style: "currency",
+						currency: "THB",
+					}).format(Number(payment.amountThb));
+					const date = paymentDateFormat.format(new Date(payment.paidAt));
+					const label = t("payments:history.delete", { type, amount, date });
+					return (
+						<div
+							key={payment.id}
+							className="flex items-center justify-between gap-2 px-4 py-3"
+						>
+							<div className="min-w-0">
+								<p className="text-sm font-medium">{type}</p>
+								<p className="break-words text-xs text-muted-foreground">
+									{[
+										date,
+										payment.method && t(`payments:method.${payment.method}`),
+										payment.notes,
+									]
+										.filter(Boolean)
+										.join(" · ")}
+								</p>
+							</div>
+							<div className="flex shrink-0 items-center gap-1">
+								<span className="font-mono text-sm tabular-nums">{amount}</span>
+								<Button
+									type="button"
+									variant="ghost"
+									size="icon"
+									className="text-destructive"
+									aria-label={label}
+									title={label}
+									disabled={deletePaymentMutation.isPending}
+									onClick={() => {
+										if (
+											confirm(
+												t("payments:history.deleteConfirm", {
+													type,
+													amount,
+													date,
+												}),
+											)
+										) {
+											deletePaymentMutation.mutate(payment.id);
+										}
+									}}
+								>
+									<Trash2 />
+								</Button>
+							</div>
+						</div>
+					);
+				})}
+			</Card>
+			{deletePaymentMutation.isError && (
+				<Alert variant="destructive" className="mt-2">
+					<AlertDescription>
+						{t("payments:history.deleteError")}
+					</AlertDescription>
+				</Alert>
+			)}
+		</div>
+	);
+
 	return (
 		<>
 			<div className="md:flex md:gap-8 md:items-start">
@@ -925,39 +1028,7 @@ function OrderDetailPage() {
 							</div>
 						</Card>
 
-						{order.payments.length > 0 && (
-							<div>
-								<p className="text-sm font-medium mb-2">
-									{t("payments:history.title")}
-								</p>
-								<Card className="divide-y">
-									{order.payments.map((payment) => (
-										<div
-											key={payment.id}
-											className="flex items-center justify-between px-4 py-3"
-										>
-											<div>
-												<p className="text-sm font-medium">
-													{t(`payments:type.${payment.type}`)}
-												</p>
-												<p className="text-xs text-muted-foreground">
-													{payment.method
-														? t(`payments:method.${payment.method}`)
-														: ""}
-													{payment.notes ? ` · ${payment.notes}` : ""}
-												</p>
-											</div>
-											<span className="font-mono text-sm tabular-nums">
-												{Number(payment.amountThb).toLocaleString("th-TH", {
-													minimumFractionDigits: 2,
-												})}{" "}
-												฿
-											</span>
-										</div>
-									))}
-								</Card>
-							</div>
-						)}
+						{paymentHistory}
 					</div>
 
 					{/* Errors */}
@@ -1064,39 +1135,7 @@ function OrderDetailPage() {
 						</div>
 					</Card>
 
-					{order.payments.length > 0 && (
-						<div>
-							<p className="text-sm font-medium mb-2">
-								{t("payments:history.title")}
-							</p>
-							<Card className="divide-y">
-								{order.payments.map((payment) => (
-									<div
-										key={payment.id}
-										className="flex items-center justify-between px-4 py-3"
-									>
-										<div>
-											<p className="text-sm font-medium">
-												{t(`payments:type.${payment.type}`)}
-											</p>
-											<p className="text-xs text-muted-foreground">
-												{payment.method
-													? t(`payments:method.${payment.method}`)
-													: ""}
-												{payment.notes ? ` · ${payment.notes}` : ""}
-											</p>
-										</div>
-										<span className="font-mono text-sm tabular-nums">
-											{Number(payment.amountThb).toLocaleString("th-TH", {
-												minimumFractionDigits: 2,
-											})}{" "}
-											฿
-										</span>
-									</div>
-								))}
-							</Card>
-						</div>
-					)}
+					{paymentHistory}
 
 					{!isCancelled && (
 						<div className="flex flex-col gap-2">
