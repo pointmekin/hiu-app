@@ -20,3 +20,9 @@ export const recordPaymentSchema = z.object({
 });
 
 export type RecordPaymentInput = z.infer<typeof recordPaymentSchema>;
+
+export const deletePaymentSchema = recordPaymentSchema
+	.pick({ orderId: true })
+	.extend({
+		paymentId: z.string().uuid(),
+	});

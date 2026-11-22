@@ -9,14 +9,11 @@ interface AuditEntry {
 	diff?: unknown;
 }
 
-export async function writeAudit({
-	userId,
-	entity,
-	entityId,
-	action,
-	diff,
-}: AuditEntry): Promise<void> {
-	await db.insert(auditLog).values({
+export async function writeAudit(
+	{ userId, entity, entityId, action, diff }: AuditEntry,
+	writer: Pick<typeof db, "insert"> = db,
+): Promise<void> {
+	await writer.insert(auditLog).values({
 		userId,
 		entity,
 		entityId,
