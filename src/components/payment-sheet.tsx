@@ -29,6 +29,7 @@ import {
 	SheetTitle,
 } from "#/components/ui/sheet";
 import { Textarea } from "#/components/ui/textarea";
+import type { getOrder } from "#/server/functions/orders/get";
 import { recordPayment } from "#/server/functions/payments/record";
 import {
 	PAYMENT_METHODS,
@@ -71,7 +72,16 @@ export function PaymentSheet({
 
 	const mutation = useMutation({
 		mutationFn: (data: RecordPaymentInput) => recordPayment({ data }),
-		onSuccess: () => {
+		onSuccess: (updated) => {
+			queryClient.setQueryData<Awaited<ReturnType<typeof getOrder>>>(
+				["orders", orderId],
+				(order) =>
+					order && {
+						...order,
+						paidAmountThb: updated.paidAmountThb,
+						paymentStatus: updated.paymentStatus,
+					},
+			);
 			queryClient.invalidateQueries({ queryKey: ["orders", orderId] });
 			queryClient.invalidateQueries({ queryKey: ["orders"] });
 			form.reset();

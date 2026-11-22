@@ -70,6 +70,7 @@ import {
 	SelectValue,
 } from "#/components/ui/select";
 import { Separator } from "#/components/ui/separator";
+import { Skeleton } from "#/components/ui/skeleton";
 import { Toggle } from "#/components/ui/toggle";
 import { getCustomer } from "#/server/functions/customers/get";
 import { cancelOrder } from "#/server/functions/orders/cancel";
@@ -161,7 +162,7 @@ function OrderDetailPage() {
 		queryFn: () => listRoundProducts({ data: { roundId } }),
 	});
 
-	const { data: editCustomerData } = useQuery({
+	const { data: editCustomerData, isPending: isCustomerPending } = useQuery({
 		queryKey: ["customers", editCustomerId],
 		queryFn: () => getCustomer({ data: { id: editCustomerId } }),
 		enabled: !!editCustomerId,
@@ -558,6 +559,12 @@ function OrderDetailPage() {
 					</div>
 
 					{/* Address */}
+					{!!editCustomerId && isCustomerPending && (
+						<div className="space-y-1.5">
+							<Label>{t("orders:field.address")}</Label>
+							<Skeleton className="h-9 w-full" />
+						</div>
+					)}
 					{editCustomerData && (
 						<div className="space-y-1.5">
 							<div className="flex items-center justify-between">
