@@ -46,43 +46,44 @@ export const getOrder = createServerFn({ method: "GET" })
 
 		if (!order) throw new Error("Order not found");
 
-		const items = await db
-			.select({
-				id: orderItems.id,
-				roundProductId: orderItems.roundProductId,
-				quantity: orderItems.quantity,
-				unitPriceThb: orderItems.unitPriceThb,
-				lineTotalThb: orderItems.lineTotalThb,
-				productId: products.id,
-				productName: products.name,
-				productBrand: products.brand,
-				productThumbKey: products.thumbKey,
-			})
-			.from(orderItems)
-			.innerJoin(roundProducts, eq(orderItems.roundProductId, roundProducts.id))
-			.innerJoin(products, eq(roundProducts.productId, products.id))
-			.where(eq(orderItems.orderId, data.id));
+		const [items, payments, [address = null]] = await Promise.all([
+			db
+				.select({
+					id: orderItems.id,
+					roundProductId: orderItems.roundProductId,
+					quantity: orderItems.quantity,
+					unitPriceThb: orderItems.unitPriceThb,
+					lineTotalThb: orderItems.lineTotalThb,
+					productId: products.id,
+					productName: products.name,
+					productBrand: products.brand,
+					productThumbKey: products.thumbKey,
+				})
+				.from(orderItems)
+				.innerJoin(
+					roundProducts,
+					eq(orderItems.roundProductId, roundProducts.id),
+				)
+				.innerJoin(products, eq(roundProducts.productId, products.id))
+				.where(eq(orderItems.orderId, data.id)),
+			db
+				.select()
+				.from(orderPayments)
+				.where(eq(orderPayments.orderId, data.id))
+				.orderBy(orderPayments.paidAt),
+			order.addressId
+				? db
+						.select()
+						.from(customerAddresses)
+						.where(eq(customerAddresses.id, order.addressId))
+						.limit(1)
+				: [],
+		]);
 
 		const itemsWithThumb = items.map((item) => ({
 			...item,
 			productThumbUrl: s3PublicUrl(item.productThumbKey),
 		}));
-
-		const payments = await db
-			.select()
-			.from(orderPayments)
-			.where(eq(orderPayments.orderId, data.id))
-			.orderBy(orderPayments.paidAt);
-
-		let address: typeof customerAddresses.$inferSelect | null = null;
-		if (order.addressId) {
-			const [addr] = await db
-				.select()
-				.from(customerAddresses)
-				.where(eq(customerAddresses.id, order.addressId))
-				.limit(1);
-			address = addr ?? null;
-		}
 
 		return { ...order, items: itemsWithThumb, payments, address };
 	});
